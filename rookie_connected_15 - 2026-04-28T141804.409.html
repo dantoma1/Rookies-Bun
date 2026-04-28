@@ -1052,6 +1052,180 @@
     flex-shrink: 0;
   }
 
+  /* ─── HIRING TEAM / RECRUITERS BOX ─────────────────────────────────────── */
+  .recruiters-strip {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .recruiters-strip::-webkit-scrollbar { height: 6px; }
+  .recruiters-strip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .recruiters-strip::-webkit-scrollbar-thumb:hover { background: var(--gray); }
+  .recruiters-strip::-webkit-scrollbar-track { background: transparent; }
+
+  .recruiter-card {
+    position: relative;
+    flex: 0 0 240px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .recruiter-card:hover {
+    border-color: var(--navy);
+    box-shadow: 0 4px 14px rgba(15,31,61,0.06);
+  }
+  .recruiter-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .recruiter-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .recruiter-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 0;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .recruiter-card .recruiter-role {
+    font-size: 11px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .recruiter-card .recruiter-email {
+    font-size: 12px;
+    color: var(--text-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .recruiter-card .recruiter-listings {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+  .recruiter-card .recruiter-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .recruiter-card:hover .recruiter-actions { opacity: 1; }
+  .recruiter-card .recruiter-actions button {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    width: 26px; height: 26px;
+    font-size: 12px;
+    color: var(--text-light);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .recruiter-card .recruiter-actions button:hover {
+    border-color: var(--navy);
+    color: var(--navy);
+  }
+  .recruiter-card .recruiter-actions button.danger:hover {
+    border-color: #c0392b;
+    color: #c0392b;
+  }
+  .recruiter-empty {
+    padding: 24px;
+    text-align: center;
+    color: var(--text-light);
+    font-size: 13px;
+    width: 100%;
+  }
+  .recruiter-empty-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  /* Settings page toggle row */
+  .settings-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .settings-toggle:hover {
+    border-color: var(--navy);
+    background: var(--cream);
+  }
+  .settings-toggle input[type="checkbox"] {
+    accent-color: var(--navy);
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+  }
+
+  /* "Owned by [recruiter]" pill — tiny avatar + name, sits inline next to job titles */
+  .owner-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 4px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-light);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .owner-pill .owner-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+
   .applicant-info h4 { font-size: 14px; font-weight: 600; color: var(--text); }
   .applicant-info p { font-size: 12px; color: var(--text-light); margin-top: 2px; }
 
@@ -2201,7 +2375,7 @@
 
       <!-- Company content -->
       <div id="toggle-content-company" style="display:none;transition:opacity 0.35s ease, transform 0.35s ease;">
-        <div style="font-family:'Playfair Display',serif;font-size:42px;color:var(--navy);margin-bottom:20px;line-height:1.2;">Find the right student talent.</div>
+        <div style="font-family:'Playfair Display',serif;font-size:42px;color:var(--navy);margin-bottom:20px;line-height:1.2;">Find the right Rookie.</div>
         <p style="font-size:18px;color:var(--text-light);line-height:1.8;margin-bottom:52px;max-width:640px;margin-left:auto;margin-right:auto;">Post listings, browse structured profiles filtered by skills and availability. No more scanning three hundred CVs — we take care of that pile.</p>
 
         <!-- How it works — company -->
@@ -2415,6 +2589,7 @@
     <button class="tab-btn" onclick="goToProfileOrPrompt();">My profile</button>
     <button class="tab-btn" onclick="showScreen('student-applications');loadApplicationsFromDB();">My applications</button>
     <button class="tab-btn" onclick="showScreen('student-messages');loadStudentMessages();">Messages <span id="student-msg-badge" style="display:none;background:#f43f5e;color:white;border-radius:100px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px;">0</span></button>
+    <button class="tab-btn" onclick="showScreen('student-settings');loadStudentSettings();">Settings</button>
   </div>
   <div style="max-width:1200px;margin:0 auto;padding:32px 48px;">
       <div class="search-bar">
@@ -2446,6 +2621,7 @@
     <button class="tab-btn active">My profile</button>
     <button class="tab-btn" onclick="showScreen('student-applications');loadApplicationsFromDB();">My applications</button>
     <button class="tab-btn" onclick="showScreen('student-messages');loadStudentMessages();">Messages <span id="student-msg-badge-2" style="display:none;background:#f43f5e;color:white;border-radius:100px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px;">0</span></button>
+    <button class="tab-btn" onclick="showScreen('student-settings');loadStudentSettings();">Settings</button>
     <button class="tab-btn" id="admin-tab-btn" style="display:none;" onclick="showAdminPanel()">⚡ Admin</button>
   </div>
 
@@ -3405,6 +3581,7 @@
     <button class="tab-btn" id="ctab-listings" onclick="showCompanyTab('listings')">My listings</button>
     <button class="tab-btn" id="ctab-applicants" onclick="showCompanyTab('applicants')">Applicants</button>
     <button class="tab-btn" id="ctab-messages" onclick="showCompanyTab('messages')">Messages <span id="company-msg-badge" style="display:none;background:#f43f5e;color:white;border-radius:100px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px;">0</span></button>
+    <button class="tab-btn" id="ctab-settings" onclick="showCompanyTab('settings')">Settings</button>
   </div>
 
   <!-- Guest prompt: shown when not logged in as a company -->
@@ -3458,6 +3635,20 @@
         <div class="metric-label">New this week</div>
         <div class="metric-value" id="metric-new-week">—</div>
         <div class="metric-sub" id="metric-new-week-sub"></div>
+      </div>
+    </div>
+
+    <!-- Hiring team / Recruiters — full-width panel above the two-column dash grid -->
+    <div class="dash-panel" style="margin-bottom:24px;">
+      <div class="panel-header">
+        <div style="display:flex;align-items:baseline;gap:12px;">
+          <h3>Hiring team</h3>
+          <span id="recruiters-count" style="font-size:12px;color:var(--gray);"></span>
+        </div>
+        <button class="btn btn-navy" style="font-size:13px;padding:9px 16px;" onclick="openRecruiterModal()">+ Add recruiter</button>
+      </div>
+      <div id="recruiters-strip" class="recruiters-strip">
+        <p style="font-size:13px;color:var(--gray);padding:16px 24px;margin:0;">Loading hiring team…</p>
       </div>
     </div>
 
@@ -3560,6 +3751,102 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div id="company-panel-settings" style="display:none;">
+    <div class="company-dash" style="max-width:780px;">
+      <div style="margin-bottom:24px;">
+        <h2 style="font-family:'Playfair Display',serif;font-size:30px;color:var(--navy);margin-bottom:6px;">Settings</h2>
+        <p style="font-size:14px;color:var(--text-light);">Account, notifications and your data — all in one place.</p>
+      </div>
+
+      <!-- ACCOUNT -->
+      <div class="profile-section" style="margin-bottom:20px;padding:28px 32px;">
+        <div class="section-head" style="margin-bottom:16px;">
+          <h3>🔐 Account</h3>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Work email</span>
+          <span class="info-value" id="settings-co-email">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Last sign-in</span>
+          <span class="info-value" id="settings-co-lastlogin">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Account ID</span>
+          <span class="info-value" id="settings-co-uid" style="font-family:monospace;font-size:12px;color:var(--text-light);">—</span>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
+          <button class="btn btn-outline-navy" style="font-size:13px;padding:10px 18px;" onclick="openChangeEmailModal()">Change email</button>
+          <button class="btn btn-outline-navy" style="font-size:13px;padding:10px 18px;" onclick="openChangePasswordModal()">Change password</button>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="profile-section" style="margin-bottom:20px;padding:28px 32px;">
+        <div class="section-head" style="margin-bottom:16px;">
+          <h3>📬 Notifications</h3>
+        </div>
+        <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;">Email me about…</p>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <label class="settings-toggle"><input type="checkbox" id="notif-co-application" onchange="saveCompanyNotifPrefs()"> <span>New application received</span></label>
+          <label class="settings-toggle"><input type="checkbox" id="notif-co-message" onchange="saveCompanyNotifPrefs()"> <span>New message from a candidate</span></label>
+          <label class="settings-toggle"><input type="checkbox" id="notif-co-digest" onchange="saveCompanyNotifPrefs()"> <span>Weekly digest of new matching students</span></label>
+          <label class="settings-toggle"><input type="checkbox" id="notif-co-deadline" onchange="saveCompanyNotifPrefs()"> <span>Listing nearing deadline</span></label>
+        </div>
+        <p id="notif-co-saved" style="display:none;font-size:12px;color:var(--success);margin-top:10px;">✓ Saved</p>
+      </div>
+
+      <!-- AUTO-ARCHIVE -->
+      <div class="profile-section" style="margin-bottom:20px;padding:24px 32px;">
+        <div class="section-head" style="margin-bottom:8px;">
+          <h3>🗂️ Auto-archive listings</h3>
+        </div>
+        <label class="settings-toggle" style="margin-top:6px;">
+          <input type="checkbox" id="settings-co-auto-archive" onchange="saveCompanyAutoArchive()">
+          <span>Auto-archive listings 14 days after the deadline</span>
+        </label>
+        <p style="font-size:12px;color:var(--gray);margin-top:8px;">Keeps your dashboard clean. Archived listings stay in Past listings and remain visible to students who already applied.</p>
+      </div>
+
+      <!-- COMPANY PROFILE QUICK-LINK -->
+      <div class="profile-section" style="margin-bottom:20px;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;">
+        <div>
+          <div style="font-size:15px;font-weight:600;color:var(--navy);">Company profile</div>
+          <p style="font-size:13px;color:var(--text-light);margin-top:4px;">Edit your company name, description, sector, size and website.</p>
+        </div>
+        <button class="btn btn-outline-navy" style="font-size:13px;padding:10px 18px;white-space:nowrap;" onclick="openCompanyProfileModal()">Edit profile →</button>
+      </div>
+
+      <!-- HIRING TEAM QUICK-LINK -->
+      <div class="profile-section" style="margin-bottom:20px;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;">
+        <div>
+          <div style="font-size:15px;font-weight:600;color:var(--navy);">Hiring team</div>
+          <p style="font-size:13px;color:var(--text-light);margin-top:4px;">Manage recruiters and hiring managers from the dashboard.</p>
+        </div>
+        <button class="btn btn-outline-navy" style="font-size:13px;padding:10px 18px;white-space:nowrap;" onclick="showCompanyTab('dashboard')">Go to dashboard →</button>
+      </div>
+
+      <!-- PRIVACY & DATA -->
+      <div class="profile-section" style="margin-bottom:20px;padding:28px 32px;">
+        <div class="section-head" style="margin-bottom:16px;">
+          <h3>🛡️ Privacy &amp; data</h3>
+        </div>
+        <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;">Your data, on your terms.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn btn-outline-navy" style="font-size:13px;padding:11px 18px;text-align:left;" onclick="downloadMyData('company')">Download my data</button>
+          <button class="btn" style="font-size:13px;padding:11px 18px;text-align:left;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" onclick="confirmDeleteAccount('company')">Delete my account</button>
+        </div>
+        <p style="font-size:11px;color:var(--gray);margin-top:14px;">Deletion is permanent — your listings and applicant data are removed too.</p>
+      </div>
+
+      <!-- SIGN OUT -->
+      <div style="text-align:center;padding-top:8px;">
+        <button class="btn" style="font-size:14px;padding:12px 28px;background:none;color:var(--gray);border:1px solid var(--border);" onclick="rookieLogout()">Sign out</button>
       </div>
     </div>
   </div>
@@ -3860,7 +4147,8 @@
           <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of study</label><div class="pref-chips multi" id="post-majors" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Business Administration">Business Administration</button><button class="pref-chip" data-val="Economics">Economics</button><button class="pref-chip" data-val="Econometrics">Econometrics</button><button class="pref-chip" data-val="Finance">Finance</button><button class="pref-chip" data-val="Accounting">Accounting</button><button class="pref-chip" data-val="Marketing">Marketing</button><button class="pref-chip" data-val="Human Resource Management">Human Resource Management</button><button class="pref-chip" data-val="International Business">International Business</button><button class="pref-chip" data-val="Business Analytics">Business Analytics</button><button class="pref-chip" data-val="Data Science">Data Science</button><button class="pref-chip" data-val="Computer Science">Computer Science</button><button class="pref-chip" data-val="Software Engineering">Software Engineering</button><button class="pref-chip" data-val="Artificial Intelligence">Artificial Intelligence</button><button class="pref-chip" data-val="Information Systems">Information Systems</button><button class="pref-chip" data-val="Law">Law</button><button class="pref-chip" data-val="Psychology">Psychology</button><button class="pref-chip" data-val="Communication">Communication</button><button class="pref-chip" data-val="Sociology">Sociology</button><button class="pref-chip" data-val="Political Science">Political Science</button><button class="pref-chip" data-val="Liberal Arts">Liberal Arts</button><button class="pref-chip" data-val="Engineering">Engineering</button><button class="pref-chip" data-val="Any">Any</button><button class="pref-chip" data-val="Other">Other</button></div><div id="post-majors-other-wrap" style="display:none;margin-top:8px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="post-majors-other" class="form-input" type="text" placeholder="e.g. Marine Biology, Architecture…" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomMajor('post');}"><button class="btn btn-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCustomMajor('post')">+ Add</button></div><div id="post-majors-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
           <div class="form-group"><label class="form-label">GPA minimum</label><input class="form-input" type="text" id="post-gpa-min" placeholder="e.g. 7.0 / 10"><div class="form-hint">Shown but does not block applications.</div></div>
           <div class="form-group"><label class="form-label">Candidate messaging</label><div class="pref-chips" id="post-messaging" style="margin-top:4px;"><button class="pref-chip active" data-val="Enabled">Enabled</button><button class="pref-chip" data-val="Disabled">Disabled</button></div></div>
-          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="post-hiring-team" placeholder="Teammate emails to notify"></div>
+          <div class="form-group"><label class="form-label">Recruiter in charge</label><select class="form-input" id="post-recruiter"><option value="">— None —</option></select><div class="form-hint">Owner of this listing. Add team members in the dashboard.</div></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="post-hiring-team" placeholder="Additional teammate emails to CC"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:20px;"><button class="btn" style="background:var(--cream);color:var(--text);" onclick="switchListingTab('post','details')">&#8592; Details</button><button class="btn btn-primary" style="padding:10px 24px;" onclick="submitListing()">Publish listing &#8594;</button></div>
       </div>
@@ -3983,7 +4271,8 @@
           <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of study</label><div class="pref-chips multi" id="edit-majors" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Business Administration">Business Administration</button><button class="pref-chip" data-val="Economics">Economics</button><button class="pref-chip" data-val="Econometrics">Econometrics</button><button class="pref-chip" data-val="Finance">Finance</button><button class="pref-chip" data-val="Accounting">Accounting</button><button class="pref-chip" data-val="Marketing">Marketing</button><button class="pref-chip" data-val="Human Resource Management">Human Resource Management</button><button class="pref-chip" data-val="International Business">International Business</button><button class="pref-chip" data-val="Business Analytics">Business Analytics</button><button class="pref-chip" data-val="Data Science">Data Science</button><button class="pref-chip" data-val="Computer Science">Computer Science</button><button class="pref-chip" data-val="Software Engineering">Software Engineering</button><button class="pref-chip" data-val="Artificial Intelligence">Artificial Intelligence</button><button class="pref-chip" data-val="Information Systems">Information Systems</button><button class="pref-chip" data-val="Law">Law</button><button class="pref-chip" data-val="Psychology">Psychology</button><button class="pref-chip" data-val="Communication">Communication</button><button class="pref-chip" data-val="Sociology">Sociology</button><button class="pref-chip" data-val="Political Science">Political Science</button><button class="pref-chip" data-val="Liberal Arts">Liberal Arts</button><button class="pref-chip" data-val="Engineering">Engineering</button><button class="pref-chip" data-val="Any">Any</button><button class="pref-chip" data-val="Other">Other</button></div><div id="edit-majors-other-wrap" style="display:none;margin-top:8px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="edit-majors-other" class="form-input" type="text" placeholder="e.g. Marine Biology, Architecture…" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomMajor('edit');}"><button class="btn btn-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCustomMajor('edit')">+ Add</button></div><div id="edit-majors-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
           <div class="form-group"><label class="form-label">GPA minimum</label><input class="form-input" type="text" id="edit-gpa-min" placeholder="e.g. 7.0 / 10"><div class="form-hint">Shown but does not block applications.</div></div>
           <div class="form-group"><label class="form-label">Candidate messaging</label><div class="pref-chips" id="edit-messaging" style="margin-top:4px;"><button class="pref-chip active" data-val="Enabled">Enabled</button><button class="pref-chip" data-val="Disabled">Disabled</button></div></div>
-          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="edit-hiring-team" placeholder="Teammate emails to notify"></div>
+          <div class="form-group"><label class="form-label">Recruiter in charge</label><select class="form-input" id="edit-recruiter"><option value="">— None —</option></select><div class="form-hint">Owner of this listing. Add team members in the dashboard.</div></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="edit-hiring-team" placeholder="Additional teammate emails to CC"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:20px;"><button class="btn" style="background:var(--cream);color:var(--text);" onclick="switchListingTab('edit','details')">&#8592; Details</button><button class="btn btn-primary" style="padding:10px 24px;" onclick="saveEditListing()">Save changes</button></div>
       </div>
@@ -4080,6 +4369,46 @@
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
         <button class="btn" style="background:var(--cream);color:var(--text);padding:12px 20px;" onclick="closeCompanyProfileModal()">Cancel</button>
         <button id="cp-save-btn" class="btn btn-primary" style="padding:12px 24px;" onclick="saveCompanyProfile()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECRUITER MODAL — add or edit a hiring-team member -->
+<div id="recruiter-modal" class="modal-overlay">
+  <div class="modal" style="max-width:480px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-header" style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:20px;">
+      <h3 id="recruiter-modal-title">Add recruiter</h3>
+      <button class="modal-close" onclick="closeRecruiterModal()">&#x2715;</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <input type="hidden" id="rec-id" value="">
+      <div>
+        <label class="form-label">Name </label>
+        <input id="rec-name" class="form-input" type="text" placeholder="e.g. Sarah van Dijk">
+      </div>
+      <div>
+        <label class="form-label">Email </label>
+        <input id="rec-email" class="form-input" type="email" placeholder="sarah@company.nl">
+      </div>
+      <div>
+        <label class="form-label">Role</label>
+        <div class="pref-chips" id="rec-role-chips" style="margin-top:4px;flex-wrap:wrap;">
+          <button class="pref-chip" data-val="Recruiter">Recruiter</button>
+          <button class="pref-chip" data-val="Hiring Manager">Hiring Manager</button>
+          <button class="pref-chip" data-val="HR Lead">HR Lead</button>
+          <button class="pref-chip" data-val="Team Lead">Team Lead</button>
+          <button class="pref-chip" data-val="Other">Other</button>
+        </div>
+        <div id="rec-role-other-wrap" style="display:none;margin-top:8px;">
+          <input id="rec-role-other" class="form-input" type="text" placeholder="Specify role…">
+        </div>
+        <div class="form-hint" style="margin-top:6px;">Shown next to listings this recruiter owns.</div>
+      </div>
+      <div id="rec-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:13px;color:#dc2626;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+        <button class="btn" style="background:var(--cream);color:var(--text);padding:12px 20px;" onclick="closeRecruiterModal()">Cancel</button>
+        <button id="rec-save-btn" class="btn btn-primary" style="padding:12px 24px;" onclick="saveRecruiter()">Save</button>
       </div>
     </div>
   </div>
@@ -5107,6 +5436,23 @@
     var myPastJobs = (jobsRes.data || []).filter(function(j){ return !j.is_active; });
     var myApplicants = appsRes.data || [];
 
+    // Auto-archive: if the employer opted in, deactivate listings whose
+    // deadline passed >14 days ago. Runs once per dashboard load.
+    if (currentEmployer.auto_archive) {
+      var stale = autoArchiveStaleJobs(myJobs);
+      if (stale.length) {
+        var staleIds = stale.map(function(j){ return j.id; });
+        await db.from('jobs').update({ is_active: false }).in('id', staleIds);
+        // Move them out of myJobs and into myPastJobs locally so the UI matches
+        myJobs = myJobs.filter(function(j){ return staleIds.indexOf(j.id) === -1; });
+        myPastJobs = myPastJobs.concat(stale.map(function(j){ j.is_active = false; return j; }));
+        showToast('Auto-archived ' + stale.length + ' listing' + (stale.length !== 1 ? 's' : ''));
+      }
+    }
+
+    // Render the hiring-team strip (uses myJobs to compute per-recruiter listing counts)
+    loadRecruitersDashboard(myJobs);
+
     // Metrics
     var shortlisted = myApplicants.filter(function(a){ return a.status === 'Shortlisted'; }).length;
     var oneWeekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString();
@@ -5178,8 +5524,11 @@
           row.dataset.jobId = job.id; row.dataset.title = job.title;
           row.dataset.type = job.job_type; row.dataset.field = job.field;
           row.dataset.location = job.location; row.dataset.description = job.description;
+          var ownerBadge = recruiterBadgeFor(job.recruiter_id);
           row.innerHTML = '<div class="listing-full-left">'
-            + '<div class="listing-full-title">' + esc(job.title||'Untitled') + '</div>'
+            + '<div class="listing-full-title">' + esc(job.title||'Untitled')
+              + (ownerBadge ? ' ' + ownerBadge : '')
+              + '</div>'
             + '<div class="listing-full-meta">' + esc(job.job_type||'Internship') + ' · ' + esc(job.field||'') + ' · ' + esc(job.location||'NL') + '</div></div>'
             + '<div class="listing-full-right">'
             + '<span class="tag tag-new" style="padding:4px 10px;font-size:11px;">Active</span>'
@@ -5257,10 +5606,255 @@
 
   } // end loadCompanyDashboard
 
+  // ─── HIRING TEAM / RECRUITERS ──────────────────────────────────────────
+  // Cached recruiter list for the active employer; reused by the
+  // post/edit-listing dropdown without an extra round trip.
+  window._companyRecruiters = [];
+
+  // Color palette — same family used for student avatars / applicant rows
+  var _RECRUITER_COLORS = ['#1a3260','#e8622a','#2e7d52','#6a1b9a','#5d4037','#c0392b','#0288d1','#1565c0','#7a3e00','#4a148c'];
+
+  // Map of recruiter_id → count of active jobs assigned. Built per dashboard load.
+  function _buildRecruiterListingCounts(jobs) {
+    var counts = {};
+    (jobs || []).forEach(function(j) {
+      if (j.recruiter_id) counts[j.recruiter_id] = (counts[j.recruiter_id] || 0) + 1;
+    });
+    return counts;
+  }
+
+  // Returns the subset of jobs whose deadline passed more than 14 days ago.
+  // Deadlines are stored as separate month + year fields ("Jun" / 2025), so
+  // we parse them back to a Date and compare to today minus 14 days.
+  var _MONTH_TO_NUM = {
+    'Jan':0,'Feb':1,'Mar':2,'Apr':3,'May':4,'Jun':5,'Jul':6,'Aug':7,'Sep':8,'Oct':9,'Nov':10,'Dec':11,
+    'January':0,'February':1,'March':2,'April':3,'June':5,'July':6,'August':7,'September':8,'October':9,'November':10,'December':11
+  };
+  function autoArchiveStaleJobs(jobs) {
+    var cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    return (jobs || []).filter(function(j) {
+      if (!j.deadline_month || !j.deadline_year) return false;
+      var m = _MONTH_TO_NUM[String(j.deadline_month).trim()];
+      if (m === undefined) return false;
+      var y = parseInt(j.deadline_year, 10);
+      if (!y) return false;
+      // Use end of the deadline month so jobs aren't archived mid-month
+      var d = new Date(y, m + 1, 0).getTime();
+      return d < cutoff;
+    });
+  }
+
+  // Look up a cached recruiter by id and return a small "Owned by …" pill,
+  // or empty string if no assignment / no recruiter found.
+  function recruiterBadgeFor(recruiterId) {
+    if (!recruiterId) return '';
+    var r = (window._companyRecruiters || []).find(function(x){ return x.id === recruiterId; });
+    if (!r) return '';
+    var initial = (r.name||'?').charAt(0).toUpperCase();
+    var idx = (window._companyRecruiters || []).indexOf(r);
+    var color = _RECRUITER_COLORS[idx % _RECRUITER_COLORS.length] || 'var(--navy)';
+    return '<span class="owner-pill" title="Owned by ' + esc(r.name||'') + (r.email ? ' · '+esc(r.email):'') + '">'
+      + '<span class="owner-dot" style="background:'+color+';">' + esc(initial) + '</span>'
+      + '<span>' + esc(r.name||'') + '</span>'
+      + '</span>';
+  }
+
+  async function loadRecruitersDashboard(myJobs) {
+    var strip = document.getElementById('recruiters-strip');
+    var countLabel = document.getElementById('recruiters-count');
+    if (!strip || !currentEmployer) return;
+
+    var res = await db
+      .from('company_recruiters')
+      .select('*')
+      .eq('employer_id', currentEmployer.id)
+      .order('created_at', { ascending: true });
+
+    if (res.error) {
+      strip.innerHTML = '<p style="font-size:13px;color:#dc2626;padding:16px 24px;margin:0;">Could not load recruiters: ' + esc(res.error.message) + '</p>';
+      return;
+    }
+
+    var recruiters = res.data || [];
+    window._companyRecruiters = recruiters;
+    if (countLabel) countLabel.textContent = recruiters.length === 0
+      ? ''
+      : recruiters.length + ' member' + (recruiters.length !== 1 ? 's' : '');
+
+    if (recruiters.length === 0) {
+      strip.innerHTML =
+        '<div class="recruiter-empty">'
+        + '<div class="recruiter-empty-icon">👥</div>'
+        + '<div style="font-weight:600;color:var(--navy);margin-bottom:4px;">No recruiters yet</div>'
+        + '<div style="font-size:12px;">Add hiring-team members so you can assign each listing to its owner.</div>'
+        + '</div>';
+      return;
+    }
+
+    var counts = _buildRecruiterListingCounts(myJobs);
+    strip.innerHTML = recruiters.map(function(r, i) {
+      var color = _RECRUITER_COLORS[i % _RECRUITER_COLORS.length];
+      var initial = (r.name || '?').charAt(0).toUpperCase();
+      var listingCount = counts[r.id] || 0;
+      var listingLabel = listingCount === 0 ? 'No listings'
+                       : listingCount === 1 ? '1 listing'
+                       : listingCount + ' listings';
+      return '<div class="recruiter-card" data-id="' + esc(r.id) + '">'
+        + '<div class="recruiter-actions">'
+        +   '<button title="Edit" onclick="openRecruiterModal(\'' + esc(r.id) + '\')">✎</button>'
+        +   '<button class="danger" title="Remove" onclick="deleteRecruiter(\'' + esc(r.id) + '\',\'' + esc(r.name).replace(/\\/g,'').replace(/'/g, "\\'") + '\')">🗑</button>'
+        + '</div>'
+        + '<div class="recruiter-card-top">'
+        +   '<div class="recruiter-avatar" style="background:' + color + ';">' + esc(initial) + '</div>'
+        +   '<div style="min-width:0;flex:1;">'
+        +     '<h4>' + esc(r.name || '—') + '</h4>'
+        +     (r.role ? '<div class="recruiter-role">' + esc(r.role) + '</div>' : '')
+        +   '</div>'
+        + '</div>'
+        + '<div class="recruiter-email" title="' + esc(r.email || '') + '">' + esc(r.email || '') + '</div>'
+        + '<div class="recruiter-listings">' + listingLabel + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  function openRecruiterModal(recruiterId) {
+    var modal = document.getElementById('recruiter-modal');
+    if (!modal) return;
+    var titleEl = document.getElementById('recruiter-modal-title');
+    var idInput = document.getElementById('rec-id');
+    var nameInput = document.getElementById('rec-name');
+    var emailInput = document.getElementById('rec-email');
+    var roleOtherInput = document.getElementById('rec-role-other');
+    var roleOtherWrap = document.getElementById('rec-role-other-wrap');
+    var errEl = document.getElementById('rec-error');
+
+    // Reset
+    if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+    nameInput.value = '';
+    emailInput.value = '';
+    roleOtherInput.value = '';
+    roleOtherWrap.style.display = 'none';
+    document.querySelectorAll('#rec-role-chips .pref-chip').forEach(function(c){ c.classList.remove('active'); });
+    idInput.value = '';
+
+    if (recruiterId) {
+      // Edit mode — prefill from cached recruiter list
+      var r = (window._companyRecruiters || []).find(function(x){ return x.id === recruiterId; });
+      if (r) {
+        idInput.value = r.id;
+        nameInput.value = r.name || '';
+        emailInput.value = r.email || '';
+        var canon = ['Recruiter','Hiring Manager','HR Lead','Team Lead'];
+        if (r.role && canon.indexOf(r.role) !== -1) {
+          var chip = document.querySelector('#rec-role-chips .pref-chip[data-val="' + r.role + '"]');
+          if (chip) chip.classList.add('active');
+        } else if (r.role) {
+          var otherChip = document.querySelector('#rec-role-chips .pref-chip[data-val="Other"]');
+          if (otherChip) otherChip.classList.add('active');
+          roleOtherWrap.style.display = 'block';
+          roleOtherInput.value = r.role;
+        }
+        if (titleEl) titleEl.textContent = 'Edit recruiter';
+      }
+    } else {
+      if (titleEl) titleEl.textContent = 'Add recruiter';
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  function closeRecruiterModal() {
+    var modal = document.getElementById('recruiter-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  // Wire role chip clicks (toggle Other input visibility)
+  document.addEventListener('DOMContentLoaded', function() {
+    var chips = document.getElementById('rec-role-chips');
+    if (!chips) return;
+    chips.addEventListener('click', function(e) {
+      var btn = e.target.closest('.pref-chip'); if (!btn) return;
+      chips.querySelectorAll('.pref-chip').forEach(function(c){ c.classList.remove('active'); });
+      btn.classList.add('active');
+      var wrap = document.getElementById('rec-role-other-wrap');
+      var input = document.getElementById('rec-role-other');
+      var isOther = btn.dataset.val === 'Other';
+      if (wrap) wrap.style.display = isOther ? 'block' : 'none';
+      if (!isOther && input) input.value = '';
+    });
+  });
+
+  async function saveRecruiter() {
+    var idInput = document.getElementById('rec-id');
+    var nameInput = document.getElementById('rec-name');
+    var emailInput = document.getElementById('rec-email');
+    var roleOtherInput = document.getElementById('rec-role-other');
+    var errEl = document.getElementById('rec-error');
+    var btn = document.getElementById('rec-save-btn');
+
+    function fail(msg) {
+      if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
+    }
+
+    var name = (nameInput.value || '').trim();
+    var email = (emailInput.value || '').trim();
+    var roleChip = document.querySelector('#rec-role-chips .pref-chip.active');
+    var roleVal = roleChip ? roleChip.dataset.val : '';
+    if (roleVal === 'Other') roleVal = (roleOtherInput.value || '').trim();
+
+    if (!name) return fail('Name is required.');
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail('A valid email is required.');
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+    var existingId = idInput.value;
+    var payload = { name: name, email: email, role: roleVal || null };
+    var res;
+    if (existingId) {
+      res = await db.from('company_recruiters').update(payload).eq('id', existingId);
+    } else {
+      payload.employer_id = currentEmployer.id;
+      res = await db.from('company_recruiters').insert([payload]);
+    }
+    if (res.error) return fail(res.error.message);
+
+    closeRecruiterModal();
+    if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
+    // Refresh dashboard so the strip and the per-recruiter counts update
+    if (typeof loadCompanyDashboard === 'function') loadCompanyDashboard();
+  }
+
+  function deleteRecruiter(id, name) {
+    if (!id) return;
+    showConfirmModal(
+      'Remove ' + (name || 'this recruiter') + '?',
+      'Listings currently assigned to them will become unassigned. You can re-assign anytime.',
+      '',
+      'Remove',
+      'danger',
+      async function() {
+        var res = await db.from('company_recruiters').delete().eq('id', id);
+        if (res.error) { showToast('Could not remove: ' + res.error.message); return; }
+        showToast('Recruiter removed');
+        if (typeof loadCompanyDashboard === 'function') loadCompanyDashboard();
+      }
+    );
+  }
+
   async function loadApplicantsPanel() {
     var body = document.getElementById('applicants-panel-body');
     if (!body || !currentEmployer) return;
     body.innerHTML = '<p style="color:var(--text-light);padding:24px 0;">Loading applicants…</p>';
+
+    // Ensure recruiter cache is populated so the "Owned by" badges render here
+    // even when this tab is opened directly (without dashboard having loaded first).
+    if (!window._companyRecruiters || !window._companyRecruiters.length) {
+      try {
+        var rr = await db.from('company_recruiters').select('*').eq('employer_id', currentEmployer.id);
+        window._companyRecruiters = rr.data || [];
+      } catch(e) { window._companyRecruiters = window._companyRecruiters || []; }
+    }
 
     var { data: apps, error } = await db
       .from('applications')
@@ -5297,7 +5891,15 @@
     var groups = {};
     apps.forEach(function(app) {
       var key = app.job_id || app.job_title || 'Unknown role';
-      if (!groups[key]) groups[key] = { title: app.job_title || 'Unknown role', type: app.job_type || '', apps: [] };
+      if (!groups[key]) {
+        var j = jobsById[app.job_id];
+        groups[key] = {
+          title: app.job_title || 'Unknown role',
+          type: app.job_type || '',
+          recruiter_id: j ? j.recruiter_id : null,
+          apps: []
+        };
+      }
       groups[key].apps.push(app);
     });
 
@@ -5333,11 +5935,13 @@
           + '</div></div>';
       }).join('');
 
+      var ownerBadge = recruiterBadgeFor(group.recruiter_id);
       return '<div class="applicant-job-group">'
         + '<div class="applicant-job-header" onclick="toggleJobGroup(this)" style="cursor:pointer;">'
         + '<div class="applicant-job-title-wrap"><span class="collapse-arrow">&#9660;</span>'
         + '<span class="applicant-job-name">' + esc(group.title) + '</span>'
         + '<span class="tag tag-type" style="font-size:11px;padding:3px 10px;">' + esc(group.type||'Role') + '</span>'
+        + (ownerBadge ? ownerBadge : '')
         + '</div><span class="applicant-job-count">' + group.apps.length + ' applicant' + (group.apps.length!==1?'s':'') + '</span></div>'
         + '<div class="applicant-job-list">' + rows + '</div></div>';
     }).join('');
@@ -5936,11 +6540,16 @@
   function showConfirmModal(title, subtitle, body, actionLabel, actionStyle, onConfirm) {
     document.getElementById('confirm-modal-title').textContent = title;
     document.getElementById('confirm-modal-subtitle').textContent = subtitle;
-    document.getElementById('confirm-modal-body').textContent = body;
+    // body accepts HTML so we can embed inputs (change-email, change-password, etc.)
+    document.getElementById('confirm-modal-body').innerHTML = body || '';
     var btn = document.getElementById('confirm-modal-action-btn');
     btn.textContent = actionLabel;
-    btn.className = 'btn ' + (actionStyle || 'btn-primary');
-    btn.onclick = function() { closeConfirmModal(); onConfirm(); };
+    var styleClass = (actionStyle === 'primary') ? 'btn-primary'
+                   : (actionStyle === 'danger')  ? 'btn-danger'
+                   : (actionStyle && actionStyle.indexOf('btn-') === 0) ? actionStyle
+                   : 'btn-primary';
+    btn.className = 'btn ' + styleClass;
+    btn.onclick = function() { var fn = onConfirm; closeConfirmModal(); if (fn) fn(); };
     document.getElementById('confirm-modal').classList.add('open');
   }
 
@@ -6342,6 +6951,228 @@
     renderStudentCards(students, 'browse-role-grid');
   }
 
+  // ─── SETTINGS PAGES (student + company) ────────────────────────────────
+  // Notification keys used by both roles' checkboxes
+  var _STU_NOTIF_KEYS = ['invite','status','message','digest'];
+  var _CO_NOTIF_KEYS  = ['application','message','digest','deadline'];
+
+  function _formatLastSignIn(iso) {
+    if (!iso) return '—';
+    try {
+      var d = new Date(iso);
+      return d.toLocaleString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    } catch(e) { return '—'; }
+  }
+
+  async function loadStudentSettings() {
+    if (!currentStudent) return;
+    var session = await db.auth.getSession();
+    var user = session && session.data && session.data.session ? session.data.session.user : null;
+    var setText = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    setText('settings-stu-email', user ? user.email : (currentStudent.email || '—'));
+    setText('settings-stu-uid', currentStudent.id || '—');
+    setText('settings-stu-lastlogin', user ? _formatLastSignIn(user.last_sign_in_at) : '—');
+
+    // Hydrate notification toggles from notification_prefs jsonb
+    var prefs = currentStudent.notification_prefs || {};
+    _STU_NOTIF_KEYS.forEach(function(k) {
+      var el = document.getElementById('notif-stu-' + k);
+      if (el) el.checked = (prefs[k] !== false); // default ON
+    });
+  }
+
+  async function loadCompanySettings() {
+    if (!currentEmployer) return;
+    var session = await db.auth.getSession();
+    var user = session && session.data && session.data.session ? session.data.session.user : null;
+    var setText = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    setText('settings-co-email', user ? user.email : (currentEmployer.email || '—'));
+    setText('settings-co-uid', currentEmployer.id || '—');
+    setText('settings-co-lastlogin', user ? _formatLastSignIn(user.last_sign_in_at) : '—');
+
+    // Refresh employer record so notification_prefs and auto_archive are current
+    var er = await db.from('employers').select('notification_prefs, auto_archive').eq('id', currentEmployer.id).single();
+    if (er.data) {
+      currentEmployer.notification_prefs = er.data.notification_prefs || {};
+      currentEmployer.auto_archive = !!er.data.auto_archive;
+    }
+    var prefs = currentEmployer.notification_prefs || {};
+    _CO_NOTIF_KEYS.forEach(function(k) {
+      var el = document.getElementById('notif-co-' + k);
+      if (el) el.checked = (prefs[k] !== false);
+    });
+    var aa = document.getElementById('settings-co-auto-archive');
+    if (aa) aa.checked = !!currentEmployer.auto_archive;
+  }
+
+  function _flashSaved(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = 'block';
+    clearTimeout(el._t);
+    el._t = setTimeout(function(){ el.style.display = 'none'; }, 1600);
+  }
+
+  async function saveStudentNotifPrefs() {
+    if (!currentStudent) return;
+    var prefs = {};
+    _STU_NOTIF_KEYS.forEach(function(k) {
+      var el = document.getElementById('notif-stu-' + k);
+      prefs[k] = !!(el && el.checked);
+    });
+    var res = await db.from('students').update({ notification_prefs: prefs }).eq('id', currentStudent.id);
+    if (!res.error) {
+      currentStudent.notification_prefs = prefs;
+      _flashSaved('notif-stu-saved');
+    }
+  }
+
+  async function saveCompanyNotifPrefs() {
+    if (!currentEmployer) return;
+    var prefs = {};
+    _CO_NOTIF_KEYS.forEach(function(k) {
+      var el = document.getElementById('notif-co-' + k);
+      prefs[k] = !!(el && el.checked);
+    });
+    var res = await db.from('employers').update({ notification_prefs: prefs }).eq('id', currentEmployer.id);
+    if (!res.error) {
+      currentEmployer.notification_prefs = prefs;
+      _flashSaved('notif-co-saved');
+    }
+  }
+
+  async function saveCompanyAutoArchive() {
+    if (!currentEmployer) return;
+    var el = document.getElementById('settings-co-auto-archive');
+    var val = !!(el && el.checked);
+    var res = await db.from('employers').update({ auto_archive: val }).eq('id', currentEmployer.id);
+    if (!res.error) {
+      currentEmployer.auto_archive = val;
+      showToast(val ? 'Auto-archive turned on' : 'Auto-archive turned off');
+    }
+  }
+
+  // ─ Change-email modal ──────────────────────────────────────────────────
+  function openChangeEmailModal() {
+    showConfirmModal(
+      'Change your account email',
+      'We\'ll send a confirmation link to the new email. The change takes effect once you click it.',
+      '<input id="settings-new-email" class="form-input" type="email" placeholder="new.email@example.com" style="width:100%;font-size:14px;">',
+      'Send confirmation',
+      'primary',
+      async function() {
+        var input = document.getElementById('settings-new-email');
+        var newEmail = input ? input.value.trim() : '';
+        if (!newEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newEmail)) {
+          showToast('Please enter a valid email');
+          return;
+        }
+        var res = await db.auth.updateUser({ email: newEmail });
+        if (res.error) showToast('Could not update: ' + res.error.message);
+        else showToast('Confirmation email sent to ' + newEmail);
+      }
+    );
+  }
+
+  // ─ Change-password modal ──────────────────────────────────────────────
+  function openChangePasswordModal() {
+    showConfirmModal(
+      'Change your password',
+      'Enter a new password (minimum 8 characters).',
+      '<input id="settings-new-pw" class="form-input" type="password" placeholder="New password" style="width:100%;font-size:14px;margin-bottom:8px;">'
+        + '<input id="settings-new-pw2" class="form-input" type="password" placeholder="Confirm new password" style="width:100%;font-size:14px;">',
+      'Update password',
+      'primary',
+      async function() {
+        var pw1 = (document.getElementById('settings-new-pw') || {}).value || '';
+        var pw2 = (document.getElementById('settings-new-pw2') || {}).value || '';
+        if (pw1.length < 8) { showToast('Password must be at least 8 characters'); return; }
+        if (pw1 !== pw2)    { showToast('Passwords do not match'); return; }
+        var res = await db.auth.updateUser({ password: pw1 });
+        if (res.error) showToast('Could not update: ' + res.error.message);
+        else showToast('Password updated');
+      }
+    );
+  }
+
+  // ─ Download my data ────────────────────────────────────────────────────
+  // Pulls the user's records from every table that references them and
+  // saves a JSON blob the user can keep. GDPR data-portability move.
+  async function downloadMyData(role) {
+    try {
+      var bundle = { exported_at: new Date().toISOString(), role: role };
+      if (role === 'student') {
+        var sid = currentStudent && currentStudent.id;
+        if (!sid) return;
+        var [s, apps, msgs] = await Promise.all([
+          db.from('students').select('*').eq('id', sid).single(),
+          db.from('applications').select('*').eq('student_id', sid),
+          db.from('messages').select('*').eq('student_id', sid)
+        ]);
+        bundle.profile = s.data || null;
+        bundle.applications = apps.data || [];
+        bundle.messages = msgs.data || [];
+      } else {
+        var eid = currentEmployer && currentEmployer.id;
+        if (!eid) return;
+        var [e, jobs, apps2, msgs2, recs] = await Promise.all([
+          db.from('employers').select('*').eq('id', eid).single(),
+          db.from('jobs').select('*').eq('employer_id', eid),
+          db.from('applications').select('*').eq('employer_id', eid),
+          db.from('messages').select('*').eq('employer_id', eid),
+          db.from('company_recruiters').select('*').eq('employer_id', eid)
+        ]);
+        bundle.profile = e.data || null;
+        bundle.jobs = jobs.data || [];
+        bundle.applications = apps2.data || [];
+        bundle.messages = msgs2.data || [];
+        bundle.recruiters = recs.data || [];
+      }
+      var blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'rookies-data-' + (role || 'export') + '-' + Date.now() + '.json';
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 100);
+      showToast('Your data has been downloaded');
+    } catch (err) {
+      showToast('Export failed: ' + (err.message || 'unknown error'));
+    }
+  }
+
+  // ─ Delete account ─────────────────────────────────────────────────────
+  function confirmDeleteAccount(role) {
+    showConfirmModal(
+      'Delete your account?',
+      'This permanently removes your profile and everything tied to it. There is no undo.',
+      '<p style="font-size:13px;color:var(--text-light);margin:0;">'
+        + (role === 'student' ? 'Your applications and messages will be deleted along with your profile.' : 'Your listings, applicants and messages will be deleted along with your account.')
+        + '</p>',
+      'Delete permanently',
+      'danger',
+      async function() {
+        try {
+          if (role === 'student' && currentStudent) {
+            await db.from('applications').delete().eq('student_id', currentStudent.id);
+            await db.from('messages').delete().eq('student_id', currentStudent.id);
+            await db.from('students').delete().eq('id', currentStudent.id);
+          } else if (role === 'company' && currentEmployer) {
+            await db.from('messages').delete().eq('employer_id', currentEmployer.id);
+            await db.from('applications').delete().eq('employer_id', currentEmployer.id);
+            await db.from('jobs').delete().eq('employer_id', currentEmployer.id);
+            await db.from('company_recruiters').delete().eq('employer_id', currentEmployer.id);
+            await db.from('employers').delete().eq('id', currentEmployer.id);
+          }
+        } catch(e) { /* ignore — even partial cleanup is better than nothing */ }
+        await db.auth.signOut();
+        currentStudent = null; currentEmployer = null;
+        showToast('Account deleted');
+        showScreen('landing');
+      }
+    );
+  }
+
   // Loose match for work_auth: the seed data uses old values
   // ("EU citizen", "Non-EU (work permit)") while the new signup form writes
   // canonical values ("EU / EEA / Swiss / Non-EU orientation year",
@@ -6575,7 +7406,7 @@
 
   // ─── COMPANY TABS ───
   function showCompanyTab(tab) {
-    var tabs = ['dashboard','students','listings','applicants','messages'];
+    var tabs = ['dashboard','students','listings','applicants','messages','settings'];
     tabs.forEach(function(t) {
       var btn = document.getElementById('ctab-' + t);
       if (btn) btn.classList.toggle('active', t === tab);
@@ -6585,11 +7416,13 @@
     var listingsPanel = document.getElementById('company-panel-listings');
     var applicantsPanel = document.getElementById('company-panel-applicants');
     var messagesPanel = document.getElementById('company-panel-messages');
-    [dash, studentsPanel, listingsPanel, applicantsPanel, messagesPanel].forEach(function(el){ if (el) el.style.display = 'none'; });
+    var settingsPanel = document.getElementById('company-panel-settings');
+    [dash, studentsPanel, listingsPanel, applicantsPanel, messagesPanel, settingsPanel].forEach(function(el){ if (el) el.style.display = 'none'; });
     if (tab === 'students' && studentsPanel) studentsPanel.style.display = 'block';
     else if (tab === 'listings' && listingsPanel) listingsPanel.style.display = 'block';
     else if (tab === 'applicants' && applicantsPanel) { applicantsPanel.style.display = 'block'; loadApplicantsPanel(); }
     else if (tab === 'messages' && messagesPanel) { messagesPanel.style.display = 'block'; loadCompanyMessages(); }
+    else if (tab === 'settings' && settingsPanel) { settingsPanel.style.display = 'block'; loadCompanySettings(); }
     else if (dash) dash.style.display = 'block';
   }
 
@@ -7758,11 +8591,35 @@
   }
 
   // ─── POST NEW LISTING ───
+  // Populate a "Recruiter in charge" <select> with the company's recruiters.
+  // selectedId is optional — used when editing an existing listing.
+  async function fillRecruiterSelect(selectId, selectedId) {
+    var el = document.getElementById(selectId);
+    if (!el || !currentEmployer) return;
+    var recruiters = window._companyRecruiters;
+    if (!recruiters || !recruiters.length) {
+      // Fetch on demand if dashboard hasn't been loaded yet
+      var res = await db.from('company_recruiters').select('*').eq('employer_id', currentEmployer.id);
+      recruiters = res.data || [];
+      window._companyRecruiters = recruiters;
+    }
+    if (!recruiters.length) {
+      el.innerHTML = '<option value="">— None (no recruiters added yet) —</option>';
+      return;
+    }
+    el.innerHTML = '<option value="">— None —</option>'
+      + recruiters.map(function(r){
+          var label = (r.role ? '['+r.role+'] ' : '') + (r.name||'') + (r.email ? ' · '+r.email : '');
+          return '<option value="'+esc(r.id)+'"'+(selectedId===r.id?' selected':'')+'>'+esc(label)+'</option>';
+        }).join('');
+  }
+
   function openPostModal() {
     document.getElementById('post-listing-form').style.display = 'block';
     document.getElementById('post-listing-success').style.display = 'none';
     var postAtsWrap = document.getElementById('post-ats-wrap');
     if (postAtsWrap) postAtsWrap.style.display = 'none';
+    fillRecruiterSelect('post-recruiter', null);
     setJobSkills('post', {});
     var mWrap = document.getElementById('post-majors-other-wrap');
     if (mWrap) mWrap.style.display = 'none';
@@ -7804,7 +8661,9 @@
       grad_to:getVal('post-grad-to'), school_year:getChips('post-school-year'),
       majors:getMajorsValue('post'), gpa_min:getVal('post-gpa-min'),
       messaging:getChip('post-messaging'),
-      hiring_team:getVal('post-hiring-team'), is_active:true,
+      hiring_team:getVal('post-hiring-team'),
+      recruiter_id: (function(){ var el=document.getElementById('post-recruiter'); return (el && el.value) ? el.value : null; })(),
+      is_active:true,
       searched_skills: getJobSkills('post'),
       msg_accepted: getVal('post-msg-accepted') || null,
       msg_shortlisted: getVal('post-msg-shortlisted') || null,
@@ -7971,6 +8830,7 @@
     setChip('edit-messaging',    job.messaging);
     setChip('edit-interview',    job.interview);
     setInput('edit-hiring-team', job.hiring_team);
+    fillRecruiterSelect('edit-recruiter', job.recruiter_id || null);
     setTA('edit-msg-accepted',   job.msg_accepted);
     setTA('edit-msg-shortlisted',job.msg_shortlisted);
     setTA('edit-msg-rejected',   job.msg_rejected);
@@ -8079,7 +8939,9 @@
       document.getElementById('dot-5')
     ];
     function revealLine(el) { if(!el) return; el.style.opacity='1'; el.style.filter='blur(0)'; el.style.transform='translateY(0)'; }
+    function hideLine(el)   { if(!el) return; el.style.opacity='0'; el.style.filter='blur(10px)'; el.style.transform='translateY(20px)'; }
     function hideHint() { if(scrollHint) scrollHint.style.opacity='0'; }
+    function showHint() { if(scrollHint) scrollHint.style.opacity='1'; }
     function activateDot(index) {
       dots.forEach(function(d, i) {
         if (!d) return;
@@ -8099,12 +8961,21 @@
       if (progressFill) progressFill.style.height = (progress * 100) + '%';
       if (progressBar) progressBar.style.opacity = progress >= 1 ? '0' : '1';
 
-      // Reveal lines and activate dots
-      if (progress < 0.05) { activateDot(0); }
-      if (progress > 0.05) { revealLine(line2); revealLine(line2b); hideHint(); activateDot(1); }
-      if (progress > 0.2)  { revealLine(line3); activateDot(2); }
-      if (progress > 0.45) { revealLine(line4); activateDot(3); }
-      if (progress > 0.7)  { revealLine(line5); activateDot(4); }
+      // Reveal/hide each line based on whether its threshold is currently passed.
+      // This makes the animation bidirectional — scrolling back up un-reveals lines.
+      if (progress > 0.05) { revealLine(line2);  revealLine(line2b); hideHint(); }
+      else                 { hideLine(line2);    hideLine(line2b);   showHint(); }
+      if (progress > 0.2)  revealLine(line3); else hideLine(line3);
+      if (progress > 0.45) revealLine(line4); else hideLine(line4);
+      if (progress > 0.7)  revealLine(line5); else hideLine(line5);
+
+      // Active dot follows the highest-passed threshold
+      var dotIdx = progress > 0.7 ? 4
+                : progress > 0.45 ? 3
+                : progress > 0.2  ? 2
+                : progress > 0.05 ? 1
+                : 0;
+      activateDot(dotIdx);
     }, { passive: true });
     // wire up chip toggles inside the modal
     ['cp-size-chips','cp-sector-chips'].forEach(function(id) {
@@ -8212,6 +9083,7 @@
       gpa_min: getVal('edit-gpa-min'),
       messaging: getChip('edit-messaging'),
       hiring_team: getVal('edit-hiring-team'),
+      recruiter_id: (function(){ var el=document.getElementById('edit-recruiter'); return (el && el.value) ? el.value : null; })(),
       searched_skills: getJobSkills('edit'),
       msg_accepted: getVal('edit-msg-accepted') || null,
       msg_shortlisted: getVal('edit-msg-shortlisted') || null,
@@ -9413,6 +10285,7 @@
     <button class="tab-btn" onclick="goToProfileOrPrompt();">My profile</button>
     <button class="tab-btn active" id="applications-tab-btn">My applications</button>
     <button class="tab-btn" onclick="showScreen('student-messages');loadStudentMessages();">Messages <span id="student-msg-badge-3" style="display:none;background:#f43f5e;color:white;border-radius:100px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px;">0</span></button>
+    <button class="tab-btn" onclick="showScreen('student-settings');loadStudentSettings();">Settings</button>
   </div>
 
   <div style="max-width:860px;margin:0 auto;padding:32px 24px;">
@@ -9564,6 +10437,7 @@
     <button class="tab-btn" onclick="goToProfileOrPrompt();">My profile</button>
     <button class="tab-btn" onclick="showScreen('student-applications');loadApplicationsFromDB();">My applications</button>
     <button class="tab-btn active">Messages</button>
+    <button class="tab-btn" onclick="showScreen('student-settings');loadStudentSettings();">Settings</button>
   </div>
   <div style="max-width:1100px;margin:0 auto;padding:24px 48px;">
     <div style="display:grid;grid-template-columns:280px 1fr;gap:0;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;height:calc(100vh - 160px);">
@@ -9623,6 +10497,91 @@
         <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Select the accepted candidate:</div>
         <div id="filled-student-list" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN: STUDENT SETTINGS
+═════════════════════════════════════════════ -->
+<div id="screen-student-settings" class="screen">
+  <div class="tab-nav">
+    <button class="tab-btn" onclick="showScreen('student-browse')">Browse listings</button>
+    <button class="tab-btn" onclick="goToProfileOrPrompt();">My profile</button>
+    <button class="tab-btn" onclick="showScreen('student-applications');loadApplicationsFromDB();">My applications</button>
+    <button class="tab-btn" onclick="showScreen('student-messages');loadStudentMessages();">Messages</button>
+    <button class="tab-btn active">Settings</button>
+  </div>
+
+  <div style="max-width:760px;margin:0 auto;padding:32px 32px 80px;">
+    <div style="margin-bottom:28px;">
+      <h2 style="font-family:'Playfair Display',serif;font-size:30px;color:var(--navy);margin-bottom:6px;">Settings</h2>
+      <p style="font-size:14px;color:var(--text-light);">Account, notifications and your data — all in one place.</p>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="profile-section" style="margin-bottom:20px;padding:28px 32px;">
+      <div class="section-head" style="margin-bottom:16px;">
+        <h3>🔐 Account</h3>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Email</span>
+        <span class="info-value" id="settings-stu-email">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Last sign-in</span>
+        <span class="info-value" id="settings-stu-lastlogin">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Account ID</span>
+        <span class="info-value" id="settings-stu-uid" style="font-family:monospace;font-size:12px;color:var(--text-light);">—</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
+        <button class="btn btn-outline-navy" style="font-size:13px;padding:10px 18px;" onclick="openChangeEmailModal()">Change email</button>
+        <button class="btn btn-outline-navy" style="font-size:13px;padding:10px 18px;" onclick="openChangePasswordModal()">Change password</button>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="profile-section" style="margin-bottom:20px;padding:28px 32px;">
+      <div class="section-head" style="margin-bottom:16px;">
+        <h3>📬 Notifications</h3>
+      </div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;">Email me about…</p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <label class="settings-toggle"><input type="checkbox" id="notif-stu-invite" onchange="saveStudentNotifPrefs()"> <span>New invite from a company</span></label>
+        <label class="settings-toggle"><input type="checkbox" id="notif-stu-status" onchange="saveStudentNotifPrefs()"> <span>Application status changed</span></label>
+        <label class="settings-toggle"><input type="checkbox" id="notif-stu-message" onchange="saveStudentNotifPrefs()"> <span>New message from a recruiter</span></label>
+        <label class="settings-toggle"><input type="checkbox" id="notif-stu-digest" onchange="saveStudentNotifPrefs()"> <span>Weekly digest of new matching listings</span></label>
+      </div>
+      <p id="notif-stu-saved" style="display:none;font-size:12px;color:var(--success);margin-top:10px;">✓ Saved</p>
+    </div>
+
+    <!-- PROFILE QUICK-LINK -->
+    <div class="profile-section" style="margin-bottom:20px;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:var(--navy);">Profile preferences and visibility</div>
+        <p style="font-size:13px;color:var(--text-light);margin-top:4px;">Edit your seeking status, who can see your profile, and your CV.</p>
+      </div>
+      <button class="btn btn-outline-navy" style="font-size:13px;padding:10px 18px;white-space:nowrap;" onclick="showScreen('student-profile');loadStudentProfile();">Open profile →</button>
+    </div>
+
+    <!-- PRIVACY & DATA -->
+    <div class="profile-section" style="margin-bottom:20px;padding:28px 32px;">
+      <div class="section-head" style="margin-bottom:16px;">
+        <h3>🛡️ Privacy &amp; data</h3>
+      </div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;">Your data, on your terms.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn btn-outline-navy" style="font-size:13px;padding:11px 18px;text-align:left;" onclick="downloadMyData('student')">Download my data</button>
+        <button class="btn" style="font-size:13px;padding:11px 18px;text-align:left;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" onclick="confirmDeleteAccount('student')">Delete my account</button>
+      </div>
+      <p style="font-size:11px;color:var(--gray);margin-top:14px;">Deletion is permanent — your applications and messages are removed too.</p>
+    </div>
+
+    <!-- SIGN OUT -->
+    <div style="text-align:center;padding-top:8px;">
+      <button class="btn" style="font-size:14px;padding:12px 28px;background:none;color:var(--gray);border:1px solid var(--border);" onclick="rookieLogout()">Sign out</button>
     </div>
   </div>
 </div>
