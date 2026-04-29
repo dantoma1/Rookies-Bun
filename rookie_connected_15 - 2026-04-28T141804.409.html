@@ -2230,11 +2230,11 @@
           <div style="display:flex;flex-direction:column;gap:16px;">
             <div>
               <label style="font-size:13px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Email</label>
-              <input id="login-email" class="form-input" type="email" placeholder="your@email.com" style="width:100%;">
+              <input id="login-email" class="form-input" type="email" placeholder="your@email.com" style="width:100%;" maxlength="150">
             </div>
             <div>
               <label style="font-size:13px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Password</label>
-              <input id="login-password" class="form-input" type="password" placeholder="••••••••" style="width:100%;">
+              <input id="login-password" class="form-input" type="password" placeholder="••••••••" style="width:100%;" maxlength="128">
             </div>
             <div id="login-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:14px;color:#dc2626;"></div>
             <button id="login-submit-btn" onclick="submitLogin()" class="btn btn-primary" style="width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:4px;">Sign in</button>
@@ -2436,15 +2436,16 @@
       <div style="display:flex;flex-direction:column;gap:16px;text-align:left;">
         <div>
           <label style="font-size:12px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:6px;">Name</label>
-          <input id="contact-name" class="form-input" type="text" placeholder="Your name" style="width:100%;font-size:16px;padding:14px 16px;">
+          <input id="contact-name" class="form-input" type="text" placeholder="Your name" style="width:100%;font-size:16px;padding:14px 16px;" maxlength="80">
         </div>
         <div>
           <label style="font-size:12px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:6px;">Email</label>
-          <input id="contact-email" class="form-input" type="email" placeholder="your@email.com" style="width:100%;font-size:16px;padding:14px 16px;">
+          <input id="contact-email" class="form-input" type="email" placeholder="your@email.com" style="width:100%;font-size:16px;padding:14px 16px;" maxlength="150">
         </div>
         <div>
           <label style="font-size:12px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:6px;">Message</label>
-          <textarea id="contact-message" class="form-textarea" placeholder="Tell us what's on your mind…" style="width:100%;font-size:16px;padding:14px 16px;min-height:140px;resize:vertical;"></textarea>
+          <textarea id="contact-message" class="form-textarea" placeholder="Tell us what's on your mind…" style="width:100%;font-size:16px;padding:14px 16px;min-height:140px;resize:vertical;" maxlength="2000"></textarea>
+          <small id="contact-message-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
         </div>
         <div id="contact-success" style="display:none;background:#e8f5e9;border-radius:8px;padding:14px 18px;font-size:15px;color:#2e7d32;">✓ Message sent! We'll get back to you soon.</div>
         <div id="contact-error" style="display:none;background:#fef2f2;border-radius:8px;padding:14px 18px;font-size:15px;color:#dc2626;"></div>
@@ -2507,29 +2508,28 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
           <div>
             <label class="form-label">First name </label>
-            <input id="ss-firstname" class="form-input" type="text" placeholder="e.g. Emma">
+            <input id="ss-firstname" class="form-input" type="text" placeholder="e.g. Emma" maxlength="80">
           </div>
           <div>
             <label class="form-label">Last name </label>
-            <input id="ss-lastname" class="form-input" type="text" placeholder="e.g. de Vries">
+            <input id="ss-lastname" class="form-input" type="text" placeholder="e.g. de Vries" maxlength="80">
           </div>
         </div>
         <div>
           <label class="form-label">Email </label>
-          <input id="ss-email" class="form-input" type="email" placeholder="your@email.com">
+          <input id="ss-email" class="form-input" type="email" placeholder="your@email.com" maxlength="150">
           <div class="form-hint">Preferably your university email.</div>
         </div>
         <div>
           <label class="form-label">Password </label>
-          <input id="ss-password" class="form-input" type="password" placeholder="Min. 8 characters">
+          <input id="ss-password" class="form-input" type="password" placeholder="Min. 8 characters" maxlength="128">
         </div>
         <div>
           <label class="form-label">Confirm password </label>
-          <input id="ss-password2" class="form-input" type="password" placeholder="Repeat your password">
+          <input id="ss-password2" class="form-input" type="password" placeholder="Repeat your password" maxlength="128">
         </div>
         <div id="ss-error-1" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:14px;color:#dc2626;"></div>
         <button id="ss-submit-btn" class="btn btn-primary" style="width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:4px;" onclick="studentSignupSubmit()">Create account →</button>
-        <div style="text-align:center;"><button onclick="showScreen('student-browse')" style="background:none;border:none;color:var(--gray);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Skip & explore</button></div>
       </div>
 
       <div style="text-align:center;margin-top:18px;font-size:14px;color:var(--text-light);">
@@ -2556,24 +2556,23 @@
       <div style="background:white;border-radius:16px;padding:36px;border:1.5px solid var(--border);display:flex;flex-direction:column;gap:18px;">
         <div>
           <label class="form-label">Company name </label>
-          <input id="cs-company" class="form-input" type="text" placeholder="e.g. Interpolis, BDO, Jumbo…">
+          <input id="cs-company" class="form-input" type="text" placeholder="e.g. Interpolis, BDO, Jumbo…" maxlength="150">
         </div>
         <div>
           <label class="form-label">Work email </label>
-          <input id="cs-email" class="form-input" type="email" placeholder="you@company.nl">
+          <input id="cs-email" class="form-input" type="email" placeholder="you@company.nl" maxlength="150">
           <div class="form-hint">Use your company email — not Gmail or Hotmail.</div>
         </div>
         <div>
           <label class="form-label">Password </label>
-          <input id="cs-password" class="form-input" type="password" placeholder="Min. 8 characters">
+          <input id="cs-password" class="form-input" type="password" placeholder="Min. 8 characters" maxlength="128">
         </div>
         <div>
           <label class="form-label">Confirm password </label>
-          <input id="cs-password2" class="form-input" type="password" placeholder="Repeat your password">
+          <input id="cs-password2" class="form-input" type="password" placeholder="Repeat your password" maxlength="128">
         </div>
         <div id="cs-error-1" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:14px;color:#dc2626;"></div>
         <button id="cs-submit-btn" class="btn btn-primary" style="width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:4px;" onclick="companySignupSubmit()">Create account →</button>
-        <div style="text-align:center;"><button onclick="skipToStudentPreview();" style="background:none;border:none;color:var(--gray);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Skip & explore</button></div>
       </div>
 
       <div style="text-align:center;margin-top:18px;font-size:14px;color:var(--text-light);">
@@ -2722,7 +2721,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Full name </label>
-              <input id="edit-basic-name" class="form-input" type="text" placeholder="Your full name">
+              <input id="edit-basic-name" class="form-input" type="text" placeholder="Your full name" maxlength="150">
             </div>
             <div class="form-group">
               <label class="form-label">Email address </label>
@@ -2731,7 +2730,8 @@
             </div>
             <div class="form-group full">
               <label class="form-label">Short bio / "My Journey" </label>
-              <textarea id="edit-basic-bio" class="form-textarea" style="min-height:70px;" placeholder="Professional summary or elevator pitch — goals, passions, what you're looking for..."></textarea>
+              <textarea id="edit-basic-bio" class="form-textarea" style="min-height:70px;" placeholder="Professional summary or elevator pitch — goals, passions, what you're looking for..." maxlength="280"></textarea>
+              <small id="edit-basic-bio-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 280</small>
               <div class="form-hint">First thing employers see. Keep it to 2–3 sentences.</div>
             </div>
             <div class="form-group full">
@@ -2761,7 +2761,7 @@
                 <button class="pref-chip" data-val="Other">Other</button>
               </div>
               <div id="field-of-study-other-wrap" style="display:none;margin-top:10px;">
-                <input id="field-of-study-other" class="form-input" type="text" placeholder="Please specify your field of study…">
+                <input id="field-of-study-other" class="form-input" type="text" placeholder="Please specify your field of study…" maxlength="100">
               </div>
             </div>
             <div class="form-group">
@@ -2795,20 +2795,20 @@
             </div>
             <div class="form-group">
               <label class="form-label">LinkedIn URL </label>
-              <input id="edit-basic-linkedin" class="form-input" type="text" placeholder="linkedin.com/in/yourname">
+              <input id="edit-basic-linkedin" class="form-input" type="text" placeholder="linkedin.com/in/yourname" maxlength="300">
             </div>
             <div class="form-group">
               <label class="form-label">GitHub / Portfolio </label>
-              <input id="edit-basic-portfolio" class="form-input" type="text" placeholder="github.com/yourname or yoursite.com">
+              <input id="edit-basic-portfolio" class="form-input" type="text" placeholder="github.com/yourname or yoursite.com" maxlength="300">
             </div>
             <div class="form-group">
               <label class="form-label">Hometown / Location <span class="field-badge private">Private</span></label>
-              <input id="edit-basic-location" class="form-input" type="text" placeholder="City, Country">
+              <input id="edit-basic-location" class="form-input" type="text" placeholder="City, Country" maxlength="100">
               <div class="form-hint">Private — used internally for recommendations only.</div>
             </div>
             <div class="form-group">
               <label class="form-label">Alternate email </label>
-              <input id="edit-basic-alt-email" class="form-input" type="email" placeholder="Personal email for post-graduation access">
+              <input id="edit-basic-alt-email" class="form-input" type="email" placeholder="Personal email for post-graduation access" maxlength="150">
             </div>
           </div>
           <div style="display:flex;gap:10px;margin-top:20px;">
@@ -2820,7 +2820,7 @@
 
       <div class="profile-section full-width" id="education-section">
         <div class="section-head">
-          <h3>📚 Education <span class="field-badge required" style="vertical-align:middle;">Required</span></h3>
+          <h3>📚 Education <span class="field-badge required" style="vertical-align:middle;">
           <button class="edit-btn" id="edu-edit-btn" onclick="toggleEducationEdit()">Edit</button>
         </div>
 
@@ -2880,7 +2880,7 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label">Name of program </label>
-                  <input class="form-input edu-program-name" type="text" placeholder="e.g. Business Analytics, Computer Science...">
+                  <input class="form-input edu-program-name" type="text" placeholder="e.g. Business Analytics, Computer Science..." maxlength="150">
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                   <label class="form-label">Field of study </label>
@@ -2908,7 +2908,7 @@
                     <button class="pref-chip" data-val="Other">Other</button>
                   </div>
                   <div class="edu-field-other-wrap" style="display:none;margin-top:8px;">
-                    <input class="form-input edu-field-other" type="text" placeholder="Please specify your field of study…">
+                    <input class="form-input edu-field-other" type="text" placeholder="Please specify your field of study…" maxlength="100">
                   </div>
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
@@ -2931,7 +2931,7 @@
                     <button class="pref-chip" data-val="Other">Other</button>
                   </div>
                   <div class="edu-minor-other-wrap" style="display:none;margin-top:8px;">
-                    <input class="form-input edu-minor" type="text" placeholder="Please specify your minor…">
+                    <input class="form-input edu-minor" type="text" placeholder="Please specify your minor…" maxlength="100">
                   </div>
                   <div class="form-hint">Additional academic discipline.</div>
                 </div>
@@ -2973,7 +2973,7 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label">GPA <span class="field-badge private">Private</span></label>
-                  <input class="form-input edu-gpa" type="text" placeholder="e.g. 7.8 / 10 or 3.6 / 4.0">
+                  <input class="form-input edu-gpa" type="text" placeholder="e.g. 7.8 / 10 or 3.6 / 4.0" maxlength="20">
                   <div class="form-hint">Visible to employers only — not shown to other students.</div>
                 </div>
                 <div class="form-group" style="display:none;" id="edu-grad-group-0">
@@ -2985,7 +2985,7 @@
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                   <label class="form-label">Description </label>
-                  <textarea class="form-textarea" placeholder="Briefly describe your specialisation, thesis topic, relevant coursework, or achievements..." style="min-height:80px;"></textarea>
+                  <textarea class="form-textarea" placeholder="Briefly describe your specialisation, thesis topic, relevant coursework, or achievements..." style="min-height:80px;" maxlength="500"></textarea>
                   <div class="form-hint">This helps companies understand your academic focus. 2–3 sentences is ideal.</div>
                 </div>
               </div>
@@ -3003,7 +3003,7 @@
 
       <div class="profile-section full-width" id="experience-section">
         <div class="section-head">
-          <h3>💼 Experience <span class="field-badge required" style="vertical-align:middle;">Required</span></h3>
+          <h3>💼 Experience <span class="field-badge required" style="vertical-align:middle;">
           <button class="edit-btn" id="exp-edit-btn" onclick="toggleExperienceEdit()">Edit</button>
         </div>
 
@@ -3023,11 +3023,11 @@
               <div class="edu-form-grid">
                 <div class="form-group">
                   <label class="form-label">Job title / Role </label>
-                  <input class="form-input exp-role" type="text" placeholder="e.g. Marketing Intern, Research Assistant...">
+                  <input class="form-input exp-role" type="text" placeholder="e.g. Marketing Intern, Research Assistant..." maxlength="150">
                 </div>
                 <div class="form-group">
                   <label class="form-label">Company / Organisation </label>
-                  <input class="form-input exp-company" type="text" placeholder="e.g. KPMG, Startup XYZ, TiU...">
+                  <input class="form-input exp-company" type="text" placeholder="e.g. KPMG, Startup XYZ, TiU..." maxlength="150">
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                   <label class="form-label">Field of work </label>
@@ -3049,12 +3049,12 @@
                     <button class="pref-chip" data-val="Other">Other</button>
                   </div>
                   <div class="exp-field-other-wrap" style="display:none;margin-top:8px;">
-                    <input class="form-input exp-field-other" type="text" placeholder="Please specify your field of work…">
+                    <input class="form-input exp-field-other" type="text" placeholder="Please specify your field of work…" maxlength="100">
                   </div>
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                   <label class="form-label">Location </label>
-                  <input class="form-input exp-location" type="text" placeholder="City, Country — e.g. Tilburg, Netherlands">
+                  <input class="form-input exp-location" type="text" placeholder="City, Country — e.g. Tilburg, Netherlands" maxlength="100">
                   <div class="form-hint">Adds context for employers browsing your profile.</div>
                 </div>
                 <div class="form-group">
@@ -3095,7 +3095,7 @@
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                   <label class="form-label">Description <span style="color:var(--gray);font-weight:400;">(optional)</span></label>
-                  <textarea class="form-textarea" placeholder="Briefly describe your responsibilities, achievements, or what you learned..." style="min-height:80px;"></textarea>
+                  <textarea class="form-textarea" placeholder="Briefly describe your responsibilities, achievements, or what you learned..." style="min-height:80px;" maxlength="500"></textarea>
                   <div class="form-hint">Keep it concise — 2 to 3 sentences is enough.</div>
                 </div>
               </div>
@@ -3114,7 +3114,7 @@
       <!-- ORGANISATIONS & EXTRACURRICULARS -->
       <div class="profile-section full-width" id="orgs-section">
         <div class="section-head">
-          <h3>🏛️ Organisations & Extracurriculars <span class="field-badge optional" style="vertical-align:middle;">Recommended</span></h3>
+          <h3>🏛️ Organisations & Extracurriculars <span class="field-badge optional" style="vertical-align:middle;">
           <button class="edit-btn" id="orgs-edit-btn" onclick="toggleOrgsEdit()">Edit</button>
         </div>
         <div id="orgs-read-view">
@@ -3137,12 +3137,12 @@
               <div class="edu-form-grid">
                 <div class="form-group">
                   <label class="form-label">Organisation name </label>
-                  <input class="form-input" type="text" placeholder="Full name — e.g. TiU Investment Society">
+                  <input class="form-input" type="text" placeholder="Full name — e.g. TiU Investment Society" maxlength="150">
                   <div class="form-hint">Spell out in full — used in employer targeting filters.</div>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Position / Role title </label>
-                  <input class="form-input" type="text" placeholder="e.g. President, Member, Volunteer">
+                  <input class="form-input" type="text" placeholder="e.g. President, Member, Volunteer" maxlength="100">
                 </div>
                 <div class="form-group">
                   <label class="form-label">Start date </label>
@@ -3166,7 +3166,7 @@
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                   <label class="form-label">Description </label>
-                  <textarea class="form-textarea" style="min-height:70px;" placeholder="Responsibilities, transferable skills — leadership, teamwork, communication. Use action verbs."></textarea>
+                  <textarea class="form-textarea" style="min-height:70px;" placeholder="Responsibilities, transferable skills — leadership, teamwork, communication. Use action verbs." maxlength="500"></textarea>
                 </div>
               </div>
             </div>
@@ -3182,7 +3182,7 @@
 
       <div class="profile-section full-width" id="skills-section">
         <div class="section-head">
-          <h3>🎓 Skills & Certificates <span class="field-badge required" style="vertical-align:middle;">Required</span></h3>
+          <h3>🎓 Skills & Certificates <span class="field-badge required" style="vertical-align:middle;">
           <button class="edit-btn" id="skills-edit-btn" onclick="toggleSkillsEdit()">Edit</button>
         </div>
 
@@ -3243,11 +3243,11 @@
                 <div class="edu-form-grid">
                   <div class="form-group">
                     <label class="form-label">Course name </label>
-                    <input class="form-input" type="text" placeholder="e.g. Advanced Econometrics">
+                    <input class="form-input" type="text" placeholder="e.g. Advanced Econometrics" maxlength="150">
                   </div>
                   <div class="form-group">
                     <label class="form-label">Course code </label>
-                    <input class="form-input" type="text" placeholder="e.g. ECO301">
+                    <input class="form-input" type="text" placeholder="e.g. ECO301" maxlength="50">
                     <div class="form-hint">Use exact code — helps employers see hard skills gained.</div>
                   </div>
                 </div>
@@ -3262,15 +3262,15 @@
                 <div class="edu-form-grid">
                   <div class="form-group" style="grid-column:1/-1;">
                     <label class="form-label">Project name </label>
-                    <input class="form-input" type="text" placeholder="e.g. Portfolio Optimisation Tool">
+                    <input class="form-input" type="text" placeholder="e.g. Portfolio Optimisation Tool" maxlength="150">
                   </div>
                   <div class="form-group" style="grid-column:1/-1;">
                     <label class="form-label">Description </label>
-                    <textarea class="form-textarea" style="min-height:70px;" placeholder="Briefly describe the project, your role and outcomes..."></textarea>
+                    <textarea class="form-textarea" style="min-height:70px;" placeholder="Briefly describe the project, your role and outcomes..." maxlength="500"></textarea>
                   </div>
                   <div class="form-group" style="grid-column:1/-1;">
                     <label class="form-label">Link / Attachment </label>
-                    <input class="form-input" type="text" placeholder="github.com/yourproject or attach a file URL">
+                    <input class="form-input" type="text" placeholder="github.com/yourproject or attach a file URL" maxlength="300">
                     <div class="form-hint">Portfolio, writing samples, websites, hackathons, publications.</div>
                   </div>
                 </div>
@@ -3289,7 +3289,7 @@
 
       <div class="profile-section full-width" id="preferences-section">
         <div class="section-head">
-          <h3>🎯 Preferences <span class="field-badge optional" style="vertical-align:middle;">Recommended</span></h3>
+          <h3>🎯 Preferences <span class="field-badge optional" style="vertical-align:middle;">
           <button class="edit-btn" id="pref-edit-btn" onclick="togglePreferencesEdit()">Edit</button>
         </div>
 
@@ -3456,7 +3456,7 @@
       <!-- DOCUMENTS & SETTINGS -->
       <div class="profile-section full-width" id="documents-section">
         <div class="section-head">
-          <h3>📄 Documents & Settings <span class="field-badge optional" style="vertical-align:middle;">Recommended</span></h3>
+          <h3>📄 Documents & Settings <span class="field-badge optional" style="vertical-align:middle;">
           <button class="edit-btn" id="docs-edit-btn" onclick="toggleDocsEdit()">Edit</button>
         </div>
         <div id="docs-read-view">
@@ -3746,7 +3746,7 @@
             <div id="company-msg-header" style="padding:16px 20px;background:white;border-bottom:1px solid var(--border);font-weight:600;font-size:15px;color:var(--navy);flex-shrink:0;"></div>
             <div id="company-msg-messages" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;"></div>
             <div style="padding:12px 16px;background:white;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
-              <textarea id="company-msg-input" class="form-textarea" placeholder="Write a reply..." style="flex:1;min-height:60px;resize:none;font-size:14px;"></textarea>
+              <textarea id="company-msg-input" class="form-textarea" placeholder="Write a reply..." style="flex:1;min-height:60px;resize:none;font-size:14px;" maxlength="1000"></textarea>
               <button class="btn btn-primary" style="align-self:flex-end;padding:10px 18px;" onclick="sendCompanyMessage()">Send</button>
             </div>
           </div>
@@ -4082,7 +4082,7 @@
       </div>
       <div id="post-panel-basics" class="listing-tab-panel">
         <div class="listing-field-grid">
-          <div class="form-group"><label class="form-label">Job title </label><input class="form-input" type="text" id="post-title" placeholder="e.g. Finance Intern, Data Analyst Graduate..."></div>
+          <div class="form-group"><label class="form-label">Job title </label><input class="form-input" type="text" id="post-title" placeholder="e.g. Finance Intern, Data Analyst Graduate..." maxlength="80"></div>
           <div class="form-group"><label class="form-label">Application method </label><div class="pref-chips" id="post-app-method" style="margin-top:4px;"><button class="pref-chip active" data-val="Apply on platform">Apply on platform</button><button class="pref-chip" data-val="External (ATS URL)">External (ATS URL)</button></div><div id="post-ats-wrap" style="display:none;margin-top:8px;"><input class="form-input" type="text" id="post-ats" placeholder="Paste the external application URL…"></div></div>
           <div class="form-group"><label class="form-label">Job type </label><div class="pref-chips" id="post-type-chips" style="margin-top:4px;"><button class="pref-chip active" data-val="Internship (stage)">Internship (stage)</button><button class="pref-chip" data-val="Working student">Working student</button><button class="pref-chip" data-val="Graduate role">Graduate role</button></div></div>
           <div class="form-group"><label class="form-label">Employment type </label><div class="pref-chips" id="post-emp-type" style="margin-top:4px;"><button class="pref-chip active" data-val="Full-time">Full-time</button><button class="pref-chip" data-val="Part-time">Part-time</button></div><div id="post-hours-wrap" style="display:none;margin-top:8px;"><div style="display:flex;align-items:center;gap:10px;"><input id="post-hours-per-week" class="form-input" type="number" min="1" max="40" placeholder="e.g. 16" style="width:100px;"><span style="font-size:13px;color:var(--gray);">hours per week</span></div></div></div>
@@ -4092,17 +4092,17 @@
           <div class="form-group"><label class="form-label">Work authorisation </label><div class="pref-chips multi" id="post-work-auth" style="margin-top:4px;"><button class="pref-chip" data-val="EU / EEA / Swiss / Non-EU orientation year">EU / EEA / Swiss / Non-EU orientation year</button><button class="pref-chip" data-val="Non-EU — student visa">Non-EU — student visa</button></div></div>
           <div class="form-group"><label class="form-label">Estimated start date</label><div style="display:flex;gap:8px;"><select class="form-input" id="post-start-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select><select class="form-input" id="post-start-year" style="flex:1;"><option>2025</option><option>2026</option><option>2027</option></select></div></div>
           <div class="form-group"><label class="form-label">Application deadline</label><div style="display:flex;gap:8px;"><select class="form-input" id="post-deadline-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select><select class="form-input" id="post-deadline-year" style="flex:1;"><option>2025</option><option>2026</option><option>2027</option></select></div></div>
-          <div class="form-group"><label class="form-label">Company division </label><input class="form-input" type="text" id="post-division" placeholder="e.g. Advisory, Finance Department..."></div>
+          <div class="form-group"><label class="form-label">Company division </label><input class="form-input" type="text" id="post-division" placeholder="e.g. Advisory, Finance Department..." maxlength="100"></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-top:16px;"><button class="btn btn-navy" onclick="switchListingTab('post','details')">Next: Details &#8594;</button></div>
       </div>
       <div id="post-panel-details" class="listing-tab-panel" style="display:none;">
         <div class="listing-field-grid">
-          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job description </label><textarea class="form-textarea" id="post-description" style="min-height:120px;" placeholder="Full description of org, role, and qualifications."></textarea></div>
-          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job role / role group </label><input class="form-input" type="text" id="post-role-group" placeholder="e.g. Financial Analyst, Data Analyst (up to 3)"><div class="form-hint">Drives student matching.</div></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job description </label><textarea class="form-textarea" id="post-description" style="min-height:120px;" placeholder="Full description of org, role, and qualifications." maxlength="2000"></textarea><small id="post-description-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job role / role group </label><input class="form-input" type="text" id="post-role-group" placeholder="e.g. Financial Analyst, Data Analyst (up to 3)" maxlength="100"><div class="form-hint">Drives student matching.</div></div>
           <div class="form-group"><label class="form-label">Number of hires </label><input class="form-input" type="number" id="post-num-hires" placeholder="e.g. 2" min="1"><div class="form-hint">Not shown to students.</div></div>
-          <div class="form-group"><label class="form-label">Pay / compensation </label><input class="form-input" type="text" id="post-pay" placeholder="e.g. 500/month, Unpaid"></div>
-          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Must-have qualifications </label><textarea class="form-textarea" id="post-qualifications" style="min-height:70px;" placeholder="Key skills, certifications, or experience required."></textarea></div>
+          <div class="form-group"><label class="form-label">Pay / compensation </label><input class="form-input" type="text" id="post-pay" placeholder="e.g. 500/month, Unpaid" maxlength="100"></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Must-have qualifications </label><textarea class="form-textarea" id="post-qualifications" style="min-height:70px;" placeholder="Key skills, certifications, or experience required." maxlength="2000"></textarea><small id="post-qualifications-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small></div>
           <div class="form-group" style="grid-column:1/-1;">
             <label class="form-label">Searched skills </label>
             <div class="form-hint" style="margin-bottom:10px;">Skills you're looking for — drives matching with students.</div>
@@ -4110,7 +4110,7 @@
               <div>
                 <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:6px;">Technical</div>
                 <div style="display:flex;gap:6px;margin-bottom:6px;position:relative;">
-                  <input class="form-input" id="post-skill-tech-input" type="text" placeholder="e.g. Python, Excel…" style="flex:1;font-size:13px;" oninput="filterJobSkillSuggestions('post','technical',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('post','technical');}">
+                  <input class="form-input" id="post-skill-tech-input" type="text" placeholder="e.g. Python, Excel…" style="flex:1;font-size:13px;" maxlength="80" oninput="filterJobSkillSuggestions('post','technical',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('post','technical');}">
                   <button class="btn btn-navy" style="padding:8px 12px;font-size:12px;" onclick="addJobSkill('post','technical')">+ Add</button>
                   <div id="post-skill-tech-suggestions" class="skill-suggestions" style="display:none;position:absolute;top:100%;left:0;right:40px;z-index:50;"></div>
                 </div>
@@ -4119,7 +4119,7 @@
               <div>
                 <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:6px;">Professional</div>
                 <div style="display:flex;gap:6px;margin-bottom:6px;position:relative;">
-                  <input class="form-input" id="post-skill-prof-input" type="text" placeholder="e.g. Leadership…" style="flex:1;font-size:13px;" oninput="filterJobSkillSuggestions('post','professional',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('post','professional');}">
+                  <input class="form-input" id="post-skill-prof-input" type="text" placeholder="e.g. Leadership…" style="flex:1;font-size:13px;" maxlength="80" oninput="filterJobSkillSuggestions('post','professional',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('post','professional');}">
                   <button class="btn btn-navy" style="padding:8px 12px;font-size:12px;" onclick="addJobSkill('post','professional')">+ Add</button>
                   <div id="post-skill-prof-suggestions" class="skill-suggestions" style="display:none;position:absolute;top:100%;left:0;right:40px;z-index:50;"></div>
                 </div>
@@ -4128,7 +4128,7 @@
               <div>
                 <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:6px;">Language</div>
                 <div style="display:flex;gap:6px;margin-bottom:6px;position:relative;">
-                  <input class="form-input" id="post-skill-lang-input" type="text" placeholder="e.g. Dutch, English…" style="flex:1;font-size:13px;" oninput="filterJobSkillSuggestions('post','languages',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('post','languages');}">
+                  <input class="form-input" id="post-skill-lang-input" type="text" placeholder="e.g. Dutch, English…" style="flex:1;font-size:13px;" maxlength="80" oninput="filterJobSkillSuggestions('post','languages',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('post','languages');}">
                   <button class="btn btn-navy" style="padding:8px 12px;font-size:12px;" onclick="addJobSkill('post','languages')">+ Add</button>
                   <div id="post-skill-lang-suggestions" class="skill-suggestions" style="display:none;position:absolute;top:100%;left:0;right:40px;z-index:50;"></div>
                 </div>
@@ -4145,10 +4145,10 @@
           <div class="form-group"><label class="form-label">Graduation date range</label><div style="display:flex;gap:6px;align-items:center;"><select class="form-input" id="post-grad-from" style="flex:1;"><option value="">From</option><option>2024</option><option>2025</option><option>2026</option><option>2027</option></select><span style="color:var(--gray);font-size:13px;">to</span><select class="form-input" id="post-grad-to" style="flex:1;"><option value="">To</option><option>2025</option><option>2026</option><option>2027</option><option>2028</option></select></div></div>
           <div class="form-group"><label class="form-label">Target candidate</label><div class="pref-chips multi" id="post-school-year" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Bachelor">Bachelor</button><button class="pref-chip" data-val="Pre-master">Pre-master</button><button class="pref-chip" data-val="Master">Master</button></div></div>
           <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of study</label><div class="pref-chips multi" id="post-majors" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Business Administration">Business Administration</button><button class="pref-chip" data-val="Economics">Economics</button><button class="pref-chip" data-val="Econometrics">Econometrics</button><button class="pref-chip" data-val="Finance">Finance</button><button class="pref-chip" data-val="Accounting">Accounting</button><button class="pref-chip" data-val="Marketing">Marketing</button><button class="pref-chip" data-val="Human Resource Management">Human Resource Management</button><button class="pref-chip" data-val="International Business">International Business</button><button class="pref-chip" data-val="Business Analytics">Business Analytics</button><button class="pref-chip" data-val="Data Science">Data Science</button><button class="pref-chip" data-val="Computer Science">Computer Science</button><button class="pref-chip" data-val="Software Engineering">Software Engineering</button><button class="pref-chip" data-val="Artificial Intelligence">Artificial Intelligence</button><button class="pref-chip" data-val="Information Systems">Information Systems</button><button class="pref-chip" data-val="Law">Law</button><button class="pref-chip" data-val="Psychology">Psychology</button><button class="pref-chip" data-val="Communication">Communication</button><button class="pref-chip" data-val="Sociology">Sociology</button><button class="pref-chip" data-val="Political Science">Political Science</button><button class="pref-chip" data-val="Liberal Arts">Liberal Arts</button><button class="pref-chip" data-val="Engineering">Engineering</button><button class="pref-chip" data-val="Any">Any</button><button class="pref-chip" data-val="Other">Other</button></div><div id="post-majors-other-wrap" style="display:none;margin-top:8px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="post-majors-other" class="form-input" type="text" placeholder="e.g. Marine Biology, Architecture…" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomMajor('post');}"><button class="btn btn-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCustomMajor('post')">+ Add</button></div><div id="post-majors-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
-          <div class="form-group"><label class="form-label">GPA minimum</label><input class="form-input" type="text" id="post-gpa-min" placeholder="e.g. 7.0 / 10"><div class="form-hint">Shown but does not block applications.</div></div>
+          <div class="form-group"><label class="form-label">GPA minimum</label><input class="form-input" type="text" id="post-gpa-min" placeholder="e.g. 7.0 / 10" maxlength="20"><div class="form-hint">Shown but does not block applications.</div></div>
           <div class="form-group"><label class="form-label">Candidate messaging</label><div class="pref-chips" id="post-messaging" style="margin-top:4px;"><button class="pref-chip active" data-val="Enabled">Enabled</button><button class="pref-chip" data-val="Disabled">Disabled</button></div></div>
           <div class="form-group"><label class="form-label">Recruiter in charge</label><select class="form-input" id="post-recruiter"><option value="">— None —</option></select><div class="form-hint">Owner of this listing. Add team members in the dashboard.</div></div>
-          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="post-hiring-team" placeholder="Additional teammate emails to CC"></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="post-hiring-team" placeholder="Additional teammate emails to CC" maxlength="150"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:20px;"><button class="btn" style="background:var(--cream);color:var(--text);" onclick="switchListingTab('post','details')">&#8592; Details</button><button class="btn btn-primary" style="padding:10px 24px;" onclick="submitListing()">Publish listing &#8594;</button></div>
       </div>
@@ -4157,19 +4157,23 @@
         <div style="display:flex;flex-direction:column;gap:20px;">
           <div class="form-group">
             <label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:var(--navy);color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">✉ Invite to apply</span></label>
-            <textarea class="form-textarea" id="post-msg-invite" rows="4" placeholder="Hi [name], we came across your profile and think you'd be a great fit for [role]. We'd love for you to apply..."></textarea>
+            <textarea class="form-textarea" id="post-msg-invite" rows="4" placeholder="Hi [name], we came across your profile and think you'd be a great fit for [role]. We'd love for you to apply..." maxlength="2000"></textarea>
+            <small id="post-msg-invite-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
           </div>
           <div class="form-group">
             <label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:#22c55e;color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">✅ Accepted</span></label>
-            <textarea class="form-textarea" id="post-msg-accepted" rows="4" placeholder="Hi [name], great news — we'd love to move forward with your application for [role]..."></textarea>
+            <textarea class="form-textarea" id="post-msg-accepted" rows="4" placeholder="Hi [name], great news — we'd love to move forward with your application for [role]..." maxlength="2000"></textarea>
+            <small id="post-msg-accepted-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
           </div>
           <div class="form-group">
             <label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:#f59e0b;color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">⭐ Shortlisted</span></label>
-            <textarea class="form-textarea" id="post-msg-shortlisted" rows="4" placeholder="Hi [name], we've reviewed your profile for [role] and would like to keep you in consideration..."></textarea>
+            <textarea class="form-textarea" id="post-msg-shortlisted" rows="4" placeholder="Hi [name], we've reviewed your profile for [role] and would like to keep you in consideration..." maxlength="2000"></textarea>
+            <small id="post-msg-shortlisted-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
           </div>
           <div class="form-group">
             <label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:#f43f5e;color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">❌ Rejected</span></label>
-            <textarea class="form-textarea" id="post-msg-rejected" rows="4" placeholder="Hi [name], thank you for applying for [role]. After careful review, we won't be moving forward at this time..."></textarea>
+            <textarea class="form-textarea" id="post-msg-rejected" rows="4" placeholder="Hi [name], thank you for applying for [role]. After careful review, we won't be moving forward at this time..." maxlength="2000"></textarea>
+            <small id="post-msg-rejected-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
           </div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:20px;"><button class="btn" style="background:var(--cream);color:var(--text);" onclick="switchListingTab('post','prefs')">&#8592; Preferences</button><button class="btn btn-primary" style="padding:10px 24px;" onclick="submitListing()">Publish listing &#8594;</button></div>
@@ -4206,7 +4210,7 @@
       </div>
       <div id="edit-panel-basics" class="listing-tab-panel">
         <div class="listing-field-grid">
-          <div class="form-group"><label class="form-label">Job title </label><input class="form-input" type="text" id="edit-title" placeholder="e.g. Finance Intern..."></div>
+          <div class="form-group"><label class="form-label">Job title </label><input class="form-input" type="text" id="edit-title" placeholder="e.g. Finance Intern..." maxlength="80"></div>
           <div class="form-group"><label class="form-label">Application method</label><div class="pref-chips" id="edit-app-method" style="margin-top:4px;"><button class="pref-chip active" data-val="Apply on platform">Apply on platform</button><button class="pref-chip" data-val="External (ATS URL)">External (ATS URL)</button></div><div id="edit-ats-wrap" style="display:none;margin-top:8px;"><input class="form-input" type="text" id="edit-ats" placeholder="Paste the external application URL…"></div></div>
           <div class="form-group"><label class="form-label">Job type </label><div class="pref-chips" id="edit-type-chips" style="margin-top:4px;"><button class="pref-chip active" data-val="Internship (stage)">Internship (stage)</button><button class="pref-chip" data-val="Working student">Working student</button><button class="pref-chip" data-val="Graduate role">Graduate role</button></div></div>
           <div class="form-group"><label class="form-label">Employment type</label><div class="pref-chips" id="edit-emp-type" style="margin-top:4px;"><button class="pref-chip active" data-val="Full-time">Full-time</button><button class="pref-chip" data-val="Part-time">Part-time</button></div><div id="edit-hours-wrap" style="display:none;margin-top:8px;"><div style="display:flex;align-items:center;gap:10px;"><input id="edit-hours-per-week" class="form-input" type="number" min="1" max="40" placeholder="e.g. 16" style="width:100px;"><span style="font-size:13px;color:var(--gray);">hours per week</span></div></div></div>
@@ -4216,17 +4220,17 @@
           <div class="form-group"><label class="form-label">Work authorisation</label><div class="pref-chips multi" id="edit-work-auth" style="margin-top:4px;"><button class="pref-chip" data-val="EU / EEA / Swiss / Non-EU orientation year">EU / EEA / Swiss / Non-EU orientation year</button><button class="pref-chip" data-val="Non-EU — student visa">Non-EU — student visa</button></div></div>
           <div class="form-group"><label class="form-label">Estimated start date</label><div style="display:flex;gap:8px;"><select class="form-input" id="edit-start-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select><select class="form-input" id="edit-start-year" style="flex:1;"><option>2025</option><option>2026</option><option>2027</option></select></div></div>
           <div class="form-group"><label class="form-label">Application deadline</label><div style="display:flex;gap:8px;"><select class="form-input" id="edit-deadline-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select><select class="form-input" id="edit-deadline-year" style="flex:1;"><option>2025</option><option>2026</option><option>2027</option></select></div></div>
-          <div class="form-group"><label class="form-label">Company division </label><input class="form-input" type="text" id="edit-division" placeholder="e.g. Advisory, Finance Dept..."></div>
+          <div class="form-group"><label class="form-label">Company division </label><input class="form-input" type="text" id="edit-division" placeholder="e.g. Advisory, Finance Dept..." maxlength="100"></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-top:16px;"><button class="btn btn-navy" onclick="switchListingTab('edit','details')">Next: Details &#8594;</button></div>
       </div>
       <div id="edit-panel-details" class="listing-tab-panel" style="display:none;">
         <div class="listing-field-grid">
-          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job description </label><textarea class="form-textarea" id="edit-description" style="min-height:120px;" placeholder="Full description of the role and qualifications."></textarea></div>
-          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job role / role group </label><input class="form-input" type="text" id="edit-role-group" placeholder="e.g. Financial Analyst, Data Analyst (up to 3)"><div class="form-hint">Drives student matching.</div></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job description </label><textarea class="form-textarea" id="edit-description" style="min-height:120px;" placeholder="Full description of the role and qualifications." maxlength="2000"></textarea><small id="edit-description-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job role / role group </label><input class="form-input" type="text" id="edit-role-group" placeholder="e.g. Financial Analyst, Data Analyst (up to 3)" maxlength="100"><div class="form-hint">Drives student matching.</div></div>
           <div class="form-group"><label class="form-label">Number of hires </label><input class="form-input" type="number" id="edit-num-hires" placeholder="e.g. 2" min="1"></div>
-          <div class="form-group"><label class="form-label">Pay / compensation </label><input class="form-input" type="text" id="edit-pay" placeholder="e.g. 500/month, Unpaid"></div>
-          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Must-have qualifications </label><textarea class="form-textarea" id="edit-qualifications" style="min-height:70px;" placeholder="Key skills, certifications, or experience required."></textarea></div>
+          <div class="form-group"><label class="form-label">Pay / compensation </label><input class="form-input" type="text" id="edit-pay" placeholder="e.g. 500/month, Unpaid" maxlength="100"></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Must-have qualifications </label><textarea class="form-textarea" id="edit-qualifications" style="min-height:70px;" placeholder="Key skills, certifications, or experience required." maxlength="2000"></textarea><small id="edit-qualifications-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small></div>
           <div class="form-group" style="grid-column:1/-1;">
             <label class="form-label">Searched skills </label>
             <div class="form-hint" style="margin-bottom:10px;">Skills you're looking for — drives matching with students.</div>
@@ -4234,7 +4238,7 @@
               <div>
                 <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:6px;">Technical</div>
                 <div style="display:flex;gap:6px;margin-bottom:6px;position:relative;">
-                  <input class="form-input" id="edit-skill-tech-input" type="text" placeholder="e.g. Python, Excel…" style="flex:1;font-size:13px;" oninput="filterJobSkillSuggestions('edit','technical',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('edit','technical');}">
+                  <input class="form-input" id="edit-skill-tech-input" type="text" placeholder="e.g. Python, Excel…" style="flex:1;font-size:13px;" maxlength="80" oninput="filterJobSkillSuggestions('edit','technical',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('edit','technical');}">
                   <button class="btn btn-navy" style="padding:8px 12px;font-size:12px;" onclick="addJobSkill('edit','technical')">+ Add</button>
                   <div id="edit-skill-tech-suggestions" class="skill-suggestions" style="display:none;position:absolute;top:100%;left:0;right:40px;z-index:50;"></div>
                 </div>
@@ -4243,7 +4247,7 @@
               <div>
                 <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:6px;">Professional</div>
                 <div style="display:flex;gap:6px;margin-bottom:6px;position:relative;">
-                  <input class="form-input" id="edit-skill-prof-input" type="text" placeholder="e.g. Leadership…" style="flex:1;font-size:13px;" oninput="filterJobSkillSuggestions('edit','professional',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('edit','professional');}">
+                  <input class="form-input" id="edit-skill-prof-input" type="text" placeholder="e.g. Leadership…" style="flex:1;font-size:13px;" maxlength="80" oninput="filterJobSkillSuggestions('edit','professional',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('edit','professional');}">
                   <button class="btn btn-navy" style="padding:8px 12px;font-size:12px;" onclick="addJobSkill('edit','professional')">+ Add</button>
                   <div id="edit-skill-prof-suggestions" class="skill-suggestions" style="display:none;position:absolute;top:100%;left:0;right:40px;z-index:50;"></div>
                 </div>
@@ -4252,7 +4256,7 @@
               <div>
                 <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:6px;">Language</div>
                 <div style="display:flex;gap:6px;margin-bottom:6px;position:relative;">
-                  <input class="form-input" id="edit-skill-lang-input" type="text" placeholder="e.g. Dutch, English…" style="flex:1;font-size:13px;" oninput="filterJobSkillSuggestions('edit','languages',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('edit','languages');}">
+                  <input class="form-input" id="edit-skill-lang-input" type="text" placeholder="e.g. Dutch, English…" style="flex:1;font-size:13px;" maxlength="80" oninput="filterJobSkillSuggestions('edit','languages',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobSkill('edit','languages');}">
                   <button class="btn btn-navy" style="padding:8px 12px;font-size:12px;" onclick="addJobSkill('edit','languages')">+ Add</button>
                   <div id="edit-skill-lang-suggestions" class="skill-suggestions" style="display:none;position:absolute;top:100%;left:0;right:40px;z-index:50;"></div>
                 </div>
@@ -4269,10 +4273,10 @@
           <div class="form-group"><label class="form-label">Graduation date range</label><div style="display:flex;gap:6px;align-items:center;"><select class="form-input" id="edit-grad-from" style="flex:1;"><option value="">From</option><option>2024</option><option>2025</option><option>2026</option><option>2027</option></select><span style="color:var(--gray);font-size:13px;">to</span><select class="form-input" id="edit-grad-to" style="flex:1;"><option value="">To</option><option>2025</option><option>2026</option><option>2027</option><option>2028</option></select></div></div>
           <div class="form-group"><label class="form-label">Target candidate</label><div class="pref-chips multi" id="edit-school-year" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Bachelor">Bachelor</button><button class="pref-chip" data-val="Pre-master">Pre-master</button><button class="pref-chip" data-val="Master">Master</button></div></div>
           <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of study</label><div class="pref-chips multi" id="edit-majors" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Business Administration">Business Administration</button><button class="pref-chip" data-val="Economics">Economics</button><button class="pref-chip" data-val="Econometrics">Econometrics</button><button class="pref-chip" data-val="Finance">Finance</button><button class="pref-chip" data-val="Accounting">Accounting</button><button class="pref-chip" data-val="Marketing">Marketing</button><button class="pref-chip" data-val="Human Resource Management">Human Resource Management</button><button class="pref-chip" data-val="International Business">International Business</button><button class="pref-chip" data-val="Business Analytics">Business Analytics</button><button class="pref-chip" data-val="Data Science">Data Science</button><button class="pref-chip" data-val="Computer Science">Computer Science</button><button class="pref-chip" data-val="Software Engineering">Software Engineering</button><button class="pref-chip" data-val="Artificial Intelligence">Artificial Intelligence</button><button class="pref-chip" data-val="Information Systems">Information Systems</button><button class="pref-chip" data-val="Law">Law</button><button class="pref-chip" data-val="Psychology">Psychology</button><button class="pref-chip" data-val="Communication">Communication</button><button class="pref-chip" data-val="Sociology">Sociology</button><button class="pref-chip" data-val="Political Science">Political Science</button><button class="pref-chip" data-val="Liberal Arts">Liberal Arts</button><button class="pref-chip" data-val="Engineering">Engineering</button><button class="pref-chip" data-val="Any">Any</button><button class="pref-chip" data-val="Other">Other</button></div><div id="edit-majors-other-wrap" style="display:none;margin-top:8px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="edit-majors-other" class="form-input" type="text" placeholder="e.g. Marine Biology, Architecture…" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomMajor('edit');}"><button class="btn btn-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCustomMajor('edit')">+ Add</button></div><div id="edit-majors-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
-          <div class="form-group"><label class="form-label">GPA minimum</label><input class="form-input" type="text" id="edit-gpa-min" placeholder="e.g. 7.0 / 10"><div class="form-hint">Shown but does not block applications.</div></div>
+          <div class="form-group"><label class="form-label">GPA minimum</label><input class="form-input" type="text" id="edit-gpa-min" placeholder="e.g. 7.0 / 10" maxlength="20"><div class="form-hint">Shown but does not block applications.</div></div>
           <div class="form-group"><label class="form-label">Candidate messaging</label><div class="pref-chips" id="edit-messaging" style="margin-top:4px;"><button class="pref-chip active" data-val="Enabled">Enabled</button><button class="pref-chip" data-val="Disabled">Disabled</button></div></div>
           <div class="form-group"><label class="form-label">Recruiter in charge</label><select class="form-input" id="edit-recruiter"><option value="">— None —</option></select><div class="form-hint">Owner of this listing. Add team members in the dashboard.</div></div>
-          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="edit-hiring-team" placeholder="Additional teammate emails to CC"></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="edit-hiring-team" placeholder="Additional teammate emails to CC" maxlength="150"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:20px;"><button class="btn" style="background:var(--cream);color:var(--text);" onclick="switchListingTab('edit','details')">&#8592; Details</button><button class="btn btn-primary" style="padding:10px 24px;" onclick="saveEditListing()">Save changes</button></div>
       </div>
@@ -4281,19 +4285,23 @@
         <div style="display:flex;flex-direction:column;gap:20px;">
           <div class="form-group">
             <label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:var(--navy);color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">✉ Invite to apply</span></label>
-            <textarea class="form-textarea" id="edit-msg-invite" rows="4" placeholder="Hi [name], we came across your profile and think you'd be a great fit for [role]. We'd love for you to apply..."></textarea>
+            <textarea class="form-textarea" id="edit-msg-invite" rows="4" placeholder="Hi [name], we came across your profile and think you'd be a great fit for [role]. We'd love for you to apply..." maxlength="2000"></textarea>
+            <small id="edit-msg-invite-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
           </div>
           <div class="form-group">
             <label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:#22c55e;color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">✅ Accepted</span></label>
-            <textarea class="form-textarea" id="edit-msg-accepted" rows="4" placeholder="Hi [name], great news — we'd love to move forward with your application for [role]..."></textarea>
+            <textarea class="form-textarea" id="edit-msg-accepted" rows="4" placeholder="Hi [name], great news — we'd love to move forward with your application for [role]..." maxlength="2000"></textarea>
+            <small id="edit-msg-accepted-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
           </div>
           <div class="form-group">
             <label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:#f59e0b;color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">⭐ Shortlisted</span></label>
-            <textarea class="form-textarea" id="edit-msg-shortlisted" rows="4" placeholder="Hi [name], we've reviewed your profile for [role] and would like to keep you in consideration..."></textarea>
+            <textarea class="form-textarea" id="edit-msg-shortlisted" rows="4" placeholder="Hi [name], we've reviewed your profile for [role] and would like to keep you in consideration..." maxlength="2000"></textarea>
+            <small id="edit-msg-shortlisted-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
           </div>
           <div class="form-group">
             <label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:#f43f5e;color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">❌ Rejected</span></label>
-            <textarea class="form-textarea" id="edit-msg-rejected" rows="4" placeholder="Hi [name], thank you for applying for [role]. After careful review, we won't be moving forward at this time..."></textarea>
+            <textarea class="form-textarea" id="edit-msg-rejected" rows="4" placeholder="Hi [name], thank you for applying for [role]. After careful review, we won't be moving forward at this time..." maxlength="2000"></textarea>
+            <small id="edit-msg-rejected-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
           </div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:20px;"><button class="btn" style="background:var(--cream);color:var(--text);" onclick="switchListingTab('edit','prefs')">&#8592; Preferences</button><button class="btn btn-primary" style="padding:10px 24px;" onclick="saveEditListing()">Save changes</button></div>
@@ -4313,16 +4321,16 @@
     <div style="display:flex;flex-direction:column;gap:16px;">
       <div>
         <label class="form-label">Company name </label>
-        <input id="cp-company-name" class="form-input" type="text" placeholder="e.g. KPMG Netherlands">
+        <input id="cp-company-name" class="form-input" type="text" placeholder="e.g. KPMG Netherlands" maxlength="150">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
           <label class="form-label">Contact first name</label>
-          <input id="cp-firstname" class="form-input" type="text" placeholder="e.g. Jeroen">
+          <input id="cp-firstname" class="form-input" type="text" placeholder="e.g. Jeroen" maxlength="80">
         </div>
         <div>
           <label class="form-label">Contact last name</label>
-          <input id="cp-lastname" class="form-input" type="text" placeholder="e.g. Visser">
+          <input id="cp-lastname" class="form-input" type="text" placeholder="e.g. Visser" maxlength="80">
         </div>
       </div>
       <div>
@@ -4332,7 +4340,7 @@
       </div>
       <div>
         <label class="form-label">Website </label>
-        <input id="cp-website" class="form-input" type="text" placeholder="https://www.company.nl">
+        <input id="cp-website" class="form-input" type="text" placeholder="https://www.company.nl" maxlength="300">
       </div>
       <div>
         <label class="form-label">Company size </label>
@@ -4363,7 +4371,8 @@
       </div>
       <div>
         <label class="form-label">Company description </label>
-        <textarea id="cp-description" class="form-textarea" style="min-height:80px;" placeholder="A short description of your company — shown on your listings."></textarea>
+        <textarea id="cp-description" class="form-textarea" style="min-height:80px;" placeholder="A short description of your company — shown on your listings." maxlength="2000"></textarea>
+        <small id="cp-description-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
       </div>
       <div id="cp-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:13px;color:#dc2626;"></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
@@ -4385,11 +4394,11 @@
       <input type="hidden" id="rec-id" value="">
       <div>
         <label class="form-label">Name </label>
-        <input id="rec-name" class="form-input" type="text" placeholder="e.g. Sarah van Dijk">
+        <input id="rec-name" class="form-input" type="text" placeholder="e.g. Sarah van Dijk" maxlength="150">
       </div>
       <div>
         <label class="form-label">Email </label>
-        <input id="rec-email" class="form-input" type="email" placeholder="sarah@company.nl">
+        <input id="rec-email" class="form-input" type="email" placeholder="sarah@company.nl" maxlength="150">
       </div>
       <div>
         <label class="form-label">Role</label>
@@ -4432,12 +4441,13 @@
       </div>
       <div class="form-group">
         <label class="form-label">Why are you interested in this role? <span style="color:var(--gray);font-weight:400;">(optional)</span></label>
-        <textarea class="form-textarea" placeholder="In a few sentences &mdash; what draws you to this company or role?"></textarea>
+        <textarea id="apply-motivation" class="form-textarea" placeholder="In a few sentences &mdash; what draws you to this company or role?" maxlength="600"></textarea>
+        <small id="apply-motivation-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 600</small>
         <div class="form-hint">Keep it short and genuine. 3&ndash;5 sentences is plenty.</div>
       </div>
       <div class="form-group">
         <label class="form-label">Earliest start date</label>
-        <input class="form-input" type="text" value="June 2025">
+        <input class="form-input" type="text" value="June 2025" maxlength="50">
       </div>
       <div style="display:flex;gap:12px;margin-top:8px;">
         <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="submitApplication()">Submit application &#8594;</button>
@@ -6562,6 +6572,48 @@
     if (cm) cm.addEventListener('click', function(e){ if(e.target===this) closeConfirmModal(); });
   });
 
+  var _charCounterFields = [
+    ['contact-message', 2000],
+    ['edit-basic-bio', 280],
+    ['post-description', 2000],
+    ['post-qualifications', 2000],
+    ['post-msg-invite', 2000],
+    ['post-msg-accepted', 2000],
+    ['post-msg-shortlisted', 2000],
+    ['post-msg-rejected', 2000],
+    ['edit-description', 2000],
+    ['edit-qualifications', 2000],
+    ['edit-msg-invite', 2000],
+    ['edit-msg-accepted', 2000],
+    ['edit-msg-shortlisted', 2000],
+    ['edit-msg-rejected', 2000],
+    ['cp-description', 2000],
+    ['apply-motivation', 600]
+  ];
+  function _updateCounter(el, counter, max) {
+    var len = el.value.length;
+    counter.textContent = len + ' / ' + max;
+    counter.style.color = len >= max * 0.9 ? '#dc2626' : 'var(--gray)';
+  }
+  function attachCharCounter(fieldId, max) {
+    var el = document.getElementById(fieldId);
+    var counter = document.getElementById(fieldId + '-counter');
+    if (!el || !counter) return;
+    el.addEventListener('input', function() { _updateCounter(el, counter, max); });
+    _updateCounter(el, counter, max);
+  }
+  function refreshCharCounters() {
+    _charCounterFields.forEach(function(pair) {
+      var el = document.getElementById(pair[0]);
+      var counter = document.getElementById(pair[0] + '-counter');
+      if (el && counter) _updateCounter(el, counter, pair[1]);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    _charCounterFields.forEach(function(pair) { attachCharCounter(pair[0], pair[1]); });
+  });
+
   async function approveCompany(id) {
     showConfirmModal(
       'Approve company',
@@ -7057,7 +7109,7 @@
     showConfirmModal(
       'Change your account email',
       'We\'ll send a confirmation link to the new email. The change takes effect once you click it.',
-      '<input id="settings-new-email" class="form-input" type="email" placeholder="new.email@example.com" style="width:100%;font-size:14px;">',
+      '<input id="settings-new-email" class="form-input" type="email" placeholder="new.email@example.com" style="width:100%;font-size:14px;" maxlength="150">',
       'Send confirmation',
       'primary',
       async function() {
@@ -7079,8 +7131,8 @@
     showConfirmModal(
       'Change your password',
       'Enter a new password (minimum 8 characters).',
-      '<input id="settings-new-pw" class="form-input" type="password" placeholder="New password" style="width:100%;font-size:14px;margin-bottom:8px;">'
-        + '<input id="settings-new-pw2" class="form-input" type="password" placeholder="Confirm new password" style="width:100%;font-size:14px;">',
+      '<input id="settings-new-pw" class="form-input" type="password" placeholder="New password" style="width:100%;font-size:14px;margin-bottom:8px;" maxlength="128">'
+        + '<input id="settings-new-pw2" class="form-input" type="password" placeholder="Confirm new password" style="width:100%;font-size:14px;" maxlength="128">',
       'Update password',
       'primary',
       async function() {
@@ -7393,7 +7445,16 @@
   });
 
   // ─── CORE NAVIGATION ───
+  var _studentScreens = ['student-browse', 'student-dash', 'student-profile'];
+  var _employerScreens = ['company-dash', 'company-pending', 'company-rejected'];
   function showScreen(name) {
+    // Require authentication for protected screens
+    if (_studentScreens.indexOf(name) !== -1 && !currentStudent) {
+      name = 'student-login';
+    }
+    if (_employerScreens.indexOf(name) !== -1 && !currentEmployer) {
+      name = 'student-login';
+    }
     // Block company dashboard access for non-approved employers
     if (name === 'company-dash' && currentEmployer && currentEmployer.status && currentEmployer.status !== 'approved') {
       name = currentEmployer.status === 'rejected' ? 'company-rejected' : 'company-pending';
@@ -7868,11 +7929,14 @@
     document.getElementById('modal-success').style.display = 'none';
     currentApplyJob = jobObj || { title: jobTitle, company_name: companyName };
     document.getElementById('apply-modal').classList.add('open');
+    var motivEl = document.getElementById('apply-motivation');
+    if (motivEl) motivEl.value = '';
+    refreshCharCounters();
   }
   function closeModal() { document.getElementById('apply-modal').classList.remove('open'); }
   async function submitApplication() {
     if (!currentStudent) { showToast('Please log in to apply.', 'error'); return; }
-    var motivation = document.querySelector('#modal-apply-form textarea');
+    var motivation = document.getElementById('apply-motivation') || document.querySelector('#modal-apply-form textarea');
     var startDate  = document.querySelector('#modal-apply-form input[type="text"]');
     var job = currentApplyJob || {};
 
@@ -8841,6 +8905,7 @@
 
     switchListingTab('edit', 'basics');
     document.getElementById('edit-listing-modal').classList.add('open');
+    refreshCharCounters();
   }
   function closeEditModal() { document.getElementById('edit-listing-modal').classList.remove('open'); editTargetRow=null; }
 
@@ -8875,6 +8940,7 @@
     }
     document.getElementById('cp-error').style.display = 'none';
     document.getElementById('company-profile-modal').classList.add('open');
+    refreshCharCounters();
   }
   function closeCompanyProfileModal() {
     document.getElementById('company-profile-modal').classList.remove('open');
@@ -9258,15 +9324,15 @@
       +'<div class="edu-form-grid">'
       +'<div class="form-group"><label class="form-label">Institution </label><select class="form-input edu-university"><option value="">Select university...</option><option>Tilburg University</option><option>University of Amsterdam (UvA)</option><option>Erasmus University Rotterdam</option><option>Utrecht University</option><option>Leiden University</option><option>Other</option></select></div>'
       +'<div class="form-group"><label class="form-label">Degree level</label><select class="form-input edu-degree-level"><option value="">Select level...</option><option>Bachelor\'s degree (BSc / BA)</option><option>Pre-master</option><option>Master\'s degree (MSc / MA)</option><option>MBA</option><option>PhD / Doctorate</option><option>Exchange programme</option><option>Other</option></select></div>'
-      +'<div class="form-group"><label class="form-label">Name of program </label><input class="form-input edu-program-name" type="text" placeholder="e.g. Business Analytics, Computer Science..."></div>'
-      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of study </label><div class="pref-chips edu-field-chips" style="margin-top:6px;flex-wrap:wrap;">'+chipsHtml+'</div><div class="edu-field-other-wrap" style="display:none;margin-top:8px;"><input class="form-input edu-field-other" type="text" placeholder="Please specify your field of study\u2026"></div></div>'
-      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Minor </label><div class="pref-chips edu-minor-chips" style="margin-top:6px;flex-wrap:wrap;">'+minorChipsHtml+'</div><div class="edu-minor-other-wrap" style="display:none;margin-top:8px;"><input class="form-input edu-minor" type="text" placeholder="Please specify your minor\u2026"></div><div class="form-hint">Additional academic discipline.</div></div>'
+      +'<div class="form-group"><label class="form-label">Name of program </label><input class="form-input edu-program-name" type="text" placeholder="e.g. Business Analytics, Computer Science..." maxlength="150"></div>'
+      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of study </label><div class="pref-chips edu-field-chips" style="margin-top:6px;flex-wrap:wrap;">'+chipsHtml+'</div><div class="edu-field-other-wrap" style="display:none;margin-top:8px;"><input class="form-input edu-field-other" type="text" placeholder="Please specify your field of study\u2026" maxlength="100"></div></div>'
+      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Minor </label><div class="pref-chips edu-minor-chips" style="margin-top:6px;flex-wrap:wrap;">'+minorChipsHtml+'</div><div class="edu-minor-other-wrap" style="display:none;margin-top:8px;"><input class="form-input edu-minor" type="text" placeholder="Please specify your minor\u2026" maxlength="100"></div><div class="form-hint">Additional academic discipline.</div></div>'
       +'<div class="form-group"><label class="form-label">Start date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;"><option value="">Month</option>'+mo+'</select><select class="form-input" style="flex:1;"><option value="">Year</option>'+yr+'</select></div></div>'
       +'<div class="form-group" id="'+endGroupId+'"><label class="form-label">End date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;"><option value="">Month</option>'+mo+'</select><select class="form-input" style="flex:1;"><option value="">Year</option>'+yr+'</select></div></div>'
       +'<div class="form-group" style="grid-column:1/-1;"><label class="edu-checkbox-label"><input type="checkbox" id="'+stillStudyingId+'" onchange="toggleEndDate(this,\''+endGroupId+'\')"><span>I am currently enrolled</span></label></div>'
-      +'<div class="form-group"><label class="form-label">GPA <span class="field-badge private">Private</span></label><input class="form-input edu-gpa" type="text" placeholder="e.g. 7.8 / 10"></div>'
+      +'<div class="form-group"><label class="form-label">GPA <span class="field-badge private">Private</span></label><input class="form-input edu-gpa" type="text" placeholder="e.g. 7.8 / 10" maxlength="20"></div>'
       +'<div class="form-group" id="edu-grad-group-'+idx+'" style="display:none;"><label class="form-label">Graduation date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;"><option value="">Month</option>'+mo+'</select><select class="form-input" style="flex:1;"><option value="">Year</option>'+yr+'</select></div></div>'
-      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Description </label><textarea class="form-textarea" style="min-height:70px;" placeholder="Specialisation, thesis topic, relevant coursework..."></textarea></div>'
+      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Description </label><textarea class="form-textarea" style="min-height:70px;" placeholder="Specialisation, thesis topic, relevant coursework..." maxlength="500"></textarea></div>'
       +'</div></div>';
     var w=document.createElement('div');w.innerHTML=html;
     var entry=w.firstChild;
@@ -9407,14 +9473,14 @@
     var d=document.createElement('div');d.className='edu-entry-form';d.dataset.index=idx;
     d.innerHTML='<div class="edu-entry-form-header"><span class="edu-entry-label">Entry '+(idx+1)+'</span><button class="remove-edu-btn" onclick="removeExpEntry(this)">\u2715 Remove</button></div>'
       +'<div class="edu-form-grid">'
-      +'<div class="form-group"><label class="form-label">Job title / Role </label><input class="form-input exp-role" type="text" placeholder="e.g. Marketing Intern..."></div>'
-      +'<div class="form-group"><label class="form-label">Company / Organisation </label><input class="form-input exp-company" type="text" placeholder="e.g. KPMG, Startup XYZ..."></div>'
-      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of work </label><div class="pref-chips exp-field-chips" style="margin-top:6px;flex-wrap:wrap;">'+expFieldChipsHtml+'</div><div class="exp-field-other-wrap" style="display:none;margin-top:8px;"><input class="form-input exp-field-other" type="text" placeholder="Please specify your field of work\u2026"></div></div>'
-      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Location</label><input class="form-input exp-location" type="text" placeholder="City, Country"></div>'
+      +'<div class="form-group"><label class="form-label">Job title / Role </label><input class="form-input exp-role" type="text" placeholder="e.g. Marketing Intern..." maxlength="150"></div>'
+      +'<div class="form-group"><label class="form-label">Company / Organisation </label><input class="form-input exp-company" type="text" placeholder="e.g. KPMG, Startup XYZ..." maxlength="150"></div>'
+      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of work </label><div class="pref-chips exp-field-chips" style="margin-top:6px;flex-wrap:wrap;">'+expFieldChipsHtml+'</div><div class="exp-field-other-wrap" style="display:none;margin-top:8px;"><input class="form-input exp-field-other" type="text" placeholder="Please specify your field of work\u2026" maxlength="100"></div></div>'
+      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Location</label><input class="form-input exp-location" type="text" placeholder="City, Country" maxlength="100"></div>'
       +'<div class="form-group"><label class="form-label">Start date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;"><option value="">Month</option>'+mo+'</select><select class="form-input" style="flex:1;"><option value="">Year</option>'+yr+'</select></div></div>'
       +'<div class="form-group" id="'+endGroupId+'"><label class="form-label">End date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;"><option value="">Month</option>'+mo+'</select><select class="form-input" style="flex:1;"><option value="">Year</option>'+yr+'</select></div></div>'
       +'<div class="form-group" style="grid-column:1/-1;"><label class="edu-checkbox-label"><input type="checkbox" id="'+stillId+'" onchange="toggleEndDate(this,\''+endGroupId+'\')"><span>I currently work here</span></label></div>'
-      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Description</label><textarea class="form-textarea" style="min-height:70px;" placeholder="Responsibilities, achievements..."></textarea></div>'
+      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Description</label><textarea class="form-textarea" style="min-height:70px;" placeholder="Responsibilities, achievements..." maxlength="500"></textarea></div>'
       +'</div>';
     // Wire Other toggle for field of work
     var chipsEl=d.querySelector('.exp-field-chips');
@@ -9494,12 +9560,12 @@
     var d=document.createElement('div');d.className='edu-entry-form';
     var header=document.createElement('div');header.className='edu-entry-form-header';var lbl=document.createElement('span');lbl.className='edu-entry-label';lbl.textContent='Entry '+(idx+1);var rb=document.createElement('button');rb.className='remove-edu-btn';rb.textContent='\u2715 Remove';rb.onclick=function(){d.remove();};header.appendChild(lbl);header.appendChild(rb);d.appendChild(header);
     var grid=document.createElement('div');grid.className='edu-form-grid';
-    var f1=document.createElement('div');f1.className='form-group';f1.innerHTML='<label class="form-label">Organisation name </label><input class="form-input" type="text" placeholder="Full organisation name">';
-    var f2=document.createElement('div');f2.className='form-group';f2.innerHTML='<label class="form-label">Position / Role title </label><input class="form-input" type="text" placeholder="e.g. President, Member">';
+    var f1=document.createElement('div');f1.className='form-group';f1.innerHTML='<label class="form-label">Organisation name </label><input class="form-input" type="text" placeholder="Full organisation name" maxlength="150">';
+    var f2=document.createElement('div');f2.className='form-group';f2.innerHTML='<label class="form-label">Position / Role title </label><input class="form-input" type="text" placeholder="e.g. President, Member" maxlength="100">';
     var f3=document.createElement('div');f3.className='form-group';f3.innerHTML='<label class="form-label">Start date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;">'+mo+'</select><select class="form-input" style="flex:1;">'+yr+'</select></div>';
     var f4=document.createElement('div');f4.className='form-group';f4.id=endGroupId;f4.innerHTML='<label class="form-label">End date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;">'+mo+'</select><select class="form-input" style="flex:1;">'+yr+'</select></div>';
     var f5=document.createElement('div');f5.className='form-group';f5.style.gridColumn='1/-1';var cbLabel=document.createElement('label');cbLabel.className='edu-checkbox-label';var cb=document.createElement('input');cb.type='checkbox';cb.addEventListener('change',function(){toggleEndDate(cb,endGroupId);});var cbSpan=document.createElement('span');cbSpan.textContent='I am currently a member';cbLabel.appendChild(cb);cbLabel.appendChild(cbSpan);f5.appendChild(cbLabel);
-    var f6=document.createElement('div');f6.className='form-group';f6.style.gridColumn='1/-1';f6.innerHTML='<label class="form-label">Description </label><textarea class="form-textarea" style="min-height:60px;" placeholder="Responsibilities and transferable skills."></textarea>';
+    var f6=document.createElement('div');f6.className='form-group';f6.style.gridColumn='1/-1';f6.innerHTML='<label class="form-label">Description </label><textarea class="form-textarea" style="min-height:60px;" placeholder="Responsibilities and transferable skills." maxlength="500"></textarea>';
     grid.appendChild(f1);grid.appendChild(f2);grid.appendChild(f3);grid.appendChild(f4);grid.appendChild(f5);grid.appendChild(f6);d.appendChild(grid);c.appendChild(d);
   }
   function removeOrgsEntry(btn){var e=btn.closest('.edu-entry-form');if(e)e.remove();}
@@ -9581,8 +9647,8 @@
     b.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>';setTimeout(function(){b.textContent='Edit';},2500);
   }
   function cancelSkillsEdit(){document.getElementById('skills-edit-view').style.display='none';document.getElementById('skills-read-view').style.display='block';document.getElementById('skills-edit-btn').textContent='Edit';document.getElementById('skill-suggestions').style.display='none';}
-  function addCourseEntry(){var list=document.getElementById('courses-list');var d=document.createElement('div');d.className='edu-entry-form';d.style.marginTop='10px';var grid=document.createElement('div');grid.className='edu-form-grid';var f1=document.createElement('div');f1.className='form-group';var l1=document.createElement('label');l1.className='form-label';l1.textContent='Course name ';var b1=document.createElement('span');b1.className='field-badge required';b1.textContent='Required';l1.appendChild(b1);var i1=document.createElement('input');i1.className='form-input';i1.type='text';i1.placeholder='e.g. Corporate Finance';f1.appendChild(l1);f1.appendChild(i1);var f2=document.createElement('div');f2.className='form-group';var l2=document.createElement('label');l2.className='form-label';l2.textContent='Course code ';var b2=document.createElement('span');b2.className='field-badge optional';b2.textContent='Optional';l2.appendChild(b2);var i2=document.createElement('input');i2.className='form-input';i2.type='text';i2.placeholder='e.g. FIN402';f2.appendChild(l2);f2.appendChild(i2);grid.appendChild(f1);grid.appendChild(f2);d.appendChild(grid);var rb=document.createElement('button');rb.className='remove-edu-btn';rb.style.marginTop='8px';rb.textContent='Remove';rb.onclick=function(){d.remove();};d.appendChild(rb);list.appendChild(d);}
-  function addProjectEntry(){var list=document.getElementById('projects-list');var d=document.createElement('div');d.className='edu-entry-form';d.style.marginTop='10px';var grid=document.createElement('div');grid.className='edu-form-grid';var f1=document.createElement('div');f1.className='form-group';f1.style.gridColumn='1/-1';var l1=document.createElement('label');l1.className='form-label';l1.textContent='Project name ';var b1=document.createElement('span');b1.className='field-badge required';b1.textContent='Required';l1.appendChild(b1);var i1=document.createElement('input');i1.className='form-input';i1.type='text';i1.placeholder='Project name';f1.appendChild(l1);f1.appendChild(i1);var f2=document.createElement('div');f2.className='form-group';f2.style.gridColumn='1/-1';var l2=document.createElement('label');l2.className='form-label';l2.textContent='Description ';var b2=document.createElement('span');b2.className='field-badge optional';b2.textContent='Optional';l2.appendChild(b2);var t2=document.createElement('textarea');t2.className='form-textarea';t2.style.minHeight='60px';t2.placeholder='Describe the project...';f2.appendChild(l2);f2.appendChild(t2);var f3=document.createElement('div');f3.className='form-group';f3.style.gridColumn='1/-1';var l3=document.createElement('label');l3.className='form-label';l3.textContent='Link ';var b3=document.createElement('span');b3.className='field-badge optional';b3.textContent='Optional';l3.appendChild(b3);var i3=document.createElement('input');i3.className='form-input';i3.type='text';i3.placeholder='github.com/... or portfolio URL';f3.appendChild(l3);f3.appendChild(i3);grid.appendChild(f1);grid.appendChild(f2);grid.appendChild(f3);d.appendChild(grid);var rb=document.createElement('button');rb.className='remove-edu-btn';rb.style.marginTop='8px';rb.textContent='Remove';rb.onclick=function(){d.remove();};d.appendChild(rb);list.appendChild(d);}
+  function addCourseEntry(){var list=document.getElementById('courses-list');var d=document.createElement('div');d.className='edu-entry-form';d.style.marginTop='10px';var grid=document.createElement('div');grid.className='edu-form-grid';var f1=document.createElement('div');f1.className='form-group';var l1=document.createElement('label');l1.className='form-label';l1.textContent='Course name ';var b1=document.createElement('span');b1.className='field-badge required';b1.textContent='Required';l1.appendChild(b1);var i1=document.createElement('input');i1.className='form-input';i1.type='text';i1.placeholder='e.g. Corporate Finance';i1.maxLength=150;f1.appendChild(l1);f1.appendChild(i1);var f2=document.createElement('div');f2.className='form-group';var l2=document.createElement('label');l2.className='form-label';l2.textContent='Course code ';var b2=document.createElement('span');b2.className='field-badge optional';b2.textContent='Optional';l2.appendChild(b2);var i2=document.createElement('input');i2.className='form-input';i2.type='text';i2.placeholder='e.g. FIN402';i2.maxLength=50;f2.appendChild(l2);f2.appendChild(i2);grid.appendChild(f1);grid.appendChild(f2);d.appendChild(grid);var rb=document.createElement('button');rb.className='remove-edu-btn';rb.style.marginTop='8px';rb.textContent='Remove';rb.onclick=function(){d.remove();};d.appendChild(rb);list.appendChild(d);}
+  function addProjectEntry(){var list=document.getElementById('projects-list');var d=document.createElement('div');d.className='edu-entry-form';d.style.marginTop='10px';var grid=document.createElement('div');grid.className='edu-form-grid';var f1=document.createElement('div');f1.className='form-group';f1.style.gridColumn='1/-1';var l1=document.createElement('label');l1.className='form-label';l1.textContent='Project name ';var b1=document.createElement('span');b1.className='field-badge required';b1.textContent='Required';l1.appendChild(b1);var i1=document.createElement('input');i1.className='form-input';i1.type='text';i1.placeholder='Project name';i1.maxLength=150;f1.appendChild(l1);f1.appendChild(i1);var f2=document.createElement('div');f2.className='form-group';f2.style.gridColumn='1/-1';var l2=document.createElement('label');l2.className='form-label';l2.textContent='Description ';var b2=document.createElement('span');b2.className='field-badge optional';b2.textContent='Optional';l2.appendChild(b2);var t2=document.createElement('textarea');t2.className='form-textarea';t2.style.minHeight='60px';t2.placeholder='Describe the project...';t2.maxLength=500;f2.appendChild(l2);f2.appendChild(t2);var f3=document.createElement('div');f3.className='form-group';f3.style.gridColumn='1/-1';var l3=document.createElement('label');l3.className='form-label';l3.textContent='Link ';var b3=document.createElement('span');b3.className='field-badge optional';b3.textContent='Optional';l3.appendChild(b3);var i3=document.createElement('input');i3.className='form-input';i3.type='text';i3.placeholder='github.com/... or portfolio URL';i3.maxLength=300;f3.appendChild(l3);f3.appendChild(i3);grid.appendChild(f1);grid.appendChild(f2);grid.appendChild(f3);d.appendChild(grid);var rb=document.createElement('button');rb.className='remove-edu-btn';rb.style.marginTop='8px';rb.textContent='Remove';rb.onclick=function(){d.remove();};d.appendChild(rb);list.appendChild(d);}
   document.addEventListener('click',function(e){var box=document.getElementById('skill-suggestions');var input=document.getElementById('skill-search-input');if(box&&input&&!box.contains(e.target)&&e.target!==input)box.style.display='none';});
 
   // ─── PREFERENCES ───
@@ -10016,6 +10082,7 @@
     r.style.display = 'none';
     e.style.display = 'block';
     b.textContent = 'Cancel';
+    refreshCharCounters();
   }
 
   async function saveBasicInfo() {
@@ -10094,27 +10161,6 @@
 
 
   // ─── BROWSE STUDENTS ───
-  function skipToStudentPreview() {
-    showScreen('company-dash');
-    // Hide everything except the students panel
-    var realDash      = document.getElementById('real-company-dash');
-    var listingsPanel = document.getElementById('company-panel-listings');
-    var appsPanel     = document.getElementById('company-panel-applicants');
-    var guestPrompt   = document.getElementById('guest-company-prompt');
-    var tabNav        = document.querySelector('#screen-company-dash .tab-nav');
-    if (realDash)      realDash.style.display      = 'none';
-    if (listingsPanel) listingsPanel.style.display  = 'none';
-    if (appsPanel)     appsPanel.style.display      = 'none';
-    if (guestPrompt)   guestPrompt.style.display    = 'none';
-    if (tabNav)        tabNav.style.display          = 'none';
-    // Show students panel and go straight to spontaneous view
-    var studentsPanel = document.getElementById('company-panel-students');
-    if (studentsPanel) studentsPanel.style.display = 'block';
-    var banner = document.getElementById('guest-students-banner');
-    if (banner) banner.style.display = 'flex';
-    openBrowseSpontaneous();
-    loadStudentsFromDB();
-  }
 
   function openBrowseRole(title, field, location, type, skills, job) {
     // Stash the active role-job so the role grid can score every student against it
@@ -10457,7 +10503,7 @@
           </div>
           <div id="student-msg-messages" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;"></div>
           <div style="padding:12px 16px;background:white;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
-            <textarea id="student-msg-input" class="form-textarea" placeholder="Write a reply..." style="flex:1;min-height:60px;resize:none;font-size:14px;"></textarea>
+            <textarea id="student-msg-input" class="form-textarea" placeholder="Write a reply..." style="flex:1;min-height:60px;resize:none;font-size:14px;" maxlength="1000"></textarea>
             <button class="btn btn-primary" style="align-self:flex-end;padding:10px 18px;" onclick="sendStudentMessage()">Send</button>
           </div>
         </div>

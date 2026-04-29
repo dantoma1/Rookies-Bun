@@ -1,0 +1,66 @@
+1. RLS enabled on all tables
+Previously only company_recruiters had RLS on. Now all 7 tables are protected:
+students · jobs · applications · employers · messages · contact_messages · company_recruiters
+
+2. Table policies (29 policies)
+students — anyone can read · owner can insert/update/delete · owner cannot change their own is_admin flag
+
+jobs — anyone can read active listings · employers can read/insert/update/delete their own · admins can read all (including inactive)
+
+applications — students can insert and read their own · employers can read and update status on theirs · admins can read all · nobody can delete
+
+messages — students and employers can only read their own threads · each side can only send as themselves · both can mark messages as read
+
+employers — anyone can read · employers can insert/update/delete their own profile · employers cannot change their own status (pending/approved/rejected) · admins can change status
+
+contact_messages — anyone can submit · nobody can read through the app
+
+3. Storage bucket policies
+avatars — public read · authenticated owner-only upload/update/delete · 2MB limit · jpg/png/webp only
+
+cvs — authenticated users only can read · authenticated owner-only upload/update/delete · 5MB limit · PDF only · bucket made private
+
+4. Server-side validation (14 constraints)
+Rules enforced at database level that can't be bypassed through the API:
+
+Names and titles can't be blank
+Email must be a valid format
+Message/motivation length caps (2000–5000 chars)
+Application status locked to valid values only (New, In review, Shortlisted, Accepted, Rejected)
+Job hires between 1–500
+Can't apply to the same job twice (unique constraint)
+5. Rate limiting (2 triggers)
+Applications — max 20 per student per 24 hours
+Contact form — max 5 submissions per email per hour
+
+
+All HTML maxlength attributes added:
+
+Field group	Fields covered
+Login	email (150), password (128)
+Student signup	firstname (80), lastname (80), email (150), password ×2 (128)
+Company signup	company (150), email (150), password ×2 (128)
+Contact form	name (80), email (150), message textarea (2000)
+Student basic info	name (150), bio (280), linkedin (300), portfolio (300), location (100), alt-email (150), field-of-study-other (100)
+Education (static + dynamic)	program-name (150), field-other (100), minor (100), minor-other (100), gpa (20), description textarea (500)
+Experience (static + dynamic)	role (150), company (150), field-other (100), location (100), description textarea (500)
+Organizations (static + dynamic)	org-name (150), role (100), description textarea (500)
+Projects (static + dynamic)	name (150), description (500), link (300)
+Courses (static + dynamic)	name (150), code (50)
+Employer job post	title (80), division (100), description (2000), role-group (100), pay (100), qualifications (2000), gpa-min (20), hiring-team (150), all 4 message templates (2000 each)
+Employer job edit	same as above
+Company profile	company-name (150), firstname/lastname (80 each), website (300), description (2000)
+Recruiter modal	name (150), email (150)
+Apply modal	motivation textarea (600), start-date (50)
+Chat inputs	company-msg-input (1000), student-msg-input (1000)
+Skill search inputs	post/edit tech/prof/lang inputs (80 each)
+Settings modals	new-email (150), new-password ×2 (128)
+Character counters added (live X / MAX, turns red at 90%):
+bio (280), contact-message, all job descriptions/qualifications/message templates, company description, apply motivation textarea
+
+Counter refresh called when forms are pre-populated from the database: edit listing modal, company profile modal, student basic info edit.
+
+NEED TO DO:
+ ⚠️ Live counters — covered for the main long fields, but missing on the education / experience / org / project description textareas (maxlength=500 each). Those are created dynamically in JS so attachCharCounter (which uses getElementById) can't reach them — they don't have IDs. A user filling in a long description there gets no feedback until they hit the hard stop.
+
+⚠️ Server-side DB constraints — covered for all direct columns, but not for education/experience/org/project descriptions. Those are stored as JSONB arrays inside students.education, students.experience, etc. — PostgreSQL CHECK constraints can't easily inspect nested JSONB values. The HTML maxlength is the only protection there.
