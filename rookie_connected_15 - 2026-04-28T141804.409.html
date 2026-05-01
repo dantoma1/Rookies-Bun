@@ -904,6 +904,15 @@
     color: var(--text);
     margin-bottom: 6px;
   }
+  .field-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: middle; }
+  .field-badge.required { color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; }
+  .field-badge.required::before { content: '* '; }
+  .field-badge.optional { color: var(--gray); background: var(--cream); border: 1px solid var(--border); }
+  .field-badge.private { color: #92400e; background: #fffbeb; border: 1px solid #fde68a; }
+  .field-error { display: none; color: #dc2626; font-size: 12px; margin-top: 4px; }
+  .field-error.visible { display: block; }
+  .form-input.error, .form-textarea.error { border-color: #dc2626 !important; }
+  .pref-chips.error { outline: 2px solid #dc2626; border-radius: 8px; }
   .form-input, .form-textarea {
     width: 100%;
     padding: 10px 14px;
@@ -2509,24 +2518,29 @@
           <div>
             <label class="form-label">First name </label>
             <input id="ss-firstname" class="form-input" type="text" placeholder="e.g. Emma" maxlength="80">
+            <div class="field-error"></div>
           </div>
           <div>
             <label class="form-label">Last name </label>
             <input id="ss-lastname" class="form-input" type="text" placeholder="e.g. de Vries" maxlength="80">
+            <div class="field-error"></div>
           </div>
         </div>
         <div>
           <label class="form-label">Email </label>
           <input id="ss-email" class="form-input" type="email" placeholder="your@email.com" maxlength="150">
+          <div class="field-error"></div>
           <div class="form-hint">Preferably your university email.</div>
         </div>
         <div>
           <label class="form-label">Password </label>
           <input id="ss-password" class="form-input" type="password" placeholder="Min. 8 characters" maxlength="128">
+          <div class="field-error"></div>
         </div>
         <div>
           <label class="form-label">Confirm password </label>
           <input id="ss-password2" class="form-input" type="password" placeholder="Repeat your password" maxlength="128">
+          <div class="field-error"></div>
         </div>
         <div id="ss-error-1" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:14px;color:#dc2626;"></div>
         <button id="ss-submit-btn" class="btn btn-primary" style="width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:4px;" onclick="studentSignupSubmit()">Create account →</button>
@@ -2557,19 +2571,23 @@
         <div>
           <label class="form-label">Company name </label>
           <input id="cs-company" class="form-input" type="text" placeholder="e.g. Interpolis, BDO, Jumbo…" maxlength="150">
+          <div class="field-error"></div>
         </div>
         <div>
           <label class="form-label">Work email </label>
           <input id="cs-email" class="form-input" type="email" placeholder="you@company.nl" maxlength="150">
+          <div class="field-error"></div>
           <div class="form-hint">Use your company email — not Gmail or Hotmail.</div>
         </div>
         <div>
           <label class="form-label">Password </label>
           <input id="cs-password" class="form-input" type="password" placeholder="Min. 8 characters" maxlength="128">
+          <div class="field-error"></div>
         </div>
         <div>
           <label class="form-label">Confirm password </label>
           <input id="cs-password2" class="form-input" type="password" placeholder="Repeat your password" maxlength="128">
+          <div class="field-error"></div>
         </div>
         <div id="cs-error-1" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:14px;color:#dc2626;"></div>
         <button id="cs-submit-btn" class="btn btn-primary" style="width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:4px;" onclick="companySignupSubmit()">Create account →</button>
@@ -2720,7 +2738,7 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Full name </label>
+              <label class="form-label">Full name <span class="field-badge required">Required</span></label>
               <input id="edit-basic-name" class="form-input" type="text" placeholder="Your full name" maxlength="150">
             </div>
             <div class="form-group">
@@ -2735,7 +2753,7 @@
               <div class="form-hint">First thing employers see. Keep it to 2–3 sentences.</div>
             </div>
             <div class="form-group full">
-              <label class="form-label">Current field of study </label>
+              <label class="form-label">Current field of study <span class="field-badge required">Required</span></label>
               <div class="pref-chips" id="field-of-study-chips" style="margin-top:6px;flex-wrap:wrap;">
                 <button class="pref-chip" data-val="Business Administration">Business Administration</button>
                 <button class="pref-chip" data-val="Economics">Economics</button>
@@ -2765,7 +2783,7 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Work authorisation </label>
+              <label class="form-label">Work authorisation <span class="field-badge required">Required</span></label>
               <div class="pref-chips multi" id="edit-basic-work-auth" style="margin-top:4px;">
                 <button class="pref-chip" data-val="EU / EEA / Swiss / Non-EU orientation year">EU / EEA / Swiss / Non-EU orientation year</button>
                 <button class="pref-chip" data-val="Non-EU — student visa">Non-EU — student visa</button>
@@ -2781,7 +2799,7 @@
               </div>
             </div>
             <div class="form-group full">
-              <label class="form-label">Current status </label>
+              <label class="form-label">Current status <span class="field-badge required">Required</span></label>
               <div class="pref-chips" id="current-status-chips" style="margin-top:6px;">
                 <button class="pref-chip" data-val="Bachelor">Bachelor</button>
                 <button class="pref-chip" data-val="Pre-master">Pre-master</button>
@@ -2820,8 +2838,11 @@
 
       <div class="profile-section full-width" id="education-section">
         <div class="section-head">
-          <h3>📚 Education <span class="field-badge required" style="vertical-align:middle;">
-          <button class="edit-btn" id="edu-edit-btn" onclick="toggleEducationEdit()">Edit</button>
+          <h3>📚 Education</h3>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="field-badge required" id="edu-req-badge">Required</span>
+            <button class="edit-btn" id="edu-edit-btn" onclick="toggleEducationEdit()">Edit</button>
+          </div>
         </div>
 
         <!-- READ VIEW -->
@@ -3003,7 +3024,7 @@
 
       <div class="profile-section full-width" id="experience-section">
         <div class="section-head">
-          <h3>💼 Experience <span class="field-badge required" style="vertical-align:middle;">
+          <h3>💼 Experience</h3>
           <button class="edit-btn" id="exp-edit-btn" onclick="toggleExperienceEdit()">Edit</button>
         </div>
 
@@ -3114,7 +3135,7 @@
       <!-- ORGANISATIONS & EXTRACURRICULARS -->
       <div class="profile-section full-width" id="orgs-section">
         <div class="section-head">
-          <h3>🏛️ Organisations & Extracurriculars <span class="field-badge optional" style="vertical-align:middle;">
+          <h3>🏛️ Organisations & Extracurriculars</h3>
           <button class="edit-btn" id="orgs-edit-btn" onclick="toggleOrgsEdit()">Edit</button>
         </div>
         <div id="orgs-read-view">
@@ -3182,8 +3203,11 @@
 
       <div class="profile-section full-width" id="skills-section">
         <div class="section-head">
-          <h3>🎓 Skills & Certificates <span class="field-badge required" style="vertical-align:middle;">
-          <button class="edit-btn" id="skills-edit-btn" onclick="toggleSkillsEdit()">Edit</button>
+          <h3>🎓 Skills & Certificates</h3>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="field-badge required" id="skills-req-badge">Required</span>
+            <button class="edit-btn" id="skills-edit-btn" onclick="toggleSkillsEdit()">Edit</button>
+          </div>
         </div>
 
         <!-- READ VIEW -->
@@ -3289,7 +3313,7 @@
 
       <div class="profile-section full-width" id="preferences-section">
         <div class="section-head">
-          <h3>🎯 Preferences <span class="field-badge optional" style="vertical-align:middle;">
+          <h3>🎯 Preferences</h3>
           <button class="edit-btn" id="pref-edit-btn" onclick="togglePreferencesEdit()">Edit</button>
         </div>
 
@@ -3329,7 +3353,7 @@
         <div id="pref-edit-view" style="display:none;">
 
           <div class="pref-group">
-            <div class="pref-group-label">What are you looking for?</div>
+            <div class="pref-group-label">What are you looking for? <span class="field-badge required" style="vertical-align:middle;">Required</span></div>
             <div class="pref-chips multi" id="pref-type">
               <button class="pref-chip" data-val="Internship (stage)">Internship (stage)</button>
               <button class="pref-chip" data-val="Working student">Working student</button>
@@ -3378,7 +3402,7 @@
           </div>
 
           <div class="pref-group">
-            <div class="pref-group-label">Sectors of interest <span style="color:var(--gray);font-weight:400;font-size:11px;">(select all that apply)</span></div>
+            <div class="pref-group-label">Sectors of interest <span style="color:var(--gray);font-weight:400;font-size:11px;">(select all that apply)</span> <span class="field-badge required" style="vertical-align:middle;">Required</span></div>
             <div class="pref-chips multi" id="pref-sectors">
               <button class="pref-chip" data-val="Finance & Banking">Finance & Banking</button>
               <button class="pref-chip" data-val="Consulting">Consulting</button>
@@ -3404,7 +3428,7 @@
           </div>
 
           <div class="pref-group">
-            <div class="pref-group-label">Preferred location</div>
+            <div class="pref-group-label">Preferred location <span class="field-badge required" style="vertical-align:middle;">Required</span></div>
             <div class="pref-chips multi" id="pref-location">
               <button class="pref-chip" data-val="Tilburg">Tilburg</button>
               <button class="pref-chip" data-val="Amsterdam">Amsterdam</button>
@@ -3456,7 +3480,7 @@
       <!-- DOCUMENTS & SETTINGS -->
       <div class="profile-section full-width" id="documents-section">
         <div class="section-head">
-          <h3>📄 Documents & Settings <span class="field-badge optional" style="vertical-align:middle;">
+          <h3>📄 Documents & Settings</h3>
           <button class="edit-btn" id="docs-edit-btn" onclick="toggleDocsEdit()">Edit</button>
         </div>
         <div id="docs-read-view">
@@ -3518,6 +3542,10 @@
         <div class="progress-bar-wrap">
           <div class="progress-label"><span>Skills</span><span id="prog-skills-pct">0%</span></div>
           <div class="progress-bar"><div class="progress-fill" id="prog-skills-fill" style="width:0%"></div></div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-label"><span>Preferences</span><span id="prog-prefs-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="prog-prefs-fill" style="width:0%"></div></div>
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-label"><span>Experience</span><span id="prog-exp-pct">0%</span></div>
@@ -4320,7 +4348,7 @@
     </div>
     <div style="display:flex;flex-direction:column;gap:16px;">
       <div>
-        <label class="form-label">Company name </label>
+        <label class="form-label">Company name <span class="field-badge required">Required</span></label>
         <input id="cp-company-name" class="form-input" type="text" placeholder="e.g. KPMG Netherlands" maxlength="150">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -4339,11 +4367,11 @@
         <div class="form-hint">Email cannot be changed here.</div>
       </div>
       <div>
-        <label class="form-label">Website </label>
+        <label class="form-label">Website <span class="field-badge required">Required</span></label>
         <input id="cp-website" class="form-input" type="text" placeholder="https://www.company.nl" maxlength="300">
       </div>
       <div>
-        <label class="form-label">Company size </label>
+        <label class="form-label">Company size <span class="field-badge required">Required</span></label>
         <div class="pref-chips" id="cp-size-chips" style="margin-top:4px;flex-wrap:wrap;">
           <button class="pref-chip" data-val="1–10">1–10</button>
           <button class="pref-chip" data-val="10–50">10–50</button>
@@ -4353,7 +4381,7 @@
         </div>
       </div>
       <div>
-        <label class="form-label">Sector </label>
+        <label class="form-label">Sector <span class="field-badge required">Required</span></label>
         <div class="pref-chips" id="cp-sector-chips" style="margin-top:4px;flex-wrap:wrap;">
           <button class="pref-chip" data-val="Finance & Banking">Finance & Banking</button>
           <button class="pref-chip" data-val="Data & Analytics">Data & Analytics</button>
@@ -4370,7 +4398,7 @@
         </div>
       </div>
       <div>
-        <label class="form-label">Company description </label>
+        <label class="form-label">Company description <span class="field-badge required">Required</span></label>
         <textarea id="cp-description" class="form-textarea" style="min-height:80px;" placeholder="A short description of your company — shown on your listings." maxlength="2000"></textarea>
         <small id="cp-description-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
       </div>
@@ -4828,18 +4856,85 @@
     if (el) el.style.display = 'none';
   }
 
+  // ─── SIGNUP BLUR VALIDATION ───
+  document.addEventListener('DOMContentLoaded', function() {
+    function _onBlurCheck(id, checkFn) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('blur', checkFn);
+      el.addEventListener('input', function() { if (el.classList.contains('error')) checkFn(); });
+    }
+    _onBlurCheck('ss-firstname', function() {
+      var el = document.getElementById('ss-firstname');
+      if (!el.value.trim()) _showFieldError(el, 'Please enter your first name.');
+      else _clearFieldError(el);
+    });
+    _onBlurCheck('ss-lastname', function() {
+      var el = document.getElementById('ss-lastname');
+      if (!el.value.trim()) _showFieldError(el, 'Please enter your last name.');
+      else _clearFieldError(el);
+    });
+    _onBlurCheck('ss-email', function() {
+      var el = document.getElementById('ss-email');
+      if (!el.value.trim()) _showFieldError(el, 'Please enter your email address.');
+      else if (!_isValidEmail(el.value.trim())) _showFieldError(el, 'Please enter a valid email address.');
+      else _clearFieldError(el);
+    });
+    _onBlurCheck('ss-password', function() {
+      var el = document.getElementById('ss-password');
+      if (el.value.length > 0 && el.value.length < 8) _showFieldError(el, 'Password must be at least 8 characters.');
+      else _clearFieldError(el);
+    });
+    _onBlurCheck('ss-password2', function() {
+      var el = document.getElementById('ss-password2');
+      var pw = document.getElementById('ss-password');
+      if (el.value && pw && el.value !== pw.value) _showFieldError(el, 'Passwords do not match.');
+      else _clearFieldError(el);
+    });
+    _onBlurCheck('cs-company', function() {
+      var el = document.getElementById('cs-company');
+      if (!el.value.trim()) _showFieldError(el, 'Please enter your company name.');
+      else _clearFieldError(el);
+    });
+    _onBlurCheck('cs-email', function() {
+      var el = document.getElementById('cs-email');
+      if (!el.value.trim()) _showFieldError(el, 'Please enter your work email.');
+      else if (!_isValidEmail(el.value.trim())) _showFieldError(el, 'Please enter a valid email address.');
+      else _clearFieldError(el);
+    });
+    _onBlurCheck('cs-password', function() {
+      var el = document.getElementById('cs-password');
+      if (el.value.length > 0 && el.value.length < 8) _showFieldError(el, 'Password must be at least 8 characters.');
+      else _clearFieldError(el);
+    });
+    _onBlurCheck('cs-password2', function() {
+      var el = document.getElementById('cs-password2');
+      var pw = document.getElementById('cs-password');
+      if (el.value && pw && el.value !== pw.value) _showFieldError(el, 'Passwords do not match.');
+      else _clearFieldError(el);
+    });
+  });
+
   // ─── STUDENT SIGNUP ───
   async function studentSignupSubmit() {
     hideSignupError('ss-error-1');
-    var first = document.getElementById('ss-firstname').value.trim();
-    var last  = document.getElementById('ss-lastname').value.trim();
-    var email = document.getElementById('ss-email').value.trim();
-    var pw    = document.getElementById('ss-password').value;
-    var pw2   = document.getElementById('ss-password2').value;
-    if (!first || !last) { showSignupError('ss-error-1', 'Please enter your full name.'); return; }
-    if (!email)          { showSignupError('ss-error-1', 'Please enter your email.'); return; }
-    if (pw.length < 8)   { showSignupError('ss-error-1', 'Password must be at least 8 characters.'); return; }
-    if (pw !== pw2)      { showSignupError('ss-error-1', 'Passwords do not match.'); return; }
+    var firstEl = document.getElementById('ss-firstname');
+    var lastEl  = document.getElementById('ss-lastname');
+    var emailEl = document.getElementById('ss-email');
+    var pwEl    = document.getElementById('ss-password');
+    var pw2El   = document.getElementById('ss-password2');
+    var first = firstEl.value.trim(), last = lastEl.value.trim();
+    var email = emailEl.value.trim();
+    var pw = pwEl.value, pw2 = pw2El.value;
+    var ok = true;
+    if (!first) { _showFieldError(firstEl, 'Please enter your first name.'); ok = false; } else _clearFieldError(firstEl);
+    if (!last)  { _showFieldError(lastEl,  'Please enter your last name.');  ok = false; } else _clearFieldError(lastEl);
+    if (!email) { _showFieldError(emailEl, 'Please enter your email address.'); ok = false; }
+    else if (!_isValidEmail(email)) { _showFieldError(emailEl, 'Please enter a valid email address.'); ok = false; }
+    else _clearFieldError(emailEl);
+    if (pw.length < 8) { _showFieldError(pwEl, 'Password must be at least 8 characters.'); ok = false; } else _clearFieldError(pwEl);
+    if (pw !== pw2) { _showFieldError(pw2El, 'Passwords do not match.'); ok = false; } else _clearFieldError(pw2El);
+    if (!ok) { _scrollToFirstError(document.getElementById('screen-signup-student')); return; }
     var btn = document.getElementById('ss-submit-btn');
     btn.textContent = 'Creating account…'; btn.disabled = true;
     try {
@@ -4875,14 +4970,20 @@
 
   async function companySignupSubmit() {
     hideSignupError('cs-error-1');
-    var company = document.getElementById('cs-company').value.trim();
-    var email   = document.getElementById('cs-email').value.trim();
-    var pw      = document.getElementById('cs-password').value;
-    var pw2     = document.getElementById('cs-password2').value;
-    if (!company)      { showSignupError('cs-error-1', 'Please enter your company name.'); return; }
-    if (!email)        { showSignupError('cs-error-1', 'Please enter your work email.'); return; }
-    if (pw.length < 8) { showSignupError('cs-error-1', 'Password must be at least 8 characters.'); return; }
-    if (pw !== pw2)    { showSignupError('cs-error-1', 'Passwords do not match.'); return; }
+    var companyEl = document.getElementById('cs-company');
+    var emailEl   = document.getElementById('cs-email');
+    var pwEl      = document.getElementById('cs-password');
+    var pw2El     = document.getElementById('cs-password2');
+    var company = companyEl.value.trim(), email = emailEl.value.trim();
+    var pw = pwEl.value, pw2 = pw2El.value;
+    var ok = true;
+    if (!company) { _showFieldError(companyEl, 'Please enter your company name.'); ok = false; } else _clearFieldError(companyEl);
+    if (!email) { _showFieldError(emailEl, 'Please enter your work email.'); ok = false; }
+    else if (!_isValidEmail(email)) { _showFieldError(emailEl, 'Please enter a valid email address.'); ok = false; }
+    else _clearFieldError(emailEl);
+    if (pw.length < 8) { _showFieldError(pwEl, 'Password must be at least 8 characters.'); ok = false; } else _clearFieldError(pwEl);
+    if (pw !== pw2) { _showFieldError(pw2El, 'Passwords do not match.'); ok = false; } else _clearFieldError(pw2El);
+    if (!ok) { _scrollToFirstError(document.getElementById('screen-signup-company')); return; }
     var btn = document.getElementById('cs-submit-btn');
     btn.textContent = 'Creating account…'; btn.disabled = true;
     try {
@@ -6377,30 +6478,40 @@
       var pctEl = document.getElementById(pctId); if (pctEl) pctEl.textContent = pct + '%';
       var fillEl = document.getElementById(fillId); if (fillEl) { fillEl.style.width = pct + '%'; fillEl.style.background = color; }
     }
-    // Basic info: name(always 1), bio, linkedin/portfolio, location, work_auth, seeking_status = 6 fields
-    var basicFields = [s.name, s.bio, (s.linkedin||s.portfolio), s.location, s.work_auth, s.seeking_status];
+    // Basic info required: name, current_status, field_of_study, work_auth
+    var basicFields = [s.name, s.current_status, s.field_of_study, s.work_auth];
     var basicScore = Math.round((basicFields.filter(Boolean).length / basicFields.length) * 100);
     // Education: has at least 1 entry
     var eduScore = (s.education && s.education.length) ? 100 : 0;
-    // Skills: total skills across categories, cap at 5 for 100%
+    // Skills: total skills, 3 = 100%
     var totalSkills = (s.skills_technical||[]).length + (s.skills_professional||[]).length + (s.skills_languages||[]).length;
-    var skillsScore = Math.min(Math.round((totalSkills / 5) * 100), 100);
-    // Experience: has at least 1 entry
+    var skillsScore = Math.min(Math.round((totalSkills / 3) * 100), 100);
+    // Preferences required: pref_type, pref_locations, pref_sectors
+    var prefsFields = [s.pref_type, s.pref_locations, s.pref_sectors];
+    var prefsScore = Math.round((prefsFields.filter(Boolean).length / prefsFields.length) * 100);
+    // Experience: informational, not part of required overall score
     var expScore = (s.experience && s.experience.length) ? 100 : 0;
-    // Overall: weighted average
-    var overallScore = Math.round((basicScore * 0.3) + (eduScore * 0.25) + (skillsScore * 0.25) + (expScore * 0.2));
+    // Overall: 4 required sections only (experience is a bonus, not required)
+    var overallScore = Math.round((basicScore * 0.25) + (eduScore * 0.25) + (skillsScore * 0.25) + (prefsScore * 0.25));
     _setProg('prog-overall-pct', 'prog-overall-fill', overallScore);
     _setProg('prog-basic-pct',   'prog-basic-fill',   basicScore);
     _setProg('prog-edu-pct',     'prog-edu-fill',     eduScore);
     _setProg('prog-skills-pct',  'prog-skills-fill',  skillsScore);
+    _setProg('prog-prefs-pct',   'prog-prefs-fill',   prefsScore);
     _setProg('prog-exp-pct',     'prog-exp-fill',     expScore);
+    var _eduBadge = document.getElementById('edu-req-badge');
+    if (_eduBadge) _eduBadge.style.display = eduScore === 100 ? 'none' : '';
+    var _skillsBadge = document.getElementById('skills-req-badge');
+    if (_skillsBadge) _skillsBadge.style.display = skillsScore === 100 ? 'none' : '';
     // Tip
     var tipEl = document.getElementById('prog-tip');
     if (tipEl) {
-      if (expScore === 0) tipEl.textContent = 'Add past experience to increase your match rate with companies.';
-      else if (eduScore === 0) tipEl.textContent = 'Add your education to complete your profile.';
-      else if (skillsScore < 60) tipEl.textContent = 'Add more skills to stand out to employers.';
-      else if (basicScore < 80) tipEl.textContent = 'Complete your basic info (bio, location, LinkedIn) to boost visibility.';
+      if (overallScore === 100) tipEl.textContent = 'Profile complete! Your profile is visible to companies.';
+      else if (eduScore === 0) tipEl.textContent = 'Add at least one education entry to complete your profile.';
+      else if (basicScore < 100) tipEl.textContent = 'Fill in required basic info: name, current status, field of study, work authorisation.';
+      else if (prefsScore < 100) tipEl.textContent = 'Complete your preferences — what you\'re looking for, sectors, and preferred location.';
+      else if (skillsScore < 100) tipEl.textContent = 'Add at least 3 skills to complete your profile.';
+      else if (expScore === 0) tipEl.textContent = 'Add past experience to boost your match rate with companies.';
       else tipEl.textContent = 'Great profile! Keep it up to date.';
     }
 
@@ -6572,6 +6683,18 @@
     if (cm) cm.addEventListener('click', function(e){ if(e.target===this) closeConfirmModal(); });
   });
 
+  function attachCounterToTextarea(ta, max) {
+    var counter = document.createElement('small');
+    counter.style.cssText = 'float:right;font-size:11px;color:var(--gray);margin-top:3px;display:block;';
+    counter.textContent = (ta.value ? ta.value.length : 0) + ' / ' + max;
+    ta.parentNode.insertBefore(counter, ta.nextSibling);
+    ta.addEventListener('input', function() {
+      var len = ta.value.length;
+      counter.textContent = len + ' / ' + max;
+      counter.style.color = len >= max * 0.9 ? '#dc2626' : 'var(--gray)';
+    });
+  }
+
   var _charCounterFields = [
     ['contact-message', 2000],
     ['edit-basic-bio', 280],
@@ -6612,6 +6735,9 @@
 
   document.addEventListener('DOMContentLoaded', function() {
     _charCounterFields.forEach(function(pair) { attachCharCounter(pair[0], pair[1]); });
+    document.querySelectorAll('.edu-entry-form textarea').forEach(function(ta) {
+      attachCounterToTextarea(ta, 500);
+    });
   });
 
   async function approveCompany(id) {
@@ -7327,6 +7453,40 @@
     applySpontFilters();
   }
 
+  function _showFieldError(el, msg) {
+    var parent = el.parentNode;
+    var err = parent.querySelector(':scope > .field-error');
+    if (!err) {
+      err = document.createElement('div');
+      err.className = 'field-error';
+      parent.appendChild(err);
+    }
+    err.textContent = msg;
+    err.classList.add('visible');
+    el.classList.add('error');
+  }
+  function _clearFieldError(el) {
+    var parent = el.parentNode;
+    var err = parent.querySelector(':scope > .field-error');
+    if (err) err.classList.remove('visible');
+    el.classList.remove('error');
+  }
+  function _scrollToFirstError(container) {
+    var first = (container || document).querySelector('.field-error.visible');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function _isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+  function isStudentComplete(s) {
+    var totalSkills = ((s.skills_technical||[]).length + (s.skills_professional||[]).length + (s.skills_languages||[]).length);
+    return !!(
+      s.name && s.current_status && s.field_of_study && s.work_auth &&
+      s.pref_type && s.pref_locations && s.pref_sectors &&
+      s.education && s.education.length >= 1 &&
+      totalSkills >= 3
+    );
+  }
+
   async function loadStudentsFromDB() {
     try {
       var res = await db.from('students').select('*').eq('is_active', true).order('avail_year').order('name');
@@ -7334,7 +7494,7 @@
         console.warn('loadStudentsFromDB error:', res.error.message);
         return;
       }
-      var students = res.data || [];
+      var students = (res.data || []).filter(isStudentComplete);
 
       // Update count label in spontaneous browse
       var countEl = document.querySelector('#browse-spontaneous-view .results-count strong');
@@ -8941,20 +9101,33 @@
     document.getElementById('cp-error').style.display = 'none';
     document.getElementById('company-profile-modal').classList.add('open');
     refreshCharCounters();
+    _setupRequiredBadgeWatchers(document.getElementById('company-profile-modal'));
   }
   function closeCompanyProfileModal() {
     document.getElementById('company-profile-modal').classList.remove('open');
   }
   async function saveCompanyProfile() {
-    var companyName = document.getElementById('cp-company-name').value.trim();
-    if (!companyName) { var err = document.getElementById('cp-error'); err.textContent = 'Company name is required.'; err.style.display = 'block'; return; }
+    var cpNameEl = document.getElementById('cp-company-name');
+    var companyName = cpNameEl.value.trim();
     var first   = document.getElementById('cp-firstname').value.trim();
     var last    = document.getElementById('cp-lastname').value.trim();
-    var website = document.getElementById('cp-website').value.trim();
-    var desc    = document.getElementById('cp-description').value.trim();
-    var size    = (document.querySelector('#cp-size-chips .pref-chip.active') || {}).dataset?.val || null;
-    var sector  = (document.querySelector('#cp-sector-chips .pref-chip.active') || {}).dataset?.val || null;
+    var websiteEl = document.getElementById('cp-website');
+    var website = websiteEl.value.trim();
+    var descEl = document.getElementById('cp-description');
+    var desc = descEl.value.trim();
+    var sizeChips = document.getElementById('cp-size-chips');
+    var size = (sizeChips.querySelector('.pref-chip.active') || {}).dataset?.val || null;
+    var sectorChips = document.getElementById('cp-sector-chips');
+    var sector = (sectorChips.querySelector('.pref-chip.active') || {}).dataset?.val || null;
     if (sector === 'Other') { sector = (document.getElementById('cp-sector-other') || {}).value?.trim() || null; }
+    var ok = true;
+    if (!companyName) { _showFieldError(cpNameEl, 'Company name is required.'); ok = false; } else _clearFieldError(cpNameEl);
+    if (!website) { _showFieldError(websiteEl, 'Website is required.'); ok = false; } else _clearFieldError(websiteEl);
+    if (!size) { _showFieldError(sizeChips, 'Please select a company size.'); ok = false; } else _clearFieldError(sizeChips);
+    if (!sector) { _showFieldError(sectorChips, 'Please select a sector.'); ok = false; } else _clearFieldError(sectorChips);
+    if (!desc) { _showFieldError(descEl, 'Please add a company description.'); ok = false; } else _clearFieldError(descEl);
+    if (!ok) { _scrollToFirstError(document.getElementById('company-profile-modal')); return; }
+    document.getElementById('cp-error').style.display = 'none';
     var btn = document.getElementById('cp-save-btn');
     btn.textContent = 'Saving…'; btn.disabled = true;
     try {
@@ -9309,8 +9482,14 @@
       }
     }
   }
+  function _renumberEduEntries() {
+    document.querySelectorAll('#edu-entries-container .edu-entry-label').forEach(function(lbl, i) {
+      lbl.textContent = 'Entry ' + (i + 1);
+    });
+  }
   function addEduEntry() {
     var container=document.getElementById('edu-entries-container');var idx=eduEntryCount++;
+    var labelNum=container.querySelectorAll('.edu-entry-form').length+1;
     var endGroupId='edu-end-group-'+idx;var stillStudyingId='still-studying-'+idx;
     var months='Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');var years=['2019','2020','2021','2022','2023','2024','2025','2026','2027'];
     var mo=months.map(function(m){return '<option>'+m+'</option>';}).join('');
@@ -9320,7 +9499,7 @@
     var minorChips=['None','Finance','Economics','Data Science','Marketing','Law','Psychology','Philosophy','Communication','Entrepreneurship','Human Resource Studies','Sustainability','International Business','Computer Science','Other'];
     var minorChipsHtml=minorChips.map(function(f){return '<button class="pref-chip" data-val="'+f+'">'+f+'</button>';}).join('');
     var html='<div class="edu-entry-form" data-index="'+idx+'">'
-      +'<div class="edu-entry-form-header"><span class="edu-entry-label">Entry '+(idx+1)+'</span><button class="remove-edu-btn" onclick="removeEduEntry(this)">\u2715 Remove</button></div>'
+      +'<div class="edu-entry-form-header"><span class="edu-entry-label">Entry '+labelNum+'</span><button class="remove-edu-btn" onclick="removeEduEntry(this)">\u2715 Remove</button></div>'
       +'<div class="edu-form-grid">'
       +'<div class="form-group"><label class="form-label">Institution </label><select class="form-input edu-university"><option value="">Select university...</option><option>Tilburg University</option><option>University of Amsterdam (UvA)</option><option>Erasmus University Rotterdam</option><option>Utrecht University</option><option>Leiden University</option><option>Other</option></select></div>'
       +'<div class="form-group"><label class="form-label">Degree level</label><select class="form-input edu-degree-level"><option value="">Select level...</option><option>Bachelor\'s degree (BSc / BA)</option><option>Pre-master</option><option>Master\'s degree (MSc / MA)</option><option>MBA</option><option>PhD / Doctorate</option><option>Exchange programme</option><option>Other</option></select></div>'
@@ -9356,12 +9535,19 @@
       minorOtherWrap.style.display=btn.dataset.val==='Other'?'block':'none';
       if(btn.dataset.val!=='Other')entry.querySelector('.edu-minor').value='';
     });
+    var eduTA = entry.querySelector('textarea');
+    if (eduTA) attachCounterToTextarea(eduTA, 500);
     container.appendChild(entry);
   }
-  function removeEduEntry(btn){var e=btn.closest('.edu-entry-form');if(e)e.remove();}
+  function removeEduEntry(btn){var e=btn.closest('.edu-entry-form');if(e){e.remove();_renumberEduEntries();}}
   async function saveEducation() {
     var editView=document.getElementById('edu-edit-view'),readView=document.getElementById('edu-read-view'),btn=document.getElementById('edu-edit-btn');
     var entries=document.querySelectorAll('#edu-entries-container .edu-entry-form');var html='';
+    var hasValidEdu = Array.from(entries).some(function(entry){
+      var uniEl = entry.querySelector('.edu-university'); var fieldEl = entry.querySelector('.edu-program-name');
+      return (uniEl && uniEl.value.trim()) || (fieldEl && fieldEl.value.trim());
+    });
+    if (!hasValidEdu) { showToast('Please add at least one education entry (required).', 'error'); return; }
     var structured = [];
     entries.forEach(function(entry){
       var uni=entry.querySelector('.edu-university')?entry.querySelector('.edu-university').value:'';
@@ -9413,6 +9599,7 @@
     readView.style.display='block';editView.style.display='none';
     btn.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>';
     setTimeout(function(){btn.textContent='Edit';},2500);
+    var _eb = document.getElementById('edu-req-badge'); if (_eb) _eb.style.display = structured.length >= 1 ? 'none' : '';
   }
   function cancelEducationEdit(){document.getElementById('edu-edit-view').style.display='none';document.getElementById('edu-read-view').style.display='block';document.getElementById('edu-edit-btn').textContent='Edit';}
 
@@ -9492,6 +9679,7 @@
       otherWrap.style.display=btn.dataset.val==='Other'?'block':'none';
       if(btn.dataset.val!=='Other')d.querySelector('.exp-field-other').value='';
     });
+    var expTA = d.querySelector('textarea'); if (expTA) attachCounterToTextarea(expTA, 500);
     c.appendChild(d);
   }
   function removeExpEntry(btn){var e=btn.closest('.edu-entry-form');if(e)e.remove();}
@@ -9566,7 +9754,9 @@
     var f4=document.createElement('div');f4.className='form-group';f4.id=endGroupId;f4.innerHTML='<label class="form-label">End date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;">'+mo+'</select><select class="form-input" style="flex:1;">'+yr+'</select></div>';
     var f5=document.createElement('div');f5.className='form-group';f5.style.gridColumn='1/-1';var cbLabel=document.createElement('label');cbLabel.className='edu-checkbox-label';var cb=document.createElement('input');cb.type='checkbox';cb.addEventListener('change',function(){toggleEndDate(cb,endGroupId);});var cbSpan=document.createElement('span');cbSpan.textContent='I am currently a member';cbLabel.appendChild(cb);cbLabel.appendChild(cbSpan);f5.appendChild(cbLabel);
     var f6=document.createElement('div');f6.className='form-group';f6.style.gridColumn='1/-1';f6.innerHTML='<label class="form-label">Description </label><textarea class="form-textarea" style="min-height:60px;" placeholder="Responsibilities and transferable skills." maxlength="500"></textarea>';
-    grid.appendChild(f1);grid.appendChild(f2);grid.appendChild(f3);grid.appendChild(f4);grid.appendChild(f5);grid.appendChild(f6);d.appendChild(grid);c.appendChild(d);
+    grid.appendChild(f1);grid.appendChild(f2);grid.appendChild(f3);grid.appendChild(f4);grid.appendChild(f5);grid.appendChild(f6);d.appendChild(grid);
+    var orgsTA = f6.querySelector('textarea'); if (orgsTA) attachCounterToTextarea(orgsTA, 500);
+    c.appendChild(d);
   }
   function removeOrgsEntry(btn){var e=btn.closest('.edu-entry-form');if(e)e.remove();}
   async function saveOrgs(){
@@ -9618,6 +9808,8 @@
   function addSkillFromSearch(){var input=document.getElementById('skill-search-input');var name=input.value.trim();if(!name)return;var existing=skillsDB[currentSkillCat].map(function(d){return d.name.toLowerCase();});if(existing.includes(name.toLowerCase())){input.value='';return;}var ds=currentSkillCat==='languages'?'Language certificate':'Self-taught';skillsDB[currentSkillCat].push({name:name,source:ds,proof:''});input.value='';document.getElementById('skill-suggestions').style.display='none';renderEditList(currentSkillCat);}
   async function saveSkills(){
     var r=document.getElementById('skills-read-view'),e=document.getElementById('skills-edit-view'),b=document.getElementById('skills-edit-btn');
+    var totalSkillCount = skillsDB.technical.length + skillsDB.professional.length + skillsDB.languages.length;
+    if (totalSkillCount < 3) { showToast('Please add at least 3 skills to complete your profile (required).', 'error'); return; }
     // Collect courses
     var courses=[];
     document.querySelectorAll('#courses-list .edu-entry-form').forEach(function(entry){
@@ -9645,10 +9837,11 @@
     } catch(err) { showToast('Failed to save skills: ' + err.message, 'error'); }
     r.style.display='block';e.style.display='none';
     b.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>';setTimeout(function(){b.textContent='Edit';},2500);
+    var _sb = document.getElementById('skills-req-badge'); if (_sb) _sb.style.display = totalSkillCount >= 3 ? 'none' : '';
   }
   function cancelSkillsEdit(){document.getElementById('skills-edit-view').style.display='none';document.getElementById('skills-read-view').style.display='block';document.getElementById('skills-edit-btn').textContent='Edit';document.getElementById('skill-suggestions').style.display='none';}
   function addCourseEntry(){var list=document.getElementById('courses-list');var d=document.createElement('div');d.className='edu-entry-form';d.style.marginTop='10px';var grid=document.createElement('div');grid.className='edu-form-grid';var f1=document.createElement('div');f1.className='form-group';var l1=document.createElement('label');l1.className='form-label';l1.textContent='Course name ';var b1=document.createElement('span');b1.className='field-badge required';b1.textContent='Required';l1.appendChild(b1);var i1=document.createElement('input');i1.className='form-input';i1.type='text';i1.placeholder='e.g. Corporate Finance';i1.maxLength=150;f1.appendChild(l1);f1.appendChild(i1);var f2=document.createElement('div');f2.className='form-group';var l2=document.createElement('label');l2.className='form-label';l2.textContent='Course code ';var b2=document.createElement('span');b2.className='field-badge optional';b2.textContent='Optional';l2.appendChild(b2);var i2=document.createElement('input');i2.className='form-input';i2.type='text';i2.placeholder='e.g. FIN402';i2.maxLength=50;f2.appendChild(l2);f2.appendChild(i2);grid.appendChild(f1);grid.appendChild(f2);d.appendChild(grid);var rb=document.createElement('button');rb.className='remove-edu-btn';rb.style.marginTop='8px';rb.textContent='Remove';rb.onclick=function(){d.remove();};d.appendChild(rb);list.appendChild(d);}
-  function addProjectEntry(){var list=document.getElementById('projects-list');var d=document.createElement('div');d.className='edu-entry-form';d.style.marginTop='10px';var grid=document.createElement('div');grid.className='edu-form-grid';var f1=document.createElement('div');f1.className='form-group';f1.style.gridColumn='1/-1';var l1=document.createElement('label');l1.className='form-label';l1.textContent='Project name ';var b1=document.createElement('span');b1.className='field-badge required';b1.textContent='Required';l1.appendChild(b1);var i1=document.createElement('input');i1.className='form-input';i1.type='text';i1.placeholder='Project name';i1.maxLength=150;f1.appendChild(l1);f1.appendChild(i1);var f2=document.createElement('div');f2.className='form-group';f2.style.gridColumn='1/-1';var l2=document.createElement('label');l2.className='form-label';l2.textContent='Description ';var b2=document.createElement('span');b2.className='field-badge optional';b2.textContent='Optional';l2.appendChild(b2);var t2=document.createElement('textarea');t2.className='form-textarea';t2.style.minHeight='60px';t2.placeholder='Describe the project...';t2.maxLength=500;f2.appendChild(l2);f2.appendChild(t2);var f3=document.createElement('div');f3.className='form-group';f3.style.gridColumn='1/-1';var l3=document.createElement('label');l3.className='form-label';l3.textContent='Link ';var b3=document.createElement('span');b3.className='field-badge optional';b3.textContent='Optional';l3.appendChild(b3);var i3=document.createElement('input');i3.className='form-input';i3.type='text';i3.placeholder='github.com/... or portfolio URL';i3.maxLength=300;f3.appendChild(l3);f3.appendChild(i3);grid.appendChild(f1);grid.appendChild(f2);grid.appendChild(f3);d.appendChild(grid);var rb=document.createElement('button');rb.className='remove-edu-btn';rb.style.marginTop='8px';rb.textContent='Remove';rb.onclick=function(){d.remove();};d.appendChild(rb);list.appendChild(d);}
+  function addProjectEntry(){var list=document.getElementById('projects-list');var d=document.createElement('div');d.className='edu-entry-form';d.style.marginTop='10px';var grid=document.createElement('div');grid.className='edu-form-grid';var f1=document.createElement('div');f1.className='form-group';f1.style.gridColumn='1/-1';var l1=document.createElement('label');l1.className='form-label';l1.textContent='Project name ';var b1=document.createElement('span');b1.className='field-badge required';b1.textContent='Required';l1.appendChild(b1);var i1=document.createElement('input');i1.className='form-input';i1.type='text';i1.placeholder='Project name';i1.maxLength=150;f1.appendChild(l1);f1.appendChild(i1);var f2=document.createElement('div');f2.className='form-group';f2.style.gridColumn='1/-1';var l2=document.createElement('label');l2.className='form-label';l2.textContent='Description ';var b2=document.createElement('span');b2.className='field-badge optional';b2.textContent='Optional';l2.appendChild(b2);var t2=document.createElement('textarea');t2.className='form-textarea';t2.style.minHeight='60px';t2.placeholder='Describe the project...';t2.maxLength=500;f2.appendChild(l2);f2.appendChild(t2);var f3=document.createElement('div');f3.className='form-group';f3.style.gridColumn='1/-1';var l3=document.createElement('label');l3.className='form-label';l3.textContent='Link ';var b3=document.createElement('span');b3.className='field-badge optional';b3.textContent='Optional';l3.appendChild(b3);var i3=document.createElement('input');i3.className='form-input';i3.type='text';i3.placeholder='github.com/... or portfolio URL';i3.maxLength=300;f3.appendChild(l3);f3.appendChild(i3);grid.appendChild(f1);grid.appendChild(f2);grid.appendChild(f3);d.appendChild(grid);var rb=document.createElement('button');rb.className='remove-edu-btn';rb.style.marginTop='8px';rb.textContent='Remove';rb.onclick=function(){d.remove();};d.appendChild(rb);attachCounterToTextarea(t2, 500);list.appendChild(d);}
   document.addEventListener('click',function(e){var box=document.getElementById('skill-suggestions');var input=document.getElementById('skill-search-input');if(box&&input&&!box.contains(e.target)&&e.target!==input)box.style.display='none';});
 
   // ─── PREFERENCES ───
@@ -9734,8 +9927,11 @@
     if (tagsEl && p.roles && p.roles.length) {
       tagsEl.innerHTML = p.roles.map(function(r){ return '<span class="role-tag">'+r+' <button class="role-remove-btn" onclick="removeRoleTag(this)">&#xd7;</button></span>'; }).join('');
     }
+    _setupRequiredBadgeWatchers(e);
   }
   document.addEventListener('click',function(e){var chip=e.target.closest('.pref-chip');if(!chip)return;var group=chip.closest('.pref-chips');if(!group)return;if(group.classList.contains('multi')){chip.classList.toggle('active');}else{group.querySelectorAll('.pref-chip').forEach(function(c){c.classList.remove('active');});chip.classList.add('active');}
+    // Clear inline error on chip group once a selection exists
+    if(group.classList.contains('error')&&group.querySelector('.pref-chip.active'))_clearFieldError(group);
     // Show/hide hours per week for part-time
     if(group.id==='pref-emp-type'||group.id==='post-emp-type'||group.id==='edit-emp-type'){
       var prefix=group.id==='pref-emp-type'?'pref':group.id==='post-emp-type'?'post':'edit';
@@ -9762,6 +9958,14 @@
   async function savePreferences(){
     var r=document.getElementById('pref-read-view'),e=document.getElementById('pref-edit-view'),b=document.getElementById('pref-edit-btn');
     var getActive=function(id){return Array.from(document.querySelectorAll('#'+id+' .pref-chip.active')).map(function(c){return c.dataset.val;});};
+    var prefTypeChips = document.getElementById('pref-type');
+    var prefSectorsChips = document.getElementById('pref-sectors');
+    var prefLocChips = document.getElementById('pref-location');
+    var ok = true;
+    if (!getActive('pref-type').length) { _showFieldError(prefTypeChips, 'Please select what you are looking for.'); ok = false; } else _clearFieldError(prefTypeChips);
+    if (!getActive('pref-sectors').length) { _showFieldError(prefSectorsChips, 'Please select at least one sector.'); ok = false; } else _clearFieldError(prefSectorsChips);
+    if (!getActive('pref-location').length) { _showFieldError(prefLocChips, 'Please select at least one preferred location.'); ok = false; } else _clearFieldError(prefLocChips);
+    if (!ok) { _scrollToFirstError(document.getElementById('pref-edit-view')); return; }
     var month=document.getElementById('pref-start-month').value;
     var year=document.getElementById('pref-start-year').value;
     var roles=Array.from(document.querySelectorAll('#pref-roles-tags .role-tag')).map(function(t){return t.textContent.replace('\xd7','').trim();});
@@ -10025,6 +10229,23 @@
   }
   document.addEventListener('click',function(e){var box=document.getElementById('role-suggestions');var input=document.getElementById('role-search-input');if(box&&input&&!box.contains(e.target)&&e.target!==input)box.style.display='none';});
 
+  // Hides a Required badge when its field is filled; shows it again when emptied.
+  function _setupRequiredBadgeWatchers(container) {
+    container.querySelectorAll('.field-badge.required').forEach(function(badge) {
+      var group = badge.closest('.form-group') || badge.closest('.pref-group') || (badge.closest('label') && badge.closest('label').parentElement);
+      if (!group) return;
+      var input = group.querySelector('input[type="text"], input[type="email"], textarea');
+      var chips = group.querySelector('.pref-chips');
+      function check() {
+        var filled = input ? input.value.trim().length > 0 : (chips ? !!chips.querySelector('.pref-chip.active') : false);
+        badge.style.display = filled ? 'none' : '';
+      }
+      if (input) input.addEventListener('input', check);
+      if (chips) chips.addEventListener('click', function() { setTimeout(check, 0); });
+      check();
+    });
+  }
+
   // ─── BASIC INFO ───
   async function toggleBasicEdit() {
     var r = document.getElementById('basic-read-view');
@@ -10083,15 +10304,25 @@
     e.style.display = 'block';
     b.textContent = 'Cancel';
     refreshCharCounters();
+    _setupRequiredBadgeWatchers(e);
   }
 
   async function saveBasicInfo() {
-    var name = document.getElementById('edit-basic-name').value.trim();
-    if (!name) { showToast('Name is required.', 'error'); return; }
-    var fosChip = document.querySelector('#field-of-study-chips .pref-chip.active');
+    var nameEl = document.getElementById('edit-basic-name');
+    var name = nameEl.value.trim();
+    var fosChips = document.getElementById('field-of-study-chips');
+    var fosChip = fosChips.querySelector('.pref-chip.active');
     var fosVal = fosChip ? fosChip.dataset.val : '';
     if (fosVal === 'Other') fosVal = document.getElementById('field-of-study-other').value.trim();
-    var csChip = document.querySelector('#current-status-chips .pref-chip.active');
+    var csChips = document.getElementById('current-status-chips');
+    var workAuthChips = document.getElementById('edit-basic-work-auth');
+    var ok = true;
+    if (!name) { _showFieldError(nameEl, 'Name is required.'); ok = false; } else _clearFieldError(nameEl);
+    if (!fosVal) { _showFieldError(fosChips, 'Please select your field of study.'); ok = false; } else _clearFieldError(fosChips);
+    if (!csChips.querySelector('.pref-chip.active')) { _showFieldError(csChips, 'Please select your current status.'); ok = false; } else _clearFieldError(csChips);
+    if (!workAuthChips.querySelectorAll('.pref-chip.active').length) { _showFieldError(workAuthChips, 'Please select your work authorisation.'); ok = false; } else _clearFieldError(workAuthChips);
+    if (!ok) { _scrollToFirstError(document.getElementById('basic-edit-view')); return; }
+    var csChip = csChips.querySelector('.pref-chip.active');
     var csVal = csChip ? csChip.dataset.val : '';
     var csYearChip = document.querySelector('#current-status-year-chips .pref-chip.active');
     var csYearVal = csYearChip ? csYearChip.dataset.val : '';
