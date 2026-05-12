@@ -845,6 +845,11 @@
   .screen.active .modal-overlay { display: none; }
   .modal-overlay.open { display: flex !important; }
 
+  /* Prevent scroll chaining out of modals + lock page when modal is open */
+  .modal-overlay { overscroll-behavior: contain; }
+  .modal { overscroll-behavior: contain; }
+  body.modal-open { overflow: hidden; }
+
   .modal {
     background: white;
     border-radius: 16px;
@@ -2172,17 +2177,20 @@
   <div class="nav-center"></div>
   <div class="nav-links" id="nav-student" style="display:none;">
     <button class="nav-btn ghost" onclick="showScreen('landing')">Home</button>
+    <button class="nav-btn ghost" onclick="openCareerConsole()">Career Console</button>
     <button class="nav-btn ghost" onclick="showScreen('student-browse');loadJobsFromDB();">Browse Jobs</button>
     <button class="nav-btn primary" onclick="showScreen('student-profile')">My Profile</button>
     <button class="nav-btn outline" onclick="rookieLogout()">Sign out</button>
   </div>
   <div class="nav-links" id="nav-company" style="display:none;">
     <button class="nav-btn ghost" onclick="showScreen('landing')">Home</button>
+    <button class="nav-btn ghost" onclick="openCareerConsole()">Career Console</button>
     <button class="nav-btn primary" onclick="showScreen('company-dash');loadCompanyDashboard();">Dashboard</button>
     <button class="nav-btn outline" onclick="rookieLogout()">Sign out</button>
   </div>
   <div class="nav-links" id="nav-guest">
     <button class="nav-btn ghost" onclick="showScreen('landing')">Home</button>
+    <button class="nav-btn ghost" onclick="openCareerConsole()">Career Console</button>
     <button class="nav-btn outline" onclick="showScreen('login')">Sign in</button>
     <button class="nav-btn primary" onclick="showScreen('signup-pick')">Get started →</button>
   </div>
@@ -3347,6 +3355,10 @@
             <span class="info-label">Role interests</span>
             <span class="info-value" id="pref-read-roles">Financial Analyst, Data Analyst, Strategy Consultant</span>
           </div>
+          <div class="info-row">
+            <span class="info-label">Dutch-only roles</span>
+            <span class="info-value" id="pref-read-dutch-only">No</span>
+          </div>
         </div>
 
         <!-- EDIT VIEW -->
@@ -3468,6 +3480,15 @@
             </div>
             <div id="pref-roles-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
             <div class="form-hint" style="margin-top:6px;">Students who fill this are 2.5x more likely to see relevant jobs.</div>
+          </div>
+
+          <div class="pref-group">
+            <div class="pref-group-label">Looking for Dutch-only roles?</div>
+            <div class="pref-chips" id="pref-dutch-only">
+              <button class="pref-chip" data-val="Yes">Yes</button>
+              <button class="pref-chip active" data-val="No">No</button>
+            </div>
+            <div class="form-hint" style="margin-top:6px;">Filter your matches to only roles open to Dutch-speaking candidates.</div>
           </div>
 
           <div style="display:flex;gap:10px;margin-top:20px;">
@@ -4092,8 +4113,8 @@
 
 <!-- POST NEW LISTING MODAL -->
 <div id="post-listing-modal" class="modal-overlay">
-  <div class="modal" style="max-width:960px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;width:92%;">
-    <div id="post-listing-form" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+  <div class="modal" style="max-width:960px;height:92vh;display:flex;flex-direction:column;overflow:hidden;width:92%;padding:0;">
+    <div id="post-listing-form" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
       <!-- Sticky navy hero header -->
       <div style="background:var(--navy);border-radius:16px 16px 0 0;padding:20px 28px;position:relative;flex-shrink:0;">
         <button class="modal-close" onclick="closePostModal()" style="position:absolute;top:14px;right:16px;color:rgba(255,255,255,0.55);background:none;border:none;font-size:18px;cursor:pointer;line-height:1;">&#x2715;</button>
@@ -4101,7 +4122,7 @@
         <div style="font-size:13px;color:rgba(255,255,255,0.55);">Fill in the details below to publish your role</div>
       </div>
       <!-- Scrollable form body -->
-      <div style="overflow-y:auto;flex:1;padding:20px 28px 28px;min-height:0;">
+      <div style="overflow-y:auto;overscroll-behavior:contain;flex:1;padding:20px 28px 28px;min-height:0;">
       <div class="listing-tab-nav">
         <button class="listing-tab active" id="post-tab-basics" onclick="switchListingTab('post','basics')">Basics</button>
         <button class="listing-tab" id="post-tab-details" onclick="switchListingTab('post','details')">Details</button>
@@ -4175,6 +4196,7 @@
           <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of study</label><div class="pref-chips multi" id="post-majors" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Business Administration">Business Administration</button><button class="pref-chip" data-val="Economics">Economics</button><button class="pref-chip" data-val="Econometrics">Econometrics</button><button class="pref-chip" data-val="Finance">Finance</button><button class="pref-chip" data-val="Accounting">Accounting</button><button class="pref-chip" data-val="Marketing">Marketing</button><button class="pref-chip" data-val="Human Resource Management">Human Resource Management</button><button class="pref-chip" data-val="International Business">International Business</button><button class="pref-chip" data-val="Business Analytics">Business Analytics</button><button class="pref-chip" data-val="Data Science">Data Science</button><button class="pref-chip" data-val="Computer Science">Computer Science</button><button class="pref-chip" data-val="Software Engineering">Software Engineering</button><button class="pref-chip" data-val="Artificial Intelligence">Artificial Intelligence</button><button class="pref-chip" data-val="Information Systems">Information Systems</button><button class="pref-chip" data-val="Law">Law</button><button class="pref-chip" data-val="Psychology">Psychology</button><button class="pref-chip" data-val="Communication">Communication</button><button class="pref-chip" data-val="Sociology">Sociology</button><button class="pref-chip" data-val="Political Science">Political Science</button><button class="pref-chip" data-val="Liberal Arts">Liberal Arts</button><button class="pref-chip" data-val="Engineering">Engineering</button><button class="pref-chip" data-val="Any">Any</button><button class="pref-chip" data-val="Other">Other</button></div><div id="post-majors-other-wrap" style="display:none;margin-top:8px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="post-majors-other" class="form-input" type="text" placeholder="e.g. Marine Biology, Architecture…" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomMajor('post');}"><button class="btn btn-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCustomMajor('post')">+ Add</button></div><div id="post-majors-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
           <div class="form-group"><label class="form-label">GPA minimum</label><input class="form-input" type="text" id="post-gpa-min" placeholder="e.g. 7.0 / 10" maxlength="20"><div class="form-hint">Shown but does not block applications.</div></div>
           <div class="form-group"><label class="form-label">Candidate messaging</label><div class="pref-chips" id="post-messaging" style="margin-top:4px;"><button class="pref-chip active" data-val="Enabled">Enabled</button><button class="pref-chip" data-val="Disabled">Disabled</button></div></div>
+          <div class="form-group"><label class="form-label">Dutch only?</label><div class="pref-chips" id="post-dutch-only" style="margin-top:4px;"><button class="pref-chip" data-val="Yes">Yes</button><button class="pref-chip active" data-val="No">No</button></div><div class="form-hint">Restricts the role to Dutch-speaking candidates.</div></div>
           <div class="form-group"><label class="form-label">Recruiter in charge</label><select class="form-input" id="post-recruiter"><option value="">— None —</option></select><div class="form-hint">Owner of this listing. Add team members in the dashboard.</div></div>
           <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="post-hiring-team" placeholder="Additional teammate emails to CC" maxlength="150"></div>
         </div>
@@ -4220,8 +4242,8 @@
 
 <!-- EDIT LISTING MODAL -->
 <div id="edit-listing-modal" class="modal-overlay">
-  <div class="modal" style="max-width:960px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;width:92%;">
-    <div id="edit-listing-form" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+  <div class="modal" style="max-width:960px;height:92vh;display:flex;flex-direction:column;overflow:hidden;width:92%;padding:0;">
+    <div id="edit-listing-form" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
       <!-- Sticky navy hero header -->
       <div style="background:var(--navy);border-radius:16px 16px 0 0;padding:20px 28px;position:relative;flex-shrink:0;">
         <button class="modal-close" onclick="closeEditModal()" style="position:absolute;top:14px;right:16px;color:rgba(255,255,255,0.55);background:none;border:none;font-size:18px;cursor:pointer;line-height:1;">&#x2715;</button>
@@ -4229,7 +4251,7 @@
         <div style="font-size:13px;color:rgba(255,255,255,0.55);">Update your job posting details below</div>
       </div>
       <!-- Scrollable form body -->
-      <div style="overflow-y:auto;flex:1;padding:20px 28px 28px;min-height:0;">
+      <div style="overflow-y:auto;overscroll-behavior:contain;flex:1;padding:20px 28px 28px;min-height:0;">
       <div class="listing-tab-nav">
         <button class="listing-tab active" id="edit-tab-basics" onclick="switchListingTab('edit','basics')">Basics</button>
         <button class="listing-tab" id="edit-tab-details" onclick="switchListingTab('edit','details')">Details</button>
@@ -4303,6 +4325,7 @@
           <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of study</label><div class="pref-chips multi" id="edit-majors" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Business Administration">Business Administration</button><button class="pref-chip" data-val="Economics">Economics</button><button class="pref-chip" data-val="Econometrics">Econometrics</button><button class="pref-chip" data-val="Finance">Finance</button><button class="pref-chip" data-val="Accounting">Accounting</button><button class="pref-chip" data-val="Marketing">Marketing</button><button class="pref-chip" data-val="Human Resource Management">Human Resource Management</button><button class="pref-chip" data-val="International Business">International Business</button><button class="pref-chip" data-val="Business Analytics">Business Analytics</button><button class="pref-chip" data-val="Data Science">Data Science</button><button class="pref-chip" data-val="Computer Science">Computer Science</button><button class="pref-chip" data-val="Software Engineering">Software Engineering</button><button class="pref-chip" data-val="Artificial Intelligence">Artificial Intelligence</button><button class="pref-chip" data-val="Information Systems">Information Systems</button><button class="pref-chip" data-val="Law">Law</button><button class="pref-chip" data-val="Psychology">Psychology</button><button class="pref-chip" data-val="Communication">Communication</button><button class="pref-chip" data-val="Sociology">Sociology</button><button class="pref-chip" data-val="Political Science">Political Science</button><button class="pref-chip" data-val="Liberal Arts">Liberal Arts</button><button class="pref-chip" data-val="Engineering">Engineering</button><button class="pref-chip" data-val="Any">Any</button><button class="pref-chip" data-val="Other">Other</button></div><div id="edit-majors-other-wrap" style="display:none;margin-top:8px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="edit-majors-other" class="form-input" type="text" placeholder="e.g. Marine Biology, Architecture…" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomMajor('edit');}"><button class="btn btn-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCustomMajor('edit')">+ Add</button></div><div id="edit-majors-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
           <div class="form-group"><label class="form-label">GPA minimum</label><input class="form-input" type="text" id="edit-gpa-min" placeholder="e.g. 7.0 / 10" maxlength="20"><div class="form-hint">Shown but does not block applications.</div></div>
           <div class="form-group"><label class="form-label">Candidate messaging</label><div class="pref-chips" id="edit-messaging" style="margin-top:4px;"><button class="pref-chip active" data-val="Enabled">Enabled</button><button class="pref-chip" data-val="Disabled">Disabled</button></div></div>
+          <div class="form-group"><label class="form-label">Dutch only?</label><div class="pref-chips" id="edit-dutch-only" style="margin-top:4px;"><button class="pref-chip" data-val="Yes">Yes</button><button class="pref-chip active" data-val="No">No</button></div><div class="form-hint">Restricts the role to Dutch-speaking candidates.</div></div>
           <div class="form-group"><label class="form-label">Recruiter in charge</label><select class="form-input" id="edit-recruiter"><option value="">— None —</option></select><div class="form-hint">Owner of this listing. Add team members in the dashboard.</div></div>
           <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="edit-hiring-team" placeholder="Additional teammate emails to CC" maxlength="150"></div>
         </div>
@@ -4855,6 +4878,22 @@
     var el = document.getElementById(id);
     if (el) el.style.display = 'none';
   }
+
+  // ─── MODAL BODY-SCROLL LOCK ───
+  // Watches every .modal-overlay; toggles body.modal-open when any are open.
+  // Combined with overscroll-behavior:contain in CSS, this prevents the page
+  // underneath from scrolling when the user wheels inside a modal.
+  document.addEventListener('DOMContentLoaded', function() {
+    const sync = () => {
+      const open = document.querySelector('.modal-overlay.open');
+      document.body.classList.toggle('modal-open', !!open);
+    };
+    const obs = new MutationObserver(sync);
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      obs.observe(m, { attributes: true, attributeFilter: ['class'] });
+    });
+    sync(); // initial state
+  });
 
   // ─── SIGNUP BLUR VALIDATION ───
   document.addEventListener('DOMContentLoaded', function() {
@@ -6427,7 +6466,8 @@
       locations: _norm(s.pref_locations),
       month:     s.avail_month    || '',
       year:      s.avail_year     || '',
-      roles:     s.role_interests || []
+      roles:     s.role_interests || [],
+      dutchOnly: !!s.pref_dutch_only
     };
     // Normalize Postgres array literals or plain strings to display text
     var _normPref = function(val) {
@@ -6451,6 +6491,8 @@
     setRead('pref-read-location', s.pref_locations);
     var rolesReadEl = document.getElementById('pref-read-roles');
     if (rolesReadEl) rolesReadEl.textContent = (s.role_interests||[]).join(', ') || '—';
+    var dutchReadEl = document.getElementById('pref-read-dutch-only');
+    if (dutchReadEl) dutchReadEl.textContent = s.pref_dutch_only ? 'Yes' : 'No';
 
     // ── Documents read view ──
     var visEl = document.getElementById('profile-visibility-status');
@@ -7591,6 +7633,12 @@
     if (applyModal) { document.body.appendChild(applyModal); }
     var studentModal = document.getElementById('student-modal');
     if (studentModal) { document.body.appendChild(studentModal); }
+    // Same for post / edit listing modals — keeps their flex height calc
+    // independent of the company-dash tab panel display:none toggles.
+    var postModal = document.getElementById('post-listing-modal');
+    if (postModal) { document.body.appendChild(postModal); }
+    var editListingModal = document.getElementById('edit-listing-modal');
+    if (editListingModal) { document.body.appendChild(editListingModal); }
     var appsScreen = document.getElementById('screen-student-applications');
     if (appsScreen) { document.body.appendChild(appsScreen); }
     checkSession();
@@ -7622,6 +7670,12 @@
     document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
     document.getElementById('screen-' + name).classList.add('active');
     window.scrollTo(0, 0);
+  }
+
+  // ─── CAREER OFFICER CONSOLE LAUNCH ───
+  // Opens the standalone Career Officer Console HTML (same folder) in a new tab.
+  function openCareerConsole() {
+    window.open(encodeURI('Rookies — Career Officer Console.html'), '_blank');
   }
 
 
@@ -8839,7 +8893,7 @@
   }
 
   function openPostModal() {
-    document.getElementById('post-listing-form').style.display = 'block';
+    document.getElementById('post-listing-form').style.display = 'flex';
     document.getElementById('post-listing-success').style.display = 'none';
     var postAtsWrap = document.getElementById('post-ats-wrap');
     if (postAtsWrap) postAtsWrap.style.display = 'none';
@@ -8855,10 +8909,10 @@
     var plTags = document.getElementById('post-location-custom-tags');
     if (plTags) plTags.innerHTML = '';
     switchListingTab('post', 'basics');
-    ['post-type-chips','post-field-chips','post-duration-chips','post-app-method','post-emp-type','post-work-auth','post-docs','post-messaging','post-interview','post-school-year','post-majors'].forEach(function(id){
+    ['post-type-chips','post-field-chips','post-duration-chips','post-app-method','post-emp-type','post-work-auth','post-docs','post-messaging','post-dutch-only','post-interview','post-school-year','post-majors'].forEach(function(id){
       var g = document.getElementById(id); if (g) g.querySelectorAll('.pref-chip').forEach(function(c){ c.classList.remove('active'); });
     });
-    var defMap = {'post-type-chips':'Internship (stage)','post-app-method':'Apply on platform','post-emp-type':'Full-time','post-work-auth':'EU citizens only','post-messaging':'Enabled','post-interview':'No','post-docs':'CV / Resume'};
+    var defMap = {'post-type-chips':'Internship (stage)','post-app-method':'Apply on platform','post-emp-type':'Full-time','post-work-auth':'EU citizens only','post-messaging':'Enabled','post-dutch-only':'No','post-interview':'No','post-docs':'CV / Resume'};
     Object.keys(defMap).forEach(function(id){ var g=document.getElementById(id); if(g){var c=g.querySelector('[data-val="'+defMap[id]+'"]');if(c)c.classList.add('active');}});
     ['post-title','post-location','post-ats','post-division','post-description','post-role-group','post-pay','post-qualifications','post-gpa-min','post-hiring-team'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
     var n=document.getElementById('post-num-hires'); if(n) n.value='';
@@ -8885,6 +8939,7 @@
       grad_to:getVal('post-grad-to'), school_year:getChips('post-school-year'),
       majors:getMajorsValue('post'), gpa_min:getVal('post-gpa-min'),
       messaging:getChip('post-messaging'),
+      dutch_only: getChip('post-dutch-only') === 'Yes',
       hiring_team:getVal('post-hiring-team'),
       recruiter_id: (function(){ var el=document.getElementById('post-recruiter'); return (el && el.value) ? el.value : null; })(),
       is_active:true,
@@ -9052,6 +9107,7 @@
     }
     setInput('edit-gpa-min',     job.gpa_min);
     setChip('edit-messaging',    job.messaging);
+    setChip('edit-dutch-only',   job.dutch_only ? 'Yes' : 'No');
     setChip('edit-interview',    job.interview);
     setInput('edit-hiring-team', job.hiring_team);
     fillRecruiterSelect('edit-recruiter', job.recruiter_id || null);
@@ -9321,6 +9377,7 @@
       majors: getMajorsValue('edit'),
       gpa_min: getVal('edit-gpa-min'),
       messaging: getChip('edit-messaging'),
+      dutch_only: getChip('edit-dutch-only') === 'Yes',
       hiring_team: getVal('edit-hiring-team'),
       recruiter_id: (function(){ var el=document.getElementById('edit-recruiter'); return (el && el.value) ? el.value : null; })(),
       searched_skills: getJobSkills('edit'),
@@ -9872,6 +9929,7 @@
     }
     restoreChips('pref-type', p.type);
     restoreChips('pref-emp-type', p.empType);
+    restoreChips('pref-dutch-only', p.dutchOnly ? ['Yes'] : ['No']);
     // Restore hours per week
     var hoursWrap = document.getElementById('pref-hours-wrap');
     var hoursInput = document.getElementById('pref-hours-per-week');
@@ -9986,7 +10044,8 @@
           .map(function(t){ return t.textContent.replace('\xd7','').trim(); }).filter(Boolean);
         return vals.concat(customTags).join(', ');
       })(),
-      month: month, year: year, roles: roles
+      month: month, year: year, roles: roles,
+      dutchOnly: getActive('pref-dutch-only').indexOf('Yes') !== -1
     };
     // Store structured data for re-editing — always as strings
     if (currentStudent) {
@@ -10000,6 +10059,7 @@
       currentStudent.avail_month    = prefs.month;
       currentStudent.avail_year     = prefs.year ? parseInt(prefs.year) : null;
       currentStudent.role_interests = prefs.roles;
+      currentStudent.pref_dutch_only = prefs.dutchOnly;
     }
     try {
       var {error} = await db.from('students').update({
@@ -10011,7 +10071,8 @@
         pref_locations: prefs.locations,
         avail_month: prefs.month || null,
         avail_year: prefs.year ? parseInt(prefs.year) : null,
-        role_interests: prefs.roles
+        role_interests: prefs.roles,
+        pref_dutch_only: prefs.dutchOnly
       }).eq('id', currentStudent.id);
       if (error) throw error;
     } catch(err) { showToast('Failed to save preferences: ' + err.message, 'error'); }
@@ -10024,6 +10085,7 @@
     setRead('pref-read-sectors',  prefs.sectors);
     setRead('pref-read-location', prefs.locations);
     var rolesEl = document.getElementById('pref-read-roles'); if (rolesEl) rolesEl.textContent = roles.join(', ') || 'Not set';
+    var dutchEl = document.getElementById('pref-read-dutch-only'); if (dutchEl) dutchEl.textContent = prefs.dutchOnly ? 'Yes' : 'No';
     r.style.display='block'; e.style.display='none';
     b.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>'; setTimeout(function(){b.textContent='Edit';},2500);
   }
@@ -10435,6 +10497,12 @@
 
 
  // ─── LOAD STUDENT APPLICATIONS FROM DB ───
+  // Cache of full job records keyed by job_id, for opening the detail modal on click.
+  window.__myAppJobs = window.__myAppJobs || {};
+  window.viewApplicationListing = function(jobId) {
+    var j = window.__myAppJobs[jobId];
+    if (j) openJobDetailFromDB(j, true); // hideApply=true (already applied)
+  };
   async function loadApplicationsFromDB() {
     var list = document.getElementById('applications-list');
     if (!list) { console.error('applications-list not found'); return; }
@@ -10460,6 +10528,8 @@
           jobRes.data.forEach(j => { jobMap[j.id] = j; });
         }
       }
+      // Expose the map for click-to-open from card onclick.
+      window.__myAppJobs = jobMap;
 
       var activeApps = apps.filter(function(a){ return a.status !== 'Rejected'; });
       var pastApps   = apps.filter(function(a){ return a.status === 'Rejected'; });
@@ -10490,6 +10560,24 @@
         var dlYear   = app.deadline_year   || j.deadline_year  || '';
         var description = j.description || '';
         var quals    = j.qualifications || '';
+        var startMonth = app.start_month || j.start_month || '';
+        var startYear  = app.start_year  || j.start_year  || '';
+        var division   = j.division || '';
+        var roleGroup  = j.role_group || '';
+        var numHires   = j.num_hires || '';
+        var docs       = j.required_docs || '';
+        var schoolYr   = j.school_year || '';
+        var majors     = j.majors || '';
+        var gradFrom   = j.grad_from || '';
+        var gradTo     = j.grad_to || '';
+        var gpaMin     = j.gpa_min || '';
+        var dutchOnly  = j.dutch_only ? 'Yes' : '';
+        // Searched skills — stored as jsonb {technical:[],professional:[],languages:[]}
+        var skillsObj  = j.searched_skills || {};
+        function skillList(arr){ return Array.isArray(arr) ? arr.filter(Boolean).join(', ') : ''; }
+        var skillsTech = skillList(skillsObj.technical);
+        var skillsProf = skillList(skillsObj.professional);
+        var skillsLang = skillList(skillsObj.languages);
 
         var statusClass = app.status === 'Shortlisted' ? 'status-shortlist'
                         : app.status === 'Accepted'    ? 'status-shortlist'
@@ -10502,16 +10590,65 @@
         var tagsHTML = tagItems.map(t => '<span style="padding:3px 10px;background:var(--cream-dark);border-radius:100px;font-size:11px;color:var(--text-light);">' + esc(t) + '</span>').join('');
 
         var detailsHTML = '';
-        if (applied)           detailsHTML += '<div class="application-detail-item"><span class="application-detail-label">Applied</span><span class="application-detail-value">' + esc(applied) + '</span></div>';
-        if (app.earliest_start) detailsHTML += '<div class="application-detail-item"><span class="application-detail-label">Start date</span><span class="application-detail-value">' + esc(app.earliest_start) + '</span></div>';
-        if (pay)               detailsHTML += '<div class="application-detail-item"><span class="application-detail-label">Pay</span><span class="application-detail-value">' + esc(pay) + '</span></div>';
-        if (location)          detailsHTML += '<div class="application-detail-item"><span class="application-detail-label">Location</span><span class="application-detail-value">' + esc(location) + '</span></div>';
-        if (dlMonth || dlYear) detailsHTML += '<div class="application-detail-item"><span class="application-detail-label">Deadline</span><span class="application-detail-value">' + esc([dlMonth, dlYear].filter(Boolean).join(' ')) + '</span></div>';
+        function addDetail(label, val) {
+          if (!val) return;
+          detailsHTML += '<div class="application-detail-item"><span class="application-detail-label">' + esc(label) + '</span><span class="application-detail-value">' + esc(val) + '</span></div>';
+        }
+        addDetail('Applied',       applied);
+        addDetail('Start date',    app.earliest_start || ((startMonth || startYear) ? [startMonth, startYear].filter(Boolean).join(' ') : ''));
+        addDetail('Deadline',      [dlMonth, dlYear].filter(Boolean).join(' '));
+        addDetail('Location',      location);
+        addDetail('Job type',      jobType);
+        addDetail('Employment',    empType);
+        addDetail('Sector',        field);
+        addDetail('Duration',      duration);
+        addDetail('Pay',           pay);
+        addDetail('Work authorisation', workAuth);
+        addDetail('Role group',    roleGroup);
+        addDetail('Division',      division);
+        addDetail('Hires planned', numHires ? String(numHires) : '');
+        addDetail('Required docs', docs);
+        addDetail('GPA minimum',   gpaMin);
+        addDetail('Dutch only',    dutchOnly);
 
         var bodyExtra = '';
-        if (description) bodyExtra += '<div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:8px;">Role description</div><p style="font-size:13px;color:var(--text);line-height:1.6;margin:0;">' + esc(description) + '</p></div>';
-        if (quals)       bodyExtra += '<div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:8px;">Qualifications</div><p style="font-size:13px;color:var(--text);line-height:1.6;margin:0;">' + esc(quals) + '</p></div>';
-        if (app.motivation) bodyExtra += '<div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:8px;">My motivation note</div><p style="font-size:13px;color:var(--text);font-style:italic;line-height:1.6;margin:0;">&ldquo;' + esc(app.motivation) + '&rdquo;</p></div>';
+        function addBlock(title, body, italic) {
+          if (!body) return;
+          bodyExtra += '<div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px;">'
+            + '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:8px;">' + esc(title) + '</div>'
+            + '<p style="font-size:13px;color:var(--text);line-height:1.6;margin:0;' + (italic ? 'font-style:italic;' : '') + '">'
+            + (italic ? '&ldquo;' : '') + esc(body) + (italic ? '&rdquo;' : '') + '</p></div>';
+        }
+        addBlock('Role description', description);
+        addBlock('Qualifications',   quals);
+
+        // Searched skills block
+        var skillsHTML = '';
+        function skillRow(label, list) {
+          if (!list) return '';
+          return '<div style="margin-bottom:8px;"><span style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;">' + esc(label) + ':</span> <span style="font-size:13px;color:var(--text);">' + esc(list) + '</span></div>';
+        }
+        skillsHTML += skillRow('Technical', skillsTech);
+        skillsHTML += skillRow('Professional', skillsProf);
+        skillsHTML += skillRow('Languages', skillsLang);
+        if (skillsHTML) {
+          bodyExtra += '<div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px;">'
+            + '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:10px;">Skills they searched for</div>'
+            + skillsHTML + '</div>';
+        }
+
+        // Target-candidate block (school year, majors, grad year range)
+        var targetBits = [];
+        if (schoolYr) targetBits.push('<div style="margin-bottom:6px;"><span style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;">Level:</span> <span style="font-size:13px;color:var(--text);">' + esc(schoolYr) + '</span></div>');
+        if (majors)   targetBits.push('<div style="margin-bottom:6px;"><span style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;">Field of study:</span> <span style="font-size:13px;color:var(--text);">' + esc(majors) + '</span></div>');
+        if (gradFrom || gradTo) targetBits.push('<div style="margin-bottom:6px;"><span style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;">Graduation year:</span> <span style="font-size:13px;color:var(--text);">' + esc([gradFrom, gradTo].filter(Boolean).join(' – ')) + '</span></div>');
+        if (targetBits.length) {
+          bodyExtra += '<div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px;">'
+            + '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:10px;">Who they\'re looking for</div>'
+            + targetBits.join('') + '</div>';
+        }
+
+        addBlock('My motivation note', app.motivation, true);
 
         var cardStyle = isPast ? 'opacity:0.6;' : '';
         return '<div class="application-card application-card-collapsed" style="' + cardStyle + '" onclick="this.classList.toggle(\'application-card-collapsed\')">'
