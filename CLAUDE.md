@@ -6,8 +6,8 @@ Single-page web app + Supabase backend for a Dutch early-career job platform. Pr
 ## Folder structure
 - `app/rookies.html` + `app/css/rookies.css` + `app/js/rookies.js` — main platform
 - `app/career-console.html` + `app/css/career-console.css` + `app/js/career-console.js` — career officer dashboard
-- `app/supabase/functions/` — Edge Functions (Deno/TypeScript)
-- `app/supabase/migrations/` — DB migrations
+- `supabase/functions/` — Edge Functions (Deno/TypeScript)
+- `supabase/migrations/` — DB migrations
 
 ## Tech stack
 - Frontend: vanilla JS, no framework

@@ -674,6 +674,50 @@
     return { pct: best.pct < 0 ? null : best.pct, job: best.job };
   }
 
+  // ─── LLM MATCH SCORING (score-match Edge Function) ───
+  // Session-scoped in-memory cache. The DB also caches with a 14-day TTL;
+  // this just avoids re-invoking the function when reopening the same job
+  // within a tab session.
+  window._llmScoreCache = window._llmScoreCache || {};
+
+  // Tracks which job the AI insights panel is currently rendering. If the user
+  // opens a different job while a fetch is in flight, the stale response is dropped.
+  var _activeAiJobId = null;
+
+  async function fetchLLMScore(student, job) {
+    if (!student || !student.id || !job || !job.id) return null;
+    var key = student.id + '_' + job.id;
+    if (window._llmScoreCache[key]) return window._llmScoreCache[key];
+    try {
+      var res = await db.functions.invoke('score-match', {
+        body: { student_id: student.id, job_id: job.id }
+      });
+      if (res.error || !res.data) return null;
+      window._llmScoreCache[key] = res.data;
+      return res.data;
+    } catch (e) {
+      console.error('fetchLLMScore error:', e);
+      return null;
+    }
+  }
+
+  function aiDimRowHTML(label, score, rationale) {
+    var color = score >= 70 ? '#2e7d32' : score >= 40 ? 'var(--orange)' : 'var(--gray)';
+    return '<div class="ai-dim-row">'
+      +   '<div class="ai-dim-label">' + esc(label) + '</div>'
+      +   '<div class="ai-dim-score" style="color:' + color + ';">' + score + '</div>'
+      +   '<div class="ai-dim-rationale">' + esc(rationale) + '</div>'
+      + '</div>';
+  }
+
+  function renderAiInsights(container, data) {
+    container.innerHTML =
+        aiDimRowHTML('Education',  data.education_fit,     data.education_rationale)
+      + aiDimRowHTML('Experience', data.experience_fit,    data.experience_rationale)
+      + aiDimRowHTML('Projects',   data.project_relevance, data.project_rationale)
+      + aiDimRowHTML('Trajectory', data.trajectory_fit,    data.trajectory_rationale);
+  }
+
   function filterJobCards(query) {
     var q = (query || '').toLowerCase().trim();
     var cards = document.querySelectorAll('#screen-student-browse .job-card');
@@ -820,6 +864,24 @@
           descBlock.style.display = 'block';
         }
       });
+    }
+    // AI match insights — lazy-loaded, student-only.
+    var aiBlock = document.getElementById('jd-ai-insights-block');
+    var aiBody  = document.getElementById('jd-ai-insights');
+    if (aiBlock && aiBody) {
+      if (currentStudent && job && job.id) {
+        aiBlock.style.display = '';
+        aiBody.innerHTML = '<p style="color:var(--text-light);font-size:14px;padding:8px 0;margin:0;">Generating AI insights…</p>';
+        _activeAiJobId = job.id;
+        var thisJobId = job.id;
+        fetchLLMScore(currentStudent, job).then(function(data) {
+          if (_activeAiJobId !== thisJobId) return;
+          if (data) renderAiInsights(aiBody, data);
+          else aiBody.innerHTML = '<p style="color:var(--text-light);font-size:14px;padding:8px 0;margin:0;">AI insights unavailable right now.</p>';
+        });
+      } else {
+        aiBlock.style.display = 'none';
+      }
     }
     modal.classList.add('open');
   }

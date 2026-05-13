@@ -1939,6 +1939,35 @@
   .cv-entry-title { font-size: 17px; font-weight: 600; color: var(--navy); }
   .cv-entry-sub { font-size: 14px; color: var(--text-light); margin-top: 3px; }
   .cv-entry-desc { font-size: 15px; color: var(--text); margin-top: 8px; line-height: 1.7; }
+
+  /* AI match insights — 4 fit dimensions rendered in the job-detail modal */
+  .ai-dim-row {
+    display: grid;
+    grid-template-columns: 110px 48px 1fr;
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(0,0,0,0.07);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .ai-dim-row:first-child { border-top: 0; padding-top: 4px; }
+  .ai-dim-label {
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .ai-dim-score {
+    font-weight: 800;
+    font-size: 20px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .ai-dim-rationale {
+    color: var(--text);
+  }
   .cv-doc-chip {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 4px 10px; background: white; border: 1px solid var(--border);
