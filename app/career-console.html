@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rookies — Career Officer Console</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="css/career-console.css">
+</head>
+<body>
+
+<!-- ───────────── NAV ───────────── -->
+<nav>
+  <div class="nav-left">
+    <div class="logo">R<span>oo</span>kies</div>
+    <div class="nav-divider"></div>
+    <div class="nav-label">Career Officer Console</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-officer-pill">
+      <div class="avatar">M</div>
+      <span>Mick Timmermans · TiU</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ───────────── HERO ───────────── -->
+<div class="page-hero">
+  <div class="hero-eyebrow">For TiU Career Services</div>
+  <div class="hero-title">A console designed for your team's daily work.</div>
+  <div class="hero-sub">
+    Three views in one place — per-student coaching for the conversation you're having now,
+    real-time market intelligence so you can speak to current trends, and cohort-level engagement
+    so you spot students who've gone quiet before they slip through.
+  </div>
+  <div class="mock-banner">
+    <div class="dot"></div>
+    Mock data shown for the May 7 conversation — live data populates from the TiU pilot once we launch.
+  </div>
+</div>
+
+<!-- ───────────── TAB NAV ───────────── -->
+<div class="console-tabs" id="tabs">
+  <button class="tab-btn active" data-panel="match">
+    <span class="tab-icon">◈</span> Match Analyzer
+  </button>
+  <button class="tab-btn" data-panel="market">
+    <span class="tab-icon">↗</span> Market Pulse
+  </button>
+  <button class="tab-btn" data-panel="path">
+    <span class="tab-icon">→</span> Career Path
+  </button>
+  <button class="tab-btn" data-panel="engagement">
+    <span class="tab-icon">●</span> Engagement
+  </button>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PANEL 1 — MATCH ANALYZER
+═════════════════════════════════════════════ -->
+<section class="panel active" id="panel-match">
+  <h2 class="section-title">Match Analyzer</h2>
+  <p class="section-sub">Pick a student, pick a target role. Get the match score, where the gaps are, and what to bring up in the 1-on-1.</p>
+
+  <div class="ma-controls">
+    <div class="ma-select">
+      <div class="ma-select-label">Student</div>
+      <select id="ma-student"></select>
+    </div>
+    <div class="ma-select">
+      <div class="ma-select-label">Target role</div>
+      <select id="ma-job"></select>
+    </div>
+    <button class="ma-run-btn" onclick="runMatch()">Run analysis</button>
+  </div>
+
+  <div class="ma-result-grid">
+    <div class="score-card">
+      <div class="score-eyebrow">Overall match</div>
+      <div class="score-target" id="ma-target">—</div>
+      <div class="score-num" id="ma-score">75<span class="pct">%</span></div>
+      <div class="score-label" id="ma-verdict-label">Strong fit · 6 of 10 categories above 70%</div>
+      <div class="score-verdict" id="ma-verdict">Strong overall match. Two specific gaps worth raising in the conversation — see coaching prompts.</div>
+    </div>
+
+    <div class="card breakdown-card">
+      <div class="card-head">
+        <div class="card-title">Category breakdown</div>
+        <div class="card-meta">10 dimensions · weighted</div>
+      </div>
+      <div id="ma-breakdown"></div>
+    </div>
+  </div>
+
+  <div class="coaching-section" id="ma-coaching">
+    <div class="coaching-title">▲ Coaching prompts for the 1-on-1</div>
+    <div id="ma-prompts"></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     PANEL 2 — MARKET PULSE
+═════════════════════════════════════════════ -->
+<section class="panel" id="panel-market">
+  <h2 class="section-title">Market Pulse</h2>
+  <p class="section-sub">What employers are searching for at TiU right now — refreshed weekly.</p>
+
+  <div class="pulse-stats">
+    <div class="pulse-stat">
+      <div class="pulse-stat-label">Postings this month</div>
+      <div class="pulse-stat-num">142</div>
+      <div class="pulse-stat-delta delta-up">↑ 23% vs. April</div>
+    </div>
+    <div class="pulse-stat">
+      <div class="pulse-stat-label">Distinct skills tracked</div>
+      <div class="pulse-stat-num">487</div>
+      <div class="pulse-stat-delta delta-up">↑ 31 new this month</div>
+    </div>
+    <div class="pulse-stat">
+      <div class="pulse-stat-label">Active employers</div>
+      <div class="pulse-stat-num">68</div>
+      <div class="pulse-stat-delta delta-up">↑ 9 new entrants</div>
+    </div>
+    <div class="pulse-stat">
+      <div class="pulse-stat-label">Avg. applications / posting</div>
+      <div class="pulse-stat-num">14.2</div>
+      <div class="pulse-stat-delta delta-down">↓ 1.4 vs. April</div>
+    </div>
+  </div>
+
+  <div class="pulse-grid">
+    <div class="card skills-board">
+      <div class="card-head">
+        <div class="card-title">Trending skills · May 2026</div>
+        <div class="card-meta">vs. previous month</div>
+      </div>
+      <div id="skills-leaderboard"></div>
+    </div>
+
+    <div class="card donut-card">
+      <div class="card-head">
+        <div class="card-title">Sector demand</div>
+        <div class="card-meta">% of postings</div>
+      </div>
+      <div class="donut-wrap">
+        <canvas id="sector-donut" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card hot-roles-card">
+    <div class="card-head">
+      <div class="card-title">Hot roles this week</div>
+      <div class="card-meta">By posting volume + week-over-week growth</div>
+    </div>
+    <div class="hot-roles-grid" id="hot-roles"></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     PANEL 3 — CAREER PATH EXPLORER
+═════════════════════════════════════════════ -->
+<section class="panel" id="panel-path">
+  <h2 class="section-title">Career Path Explorer</h2>
+  <p class="section-sub">Type a role, see what employers want, what TiU students who placed had in common, and what you'd advise a current student to do.</p>
+
+  <div class="path-header">
+    <div class="path-header-left">
+      <div class="path-eyebrow">Currently exploring</div>
+      <div class="path-title">Marketing Analyst</div>
+      <div class="path-meta">14 active postings at TiU · Avg. €2,400/month · Bachelor or Pre-master</div>
+    </div>
+    <div class="path-stats">
+      <div class="path-stat">
+        <div class="path-stat-num">14</div>
+        <div class="path-stat-label">Open roles</div>
+      </div>
+      <div class="path-stat">
+        <div class="path-stat-num">19</div>
+        <div class="path-stat-label">2025 placements</div>
+      </div>
+      <div class="path-stat">
+        <div class="path-stat-num">38</div>
+        <div class="path-stat-label">Active applicants</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="path-grid">
+    <div class="card path-card">
+      <div class="path-card-title">Skills employers ask for</div>
+      <div style="font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin-bottom: 8px;">Must-have (in 80%+ of postings)</div>
+      <div class="skill-tags">
+        <span class="skill-tag must">Excel</span>
+        <span class="skill-tag must">Google Analytics</span>
+        <span class="skill-tag must">Communication</span>
+        <span class="skill-tag must">Analytical thinking</span>
+        <span class="skill-tag must">English</span>
+      </div>
+      <div style="font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin: 18px 0 8px;">Nice-to-have (in 40–70% of postings)</div>
+      <div class="skill-tags">
+        <span class="skill-tag nice">SQL</span>
+        <span class="skill-tag nice">HubSpot</span>
+        <span class="skill-tag nice">Power BI</span>
+        <span class="skill-tag nice">Dutch (B2+)</span>
+        <span class="skill-tag nice">Tableau</span>
+        <span class="skill-tag nice">Adobe Creative Suite</span>
+      </div>
+      <div style="font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin: 18px 0 8px;">Edge skills (rarer but elevate strong applicants)</div>
+      <div class="skill-tags">
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag">A/B testing</span>
+        <span class="skill-tag">Meta Ads Manager</span>
+        <span class="skill-tag">Looker</span>
+      </div>
+    </div>
+
+    <div class="card path-card">
+      <div class="path-card-title">Common backgrounds</div>
+      <ul class="path-list">
+        <li>BSc Marketing or BSc Communication (47% of placements)</li>
+        <li>BSc Business Administration with marketing minor (21%)</li>
+        <li>BSc International Business (14%)</li>
+        <li>MSc Marketing Management (10%)</li>
+        <li>Other (incl. cross-disciplinary) (8%)</li>
+      </ul>
+    </div>
+
+    <div class="card path-card">
+      <div class="path-card-title">Preparation that lifts the application</div>
+      <ul class="path-list">
+        <li>One full-cycle marketing internship (any size company) — 3× more likely to be shortlisted</li>
+        <li>Google Analytics certification — explicitly mentioned in 31% of postings</li>
+        <li>A measurable result on a real campaign (CTR lift, audience growth, conversion) — quotable in CV</li>
+        <li>Marketing case competition placement — signals analytical ability beyond coursework</li>
+        <li>Social-media management for a student org or freelance — soft proof of execution</li>
+      </ul>
+    </div>
+
+    <div class="card path-card">
+      <div class="path-card-title">Where TiU students placed in 2025</div>
+      <div class="placement-row">
+        <div class="placement-co">Interpolis (Tilburg)</div>
+        <div class="placement-count">4</div>
+        <div class="placement-yr">Marketing Analyst</div>
+      </div>
+      <div class="placement-row">
+        <div class="placement-co">Heineken (Amsterdam)</div>
+        <div class="placement-count">3</div>
+        <div class="placement-yr">Brand Marketing</div>
+      </div>
+      <div class="placement-row">
+        <div class="placement-co">Coolblue (Rotterdam)</div>
+        <div class="placement-count">2</div>
+        <div class="placement-yr">Performance Mkt</div>
+      </div>
+      <div class="placement-row">
+        <div class="placement-co">Philips (Eindhoven)</div>
+        <div class="placement-count">2</div>
+        <div class="placement-yr">Brand Insights</div>
+      </div>
+      <div class="placement-row">
+        <div class="placement-co">Brabantse SMEs (various)</div>
+        <div class="placement-count">8</div>
+        <div class="placement-yr">Mixed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     PANEL 4 — ENGAGEMENT
+═════════════════════════════════════════════ -->
+<section class="panel" id="panel-engagement">
+  <h2 class="section-title">Engagement &amp; At-risk students</h2>
+  <p class="section-sub">Who's slipping, who's progressing, and where to focus your team's outreach this week.</p>
+
+  <div class="eng-grid">
+    <div class="card at-risk-card">
+      <div class="card-head">
+        <div class="card-title">At-risk students · TiSEM Master's</div>
+        <div class="card-meta">Final-year cohort · 8 flagged this week</div>
+      </div>
+      <table class="at-risk-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Issue</th>
+            <th>Suggested action</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="at-risk-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="card cohort-card">
+      <div class="card-head">
+        <div class="card-title">Cohort engagement</div>
+        <div class="card-meta">TiSEM MSc · year 2 · 412 students</div>
+      </div>
+
+      <div class="cohort-stat">
+        <div class="cohort-stat-row">
+          <div class="cohort-stat-label">Active profiles</div>
+          <div class="cohort-stat-value">287 / 412 · 70%</div>
+        </div>
+        <div class="cohort-bar"><div class="cohort-bar-fill" style="width:70%"></div></div>
+      </div>
+
+      <div class="cohort-stat">
+        <div class="cohort-stat-row">
+          <div class="cohort-stat-label">Profile complete (≥75%)</div>
+          <div class="cohort-stat-value">198 / 412 · 48%</div>
+        </div>
+        <div class="cohort-bar"><div class="cohort-bar-fill warn" style="width:48%"></div></div>
+      </div>
+
+      <div class="cohort-stat">
+        <div class="cohort-stat-row">
+          <div class="cohort-stat-label">Submitted ≥1 application</div>
+          <div class="cohort-stat-value">127 / 412 · 31%</div>
+        </div>
+        <div class="cohort-bar"><div class="cohort-bar-fill warn" style="width:31%"></div></div>
+      </div>
+
+      <div class="cohort-stat">
+        <div class="cohort-stat-row">
+          <div class="cohort-stat-label">Placed (offer accepted)</div>
+          <div class="cohort-stat-value">43 / 412 · 10%</div>
+        </div>
+        <div class="cohort-bar"><div class="cohort-bar-fill" style="width:10%; background: var(--success);"></div></div>
+      </div>
+
+      <div style="margin-top:18px; padding:14px 16px; background: var(--cream); border-radius:10px; font-size:12.5px; color:var(--text-light); line-height:1.5;">
+        <strong style="color:var(--navy);">Heads-up.</strong> Application rate is 9 points behind same week last year. Consider a targeted nudge to the 88 students with complete profiles but zero applications.
+      </div>
+    </div>
+  </div>
+
+  <div class="card funnel-card">
+    <div class="card-head">
+      <div class="card-title">Application funnel · TiSEM Master's · this academic year</div>
+      <div class="card-meta">Cohort-wide, all programs</div>
+    </div>
+    <div id="funnel-stages"></div>
+  </div>
+</section>
+
+<!-- ───────────── FOOTER ───────────── -->
+<footer>
+  <div class="stripe"></div>
+  Rookies — Career Officer Console · Mock data for the May 7 conversation with TiU
+</footer>
+
+<script src="js/career-console.js"></script>
+</body>
+</html>
