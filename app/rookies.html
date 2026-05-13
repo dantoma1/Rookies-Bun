@@ -462,10 +462,10 @@
 
       <div class="results-header">
         <div class="results-count"><strong>— listings</strong> matched to your profile &nbsp;<span style="font-size:12px;color:var(--gray);font-weight:400;">based on your preferences &middot; <a href="#" onclick="showScreen('student-profile');loadStudentProfile();setTimeout(function(){var el=document.getElementById('preferences-section');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},400);return false;" style="color:var(--navy);text-decoration:underline;">edit preferences</a></span></div>
-        <select style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: white;">
-          <option>Best match</option>
-          <option>Most recent</option>
-          <option>Deadline soonest</option>
+        <select id="job-sort-select" onchange="applyJobSort()" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: white;">
+          <option value="match">Best match</option>
+          <option value="recent">Most recent</option>
+          <option value="deadline">Deadline soonest</option>
         </select>
       </div>
 
@@ -2680,7 +2680,7 @@
 
       <!-- AI match insights (student view only) -->
       <div class="cv-section" id="jd-ai-insights-block" style="margin-bottom:14px;display:none;">
-        <div class="cv-section-label">&#10024; AI match insights <span style="font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray);">(generated for you)</span></div>
+        <div class="cv-section-label">&#10024; AI match insights <span style="font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray);">(generated for you &middot; scores out of 100)</span></div>
         <div id="jd-ai-insights" style="margin-top:6px;"></div>
       </div>
 
@@ -2899,6 +2899,23 @@
       <div style="font-family:'Playfair Display',serif;font-size:30px;color:var(--navy);margin-bottom:12px;">Account not approved</div>
       <p style="font-size:15px;color:var(--text-light);line-height:1.7;margin-bottom:28px;">Unfortunately we weren't able to approve your company account at this time. If you think this is a mistake, please reach out to us directly.</p>
       
+    </div>
+  </div>
+</div>
+
+<!-- VERIFY EMAIL SCREEN -->
+<div id="screen-verify-email" class="screen">
+  <div style="min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;background:var(--cream);padding:40px 20px;">
+    <div style="width:100%;max-width:520px;text-align:center;">
+      <div style="font-size:56px;margin-bottom:24px;">📧</div>
+      <div style="font-family:'Playfair Display',serif;font-size:30px;color:var(--navy);margin-bottom:12px;">Check your email</div>
+      <p style="font-size:15px;color:var(--text-light);line-height:1.7;margin-bottom:28px;">We sent a verification link to <strong id="verify-email-address" style="color:var(--navy);"></strong>. Click the link in that email to activate your account.</p>
+      <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:28px;text-align:left;font-size:14px;color:var(--text-light);line-height:1.6;">
+        <strong style="color:var(--navy);">Didn't get it?</strong><br>
+        Check your spam folder first. If it's not there, click below to resend.
+      </div>
+      <button onclick="resendVerificationEmail()" class="btn btn-outline" style="margin-right:12px;">Resend email</button>
+      <button onclick="showScreen('signup-pick')" class="btn btn-ghost" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;font-family:'DM Sans',sans-serif;">Use a different email</button>
     </div>
   </div>
 </div>

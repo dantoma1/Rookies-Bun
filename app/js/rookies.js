@@ -258,6 +258,17 @@
       var a = await db.auth.signUp({ email: email, password: pw });
       if (a.error) throw a.error;
       if (!a.data.user) throw new Error('Signup succeeded but no user returned — check Supabase email confirmation settings.');
+      if (!a.data.session) {
+        // Email confirmation required — store pending data and show verify screen
+        localStorage.setItem('rookies_pending_type', 'student');
+        localStorage.setItem('rookies_pending_name', first + ' ' + last);
+        localStorage.setItem('rookies_pending_email', email);
+        document.getElementById('verify-email-address').textContent = email;
+        btn.textContent = 'Create account →'; btn.disabled = false;
+        showScreen('verify-email');
+        return;
+      }
+      // Email confirmation disabled (dev/testing) — create row immediately
       var name   = first + ' ' + last;
       var colors = ['#e8622a','#1565c0','#2e7d52','#6a1b9a','#c0392b','#4a148c','#0f1f3d'];
       var color  = colors[Math.floor(Math.random() * colors.length)];
@@ -272,12 +283,14 @@
       if (ins.error) throw ins.error;
       currentStudent = row;
       updateNav();
-      showToast('Welcome to Rookies, ' + first + '! 🎉');
+      showToast('Welcome to Rookies, ' + first + '!');
       showScreen('student-profile');
       loadStudentProfile();
       loadStudentsFromDB();
     } catch(err) {
-      showSignupError('ss-error-1', err.message || 'Something went wrong. Please try again.');
+      var msg = err.message || 'Something went wrong. Please try again.';
+      if (msg.toLowerCase().includes('should contain at least one character of each')) msg = 'Password must include at least one uppercase letter, one lowercase letter, and one number.';
+      showSignupError('ss-error-1', msg);
       btn.textContent = 'Create account →'; btn.disabled = false;
     }
   }
@@ -307,6 +320,17 @@
       var a = await db.auth.signUp({ email: email, password: pw });
       if (a.error) throw a.error;
       if (!a.data.user) throw new Error('Signup succeeded but no user returned — check Supabase email confirmation settings.');
+      if (!a.data.session) {
+        // Email confirmation required — store pending data and show verify screen
+        localStorage.setItem('rookies_pending_type', 'company');
+        localStorage.setItem('rookies_pending_company', company);
+        localStorage.setItem('rookies_pending_email', email);
+        document.getElementById('verify-email-address').textContent = email;
+        btn.textContent = 'Create account →'; btn.disabled = false;
+        showScreen('verify-email');
+        return;
+      }
+      // Email confirmation disabled (dev/testing) — create row immediately
       var ins = await db.from('employers').insert([{
         id: a.data.user.id,
         email: email,
@@ -318,7 +342,9 @@
       updateNav();
       showScreen('company-pending');
     } catch(err) {
-      showSignupError('cs-error-1', err.message || 'Something went wrong. Please try again.');
+      var msg = err.message || 'Something went wrong. Please try again.';
+      if (msg.toLowerCase().includes('should contain at least one character of each')) msg = 'Password must include at least one uppercase letter, one lowercase letter, and one number.';
+      showSignupError('cs-error-1', msg);
       btn.textContent = 'Create account →'; btn.disabled = false;
     }
   }
@@ -366,12 +392,68 @@
           currentEmployer = null;
           console.log('Logged in as Student:', currentStudent.name);
           loadStudentProfile();
+          loadJobsFromDB();
+          updateNav();
+          return;
+        }
+
+        // No DB row found — user may have just verified their email
+        var pendingType = localStorage.getItem('rookies_pending_type');
+        if (pendingType === 'student') {
+          var pendingName  = localStorage.getItem('rookies_pending_name') || s.data.session.user.email;
+          var pendingFirst = pendingName.split(' ')[0];
+          var colors = ['#e8622a','#1565c0','#2e7d52','#6a1b9a','#c0392b','#4a148c','#0f1f3d'];
+          var color  = colors[Math.floor(Math.random() * colors.length)];
+          var row = {
+            id: userId,
+            name: pendingName, color: color, initial: pendingFirst[0].toUpperCase(),
+            pref_roles: [], skills_technical: [], skills_professional: [],
+            skills_languages: [], education: [], experience: [], orgs: [], docs: [],
+            is_active: true, is_admin: false
+          };
+          var ins = await db.from('students').insert([row]);
+          if (!ins.error) {
+            localStorage.removeItem('rookies_pending_type');
+            localStorage.removeItem('rookies_pending_name');
+            localStorage.removeItem('rookies_pending_email');
+            currentStudent = row;
+            updateNav();
+            showToast('Email verified! Welcome to Rookies, ' + pendingFirst + '!');
+            showScreen('student-profile');
+            loadStudentProfile();
+            loadStudentsFromDB();
+          }
+          return;
+        }
+        if (pendingType === 'company') {
+          var pendingCompany = localStorage.getItem('rookies_pending_company') || '';
+          var pendingEmail   = s.data.session.user.email;
+          var ins2 = await db.from('employers').insert([{
+            id: userId, email: pendingEmail, company_name: pendingCompany, status: 'pending'
+          }]);
+          if (!ins2.error) {
+            localStorage.removeItem('rookies_pending_type');
+            localStorage.removeItem('rookies_pending_company');
+            localStorage.removeItem('rookies_pending_email');
+            currentEmployer = { id: userId, email: pendingEmail, company_name: pendingCompany, status: 'pending' };
+            updateNav();
+            showScreen('company-pending');
+          }
+          return;
         }
       }
     } catch(e) {
       console.log('No active session found.');
     }
     updateNav();
+  }
+
+  async function resendVerificationEmail() {
+    var email = localStorage.getItem('rookies_pending_email');
+    if (!email) { showToast('No pending verification found.', 'error'); return; }
+    var res = await db.auth.resend({ type: 'signup', email: email });
+    if (res.error) showToast('Could not resend: ' + res.error.message, 'error');
+    else showToast('Verification email resent — check your inbox.');
   }
 
   async function rookieStudentSignup(email, password, name) {
@@ -728,77 +810,74 @@
       if (match) visible++;
     });
     var countEl = document.querySelector('.results-count strong');
-    if (countEl) countEl.textContent = visible;
+    if (countEl) countEl.textContent = visible + ' of ' + _allJobs.length;
+  }
+
+  var _allJobs = [];
+
+  function _deadlineToDate(job) {
+    var months = {January:1,February:2,March:3,April:4,May:5,June:6,July:7,August:8,September:9,October:10,November:11,December:12};
+    if (!job.deadline_month || !job.deadline_year) return new Date(9999, 0);
+    return new Date(parseInt(job.deadline_year), (months[job.deadline_month] || 1) - 1);
+  }
+
+  function renderJobList(jobs) {
+    var sortEl = document.getElementById('job-sort-select');
+    var sortVal = sortEl ? sortEl.value : 'match';
+    var sorted = jobs.slice();
+
+    if (sortVal === 'match' && currentStudent) {
+      sorted.sort(function(a, b) { return matchScore(currentStudent, b) - matchScore(currentStudent, a); });
+    } else if (sortVal === 'recent') {
+      sorted.sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+    } else if (sortVal === 'deadline') {
+      sorted.sort(function(a, b) { return _deadlineToDate(a) - _deadlineToDate(b); });
+    }
+
+    var jobList = document.getElementById('job-list');
+    if (!jobList) return;
+    jobList.innerHTML = '';
+
+    sorted.forEach(function(job) {
+      var pct = currentStudent ? matchScore(currentStudent, job) : null;
+      var matchColor = pct >= 70 ? '#2e7d32' : pct >= 40 ? 'var(--orange)' : 'var(--gray)';
+      var matchBadge = pct !== null
+        ? '<span style="font-size:12px;font-weight:700;color:'+matchColor+';">▲ '+pct+'%</span>'
+        : '';
+      var card = document.createElement('div');
+      card.className = 'job-card';
+      card.dataset.search = ((job.title||'') + ' ' + (job.company_name||'') + ' ' + (job.field||'') + ' ' + (job.location||'') + ' ' + (job.job_type||'')).toLowerCase();
+      var compWords = (job.company_name || 'Co').split(' ');
+      var compLabel = compWords.length === 1
+        ? compWords[0].substring(0, 4).toUpperCase()
+        : compWords.slice(0, 2).map(function(w){ return w.substring(0, 3); }).join('\n').toUpperCase();
+      var deadline = job.deadline_month ? 'Closes ' + job.deadline_month + ' ' + job.deadline_year : 'Open';
+      card.innerHTML = '<div class="company-logo">' + esc(compLabel) + '</div>'
+        + '<div class="job-info"><h4>' + esc(job.title) + '</h4>'
+        + '<div class="company-name">' + esc(job.company_name||'Company') + ' · ' + esc(job.location||'Netherlands') + '</div>'
+        + '<div class="job-tags"><span class="tag tag-type">' + esc(job.job_type||'Internship') + '</span>'
+        + '<span class="tag tag-location">' + esc(job.location||'NL') + '</span>'
+        + (job.field ? '<span class="tag tag-sector">' + esc(job.field) + '</span>' : '')
+        + '</div></div>'
+        + '<div class="job-meta">' + matchBadge + '<div class="deadline">' + esc(deadline) + '</div></div>';
+      card.onclick = function() { openJobDetailFromDB(job); };
+      jobList.appendChild(card);
+    });
+
+    var countEl = document.querySelector('.results-count strong');
+    if (countEl) countEl.textContent = sorted.length + ' of ' + _allJobs.length;
+  }
+
+  function applyJobSort() {
+    renderJobList(_allJobs);
   }
 
   async function loadJobsFromDB() {
     try {
       var res = await db.from('jobs').select('*').eq('is_active', true).order('created_at', {ascending: false});
       if (res.error || !res.data || res.data.length === 0) return;
-      var jobs = res.data;
-
-      // Auto-filter by student preferences if logged in
-      var filtered = jobs;
-      if (currentStudent) {
-        var sPrefTypes = (currentStudent.pref_type||'').split(',').map(function(s){return s.trim();}).filter(Boolean);
-        console.log('Filter — pref_type:', currentStudent.pref_type, '→ parsed:', sPrefTypes);
-
-        filtered = jobs.filter(function(job) {
-          // Only hard filter on job type — only apply if student has a preference set
-          if (sPrefTypes.length > 0) {
-            if (!sPrefTypes.includes(job.job_type)) return false;
-          }
-          return true;
-        });
-
-        // Sort by match score descending
-        filtered.sort(function(a, b) {
-          return matchScore(currentStudent, b) - matchScore(currentStudent, a);
-        });
-      }
-
-      var jobList = document.getElementById('job-list');
-      if (!jobList) return;
-      jobList.innerHTML = '';
-
-      if (filtered.length === 0) {
-        jobList.innerHTML = '<div style="text-align:center;padding:48px 24px;color:var(--text-light);">'
-          + '<div style="font-size:32px;margin-bottom:12px;">🔍</div>'
-          + '<div style="font-size:16px;font-weight:600;color:var(--navy);margin-bottom:8px;">No matches found</div>'
-          + '<div style="font-size:14px;">Try updating your preferences to see more listings.</div>'
-          + '<button onclick="showScreen(\'student-profile\');loadStudentProfile();" class="btn btn-navy" style="margin-top:16px;font-size:14px;padding:10px 20px;">Update preferences →</button>'
-          + '</div>';
-      } else {
-        filtered.forEach(function(job) {
-          var pct = currentStudent ? matchScore(currentStudent, job) : null;
-          var matchColor = pct >= 70 ? '#2e7d32' : pct >= 40 ? 'var(--orange)' : 'var(--gray)';
-          var matchBadge = pct !== null
-            ? '<span style="font-size:12px;font-weight:700;color:'+matchColor+';">▲ '+pct+'%</span>'
-            : '';
-          var card = document.createElement('div');
-          card.className = 'job-card';
-          card.dataset.search = ((job.title||'') + ' ' + (job.company_name||'') + ' ' + (job.field||'') + ' ' + (job.location||'') + ' ' + (job.job_type||'')).toLowerCase();
-          // Generate short company label (up to 2 words, abbreviated if long)
-          var compWords = (job.company_name || 'Co').split(' ');
-          var compLabel = compWords.length === 1
-            ? compWords[0].substring(0, 4).toUpperCase()
-            : compWords.slice(0, 2).map(function(w){ return w.substring(0, 3); }).join('\n').toUpperCase();
-          var deadline = job.deadline_month ? 'Closes ' + job.deadline_month + ' ' + job.deadline_year : 'Open';
-          card.innerHTML = '<div class="company-logo">' + esc(compLabel) + '</div>'
-            + '<div class="job-info"><h4>' + esc(job.title) + '</h4>'
-            + '<div class="company-name">' + esc(job.company_name||'Company') + ' · ' + esc(job.location||'Netherlands') + '</div>'
-            + '<div class="job-tags"><span class="tag tag-type">' + esc(job.job_type||'Internship') + '</span>'
-            + '<span class="tag tag-location">' + esc(job.location||'NL') + '</span>'
-            + (job.field ? '<span class="tag tag-sector">' + esc(job.field) + '</span>' : '')
-            + '</div></div>'
-            + '<div class="job-meta">' + matchBadge + '<div class="deadline">' + esc(deadline) + '</div></div>';
-          card.onclick = function() { openJobDetailFromDB(job); };
-          jobList.appendChild(card);
-        });
-      }
-
-      var countEl = document.querySelector('.results-count strong');
-      if (countEl) countEl.textContent = filtered.length + ' of ' + jobs.length;
+      _allJobs = res.data;
+      renderJobList(_allJobs);
     } catch(err) { console.error('loadJobsFromDB:', err.message); }
   }
 
@@ -825,7 +904,7 @@
       var el = document.getElementById('jd-skills-'+cat);
       var arr = ss[cat] || [];
       if (wrap) wrap.style.display = arr.length ? 'block' : 'none';
-      if (el) el.innerHTML = arr.map(function(s){ return '<span class="skill-tag">'+s+'</span>'; }).join('');
+      if (el) el.innerHTML = arr.map(function(s){ return '<span class="skill-tag">'+esc(s)+'</span>'; }).join('');
     });
     var logo=document.getElementById('jd-logo');
     if(logo){logo.textContent=job.company_name?job.company_name[0].toUpperCase():'R';logo.style.background='#e8622a';}
@@ -2369,7 +2448,7 @@
         + topSkills.map(function(sk) { return '<span class="skill-tag" style="font-size:11px;padding:3px 10px;">' + esc(sk) + '</span>'; }).join('')
         + '</div>'
         + '<div class="student-card-footer">'
-        + '<span>' + esc(s.location) + (s.pref_location && s.pref_location.toLowerCase().includes('hybrid') ? ' / Hybrid' : '') + '</span>'
+        + '<span>' + esc(s.location) + ((s.pref_locations || s.pref_location || '').toLowerCase().includes('hybrid') ? ' / Hybrid' : '') + '</span>'
         + '<button class="shortlist-btn" onclick="event.stopPropagation();shortlistStudent(this)">&#9734; Save</button>'
         + '</div>';
       card.onclick = (function(student) {
@@ -2646,11 +2725,11 @@
       async function() {
         var pw1 = (document.getElementById('settings-new-pw') || {}).value || '';
         var pw2 = (document.getElementById('settings-new-pw2') || {}).value || '';
-        if (pw1.length < 8) { showToast('Password must be at least 8 characters'); return; }
-        if (pw1 !== pw2)    { showToast('Passwords do not match'); return; }
+        if (pw1.length < 8) { showToast('Password must be at least 8 characters', 'error'); closeConfirmModal(); openChangePasswordModal(); return; }
+        if (pw1 !== pw2)    { showToast('Passwords do not match', 'error'); closeConfirmModal(); openChangePasswordModal(); return; }
         var res = await db.auth.updateUser({ password: pw1 });
-        if (res.error) showToast('Could not update: ' + res.error.message);
-        else showToast('Password updated');
+        if (res.error) showToast('Could not update: ' + res.error.message, 'error');
+        else { closeConfirmModal(); showToast('Password updated'); }
       }
     );
   }
@@ -3695,125 +3774,8 @@
   document.getElementById('student-modal').addEventListener('click', function(e){ if(e.target===this) closeStudentModal(); });
 
   // ─── APPLICANT CV MODAL ───
-  var applicantProfiles = {
-    'Sophie Martens': {
-      degree: 'MSc Finance', university: 'Tilburg University', gpa: '7.9 / 10', workAuth: 'EU citizen',
-      avail: 'Jun 2025', color: '#e8622a', initial: 'S',
-      motivation: 'I have been following KPMG’s data practice closely and I am particularly drawn to the intersection of financial modelling and analytics. Having interned at Rabobank last summer I want to deepen my technical toolkit in a more data-driven environment.',
-      education: [
-        { title: 'MSc Finance', sub: 'Tilburg University · Sep 2023 — Present', desc: 'Specialisation in Quantitative Finance. Thesis on factor models in European equity markets.' },
-        { title: 'BSc Economics & Business Economics', sub: 'Erasmus University Rotterdam · Sep 2020 — Jul 2023', desc: '' }
-      ],
-      experience: [
-        { title: 'Finance Intern', sub: 'Rabobank · Jun 2023 — Sep 2023 · Utrecht', desc: 'Supported the structured finance desk with cashflow modelling and credit analysis for two mid-market deals.' },
-        { title: 'Student Assistant', sub: 'Erasmus School of Economics · Sep 2022 — Jun 2023', desc: 'Assisted in grading and tutoring for Quantitative Methods I.' }
-      ],
-      orgs: [{ title: 'Treasurer', sub: 'Erasmus Finance Society · 2021 — 2023', desc: 'Managed €12k annual budget, organised 4 speaker events per semester.' }],
-      skills: { technical: ['Excel (Advanced)', 'Bloomberg Terminal', 'Python (pandas)', 'Financial Modelling', 'DCF Analysis'], professional: ['Data Analysis', 'Presentation', 'Research'], languages: ['Dutch (Native)', 'English (C1)', 'German (B1)'] },
-      prefs: { type: 'Internship (stage)', start: 'Jun 2025', duration: '5–6 months', sectors: 'Finance & Banking, Data & Analytics', location: 'Tilburg, Amsterdam', roles: ['Financial Analyst', 'Data Analyst'] },
-      docs: ['CV / Resume', 'Cover letter']
-    },
-    'Thomas de Vries': {
-      degree: 'BSc Econometrics & Operations Research', university: 'Tilburg University', gpa: '8.2 / 10', workAuth: 'EU citizen',
-      avail: 'Sep 2025', color: '#2e7d52', initial: 'T',
-      motivation: 'Econometrics and data science are my core strengths and I want to apply them in a real business context. KPMG’s analytics team works on problems I find genuinely interesting — predictive modelling for audit risk is exactly where I want to develop.',
-      education: [
-        { title: 'BSc Econometrics & Operations Research', sub: 'Tilburg University · Sep 2021 — Present', desc: 'Minor in Data Science. GPA 8.2. Relevant coursework: Machine Learning, Time Series, Econometrics III.' }
-      ],
-      experience: [
-        { title: 'Research Assistant', sub: 'TiU Department of Econometrics · Jan 2023 — Present', desc: 'Assist Prof. van Dijk with replication studies in applied econometrics. Built Python pipeline processing 2M+ records.' },
-        { title: 'Data Analyst Intern', sub: 'Jumbo Supermarkets · Jun 2024 — Aug 2024 · Tilburg', desc: 'Built demand forecasting models for 200 SKUs. Reduced forecast error by 18%.' }
-      ],
-      orgs: [{ title: 'Member', sub: 'TiU Data Science Club · 2022 — Present', desc: '' }],
-      skills: { technical: ['Python (sklearn, pandas)', 'R', 'MATLAB', 'SQL', 'Tableau', 'Git'], professional: ['Statistics', 'Machine Learning', 'Research', 'Problem Solving'], languages: ['Dutch (Native)', 'English (C1)'] },
-      prefs: { type: 'Internship (stage)', start: 'Sep 2025', duration: '5–6 months', sectors: 'Data & Analytics, Finance & Banking', location: 'Tilburg, Amsterdam, Hybrid', roles: ['Data Analyst', 'Econometrician', 'Business Analyst'] },
-      docs: ['CV / Resume']
-    },
-    'Jasper Willems': {
-      degree: 'MSc Data Science & Society', university: 'Tilburg University', gpa: '7.6 / 10', workAuth: 'EU citizen',
-      avail: 'Jun 2025', color: '#6a1b9a', initial: 'J',
-      motivation: 'I applied because KPMG’s data team works at a scale and complexity I haven’t been exposed to yet. My MSc thesis on NLP for contract review is directly relevant to audit automation and I want to see how these methods work in practice.',
-      education: [
-        { title: 'MSc Data Science & Society', sub: 'Tilburg University · Sep 2023 — Present', desc: 'Thesis: NLP pipeline for automated contract clause classification. Score 8.5.' },
-        { title: 'BSc Cognitive Science & AI', sub: 'Tilburg University · Sep 2019 — Jul 2023', desc: '' }
-      ],
-      experience: [
-        { title: 'Data Analyst Intern', sub: 'KPMG (previous placement) · Jun 2024 — Aug 2024', desc: 'Built anomaly detection model for accounts payable using isolation forests. Flagged 94 transactions for review.' },
-        { title: 'AI Research Intern', sub: 'Tilburg University · Mar 2023 — Jun 2023', desc: 'Literature review and dataset curation for NLP research project.' }
-      ],
-      orgs: [],
-      skills: { technical: ['Python (TensorFlow, HuggingFace)', 'SQL', 'Tableau', 'scikit-learn', 'Git', 'Docker'], professional: ['Machine Learning', 'NLP', 'Data Visualisation', 'Research'], languages: ['Dutch (Native)', 'English (C1)', 'Spanish (A2)'] },
-      prefs: { type: 'Internship (stage)', start: 'Jun 2025', duration: '5–6 months', sectors: 'Data & Analytics, Technology', location: 'Tilburg, Hybrid', roles: ['Data Scientist', 'Data Analyst', 'AI Engineer'] },
-      docs: ['CV / Resume', 'Cover letter']
-    },
-    'Aisha Okonkwo': {
-      degree: 'MSc Economics', university: 'Tilburg University', gpa: '7.4 / 10', workAuth: 'Non-EU (work permit)',
-      avail: 'Jun 2025', color: '#1a3260', initial: 'A',
-      motivation: 'Strategy consulting is where I want to build my career and this internship at KPMG Strategy & Operations is the clearest path I can see. My BCG experience showed me I work well in fast-paced team settings and I want to deepen that in a more analytical context.',
-      education: [
-        { title: 'MSc Economics', sub: 'Tilburg University · Sep 2023 — Present', desc: 'Specialisation in International Economics and Finance. Exchange semester at Bocconi University (Spring 2024).' },
-        { title: 'BSc Economics', sub: 'University of Lagos · Sep 2019 — Jun 2023', desc: 'First Class Honours.' }
-      ],
-      experience: [
-        { title: 'Strategy Intern', sub: 'BCG (project secondment) · Jun 2024 — Aug 2024 · Amsterdam', desc: 'Supported a 3-person case team on a market entry project for a Dutch logistics client. Built competitive benchmarking model and contributed to final board presentation.' },
-        { title: 'Junior Research Analyst', sub: 'Lagos Business School · Sep 2022 — Jun 2023', desc: 'Co-authored two working papers on FDI flows in Sub-Saharan Africa.' }
-      ],
-      orgs: [{ title: 'Co-founder & President', sub: 'TiU African Economics Society · 2023 — Present', desc: 'Built student organisation from 0 to 80 members in 18 months.' }],
-      skills: { technical: ['Excel (Advanced)', 'PowerPoint', 'Stata', 'R (basic)'], professional: ['Strategy', 'Research', 'Stakeholder Communication', 'Presentation', 'Project Management'], languages: ['English (Native)', 'Dutch (B1)', 'French (B2)', 'Yoruba (Native)'] },
-      prefs: { type: 'Internship (stage)', start: 'Jun 2025', duration: '5–6 months', sectors: 'Consulting, Finance & Banking', location: 'Amsterdam, Tilburg, Hybrid', roles: ['Strategy Consultant', 'Business Analyst'] },
-      docs: ['CV / Resume', 'Cover letter', 'Writing sample']
-    },
-    'Laura Hendrix': {
-      degree: 'BSc Business Economics', university: 'Tilburg University', gpa: '7.1 / 10', workAuth: 'EU citizen',
-      avail: 'Apr 2025', color: '#e8622a', initial: 'L',
-      motivation: 'HR has always been where I want to work. The audit graduate programme at KPMG is interesting to me because I want to understand business from the inside before moving into a people-focused role. I bring strong interpersonal skills and a genuine interest in organisational culture.',
-      education: [
-        { title: 'BSc Business Economics', sub: 'Tilburg University · Sep 2022 — Present', desc: 'Minor in Human Resource Studies. Final year project on employee engagement in hybrid workplaces.' }
-      ],
-      experience: [
-        { title: 'HR & Recruitment Assistant', sub: 'Jumbo Supermarkets · Jun 2023 — Present · Tilburg', desc: 'Supports recruitment coordinator with screening, scheduling and onboarding. Helped reduce time-to-hire by 11 days.' },
-        { title: 'Barista & Team Lead', sub: 'Starbucks · Sep 2021 — May 2023 · Tilburg', desc: 'Trained 4 new team members. Promoted to team lead after 6 months.' }
-      ],
-      orgs: [{ title: 'Events Officer', sub: 'TiU Business Association · 2023 — Present', desc: 'Organises company visits and networking events. Managed logistics for TiU Business Week 2024.' }],
-      skills: { technical: ['Excel', 'MS Office', 'AFAS (basic)', 'Canva'], professional: ['Communication', 'Teamwork', 'Organisation', 'Customer Service', 'HR Processes'], languages: ['Dutch (Native)', 'English (B2)', 'French (A2)'] },
-      prefs: { type: 'Graduate role', start: 'Apr 2025', duration: 'Ongoing', sectors: 'HR & People, Finance & Banking', location: 'Tilburg, Den Bosch', roles: ['HR Business Partner', 'Recruitment Specialist'] },
-      docs: ['CV / Resume', 'Cover letter']
-    },
-    'Milan Kovacs': {
-      degree: 'MSc Accountancy', university: 'Tilburg University', gpa: '7.7 / 10', workAuth: 'EU citizen',
-      avail: 'Jun 2025', color: '#5d4037', initial: 'M',
-      motivation: 'I want to pursue the RA qualification and KPMG’s Audit Graduate Programme is the best structured route I know. My Deloitte placement showed me I enjoy the analytical rigour of audit and I want to build on that in a larger team.',
-      education: [
-        { title: 'MSc Accountancy', sub: 'Tilburg University · Sep 2023 — Present', desc: 'Specialisation in Financial Auditing. Thesis on going-concern disclosures in Dutch listed companies.' },
-        { title: 'BSc Accountancy & Control', sub: 'Tilburg University · Sep 2020 — Jul 2023', desc: 'Cum laude.' }
-      ],
-      experience: [
-        { title: 'Audit Intern', sub: 'Deloitte · Jun 2024 — Aug 2024 · Eindhoven', desc: 'Worked on two audit engagements in manufacturing sector. Performed substantive testing on fixed assets and inventory. Received return offer.' },
-        { title: 'Finance Controller Intern', sub: 'DAF Trucks · Jun 2023 — Sep 2023 · Eindhoven', desc: 'Monthly reporting, variance analysis, and budget preparation support.' }
-      ],
-      orgs: [{ title: 'Board Member — Finance', sub: 'TiU Accountancy Association · 2022 — 2023', desc: '' }],
-      skills: { technical: ['Excel (Advanced)', 'SAP', 'CODA', 'Power BI', 'Auditing Software'], professional: ['Financial Analysis', 'Audit Procedures', 'Risk Assessment', 'Reporting', 'Attention to Detail'], languages: ['Dutch (Native)', 'English (C1)', 'German (B2)', 'Hungarian (Native)'] },
-      prefs: { type: 'Graduate role', start: 'Jun 2025', duration: 'Ongoing', sectors: 'Accounting & Audit, Finance & Banking', location: 'Tilburg, Eindhoven', roles: ['Audit Associate', 'Financial Controller'] },
-      docs: ['CV / Resume', 'Cover letter', 'Transcript']
-    },
-    'Nina Bakker': {
-      degree: 'MSc Finance', university: 'Tilburg University', gpa: '7.5 / 10', workAuth: 'EU citizen',
-      avail: 'Sep 2025', color: '#1a3260', initial: 'N',
-      motivation: 'Finance and data are increasingly inseparable and the Audit Graduate Programme at KPMG is one of the few entry points that combines both. I passed CFA Level 1 in February and I am targeting a career in financial auditing or risk.',
-      education: [
-        { title: 'MSc Finance', sub: 'Tilburg University · Sep 2023 — Present', desc: 'Track: Corporate Finance & Banking. GPA 7.5.' },
-        { title: 'BSc Finance & Investments', sub: 'Rotterdam University of Applied Sciences · Sep 2019 — Jul 2023', desc: '' }
-      ],
-      experience: [
-        { title: 'Finance Intern', sub: 'ING Bank · Jun 2024 — Aug 2024 · Amsterdam', desc: 'Supported ALM desk with interest rate sensitivity analysis. Built VBA macro reducing monthly reporting time by 3 hours.' },
-        { title: 'Investment Club Analyst', sub: 'TiU Investment Society · Sep 2023 — Present', desc: 'Covers Financials sector. Presented 3 equity pitches. Portfolio up 12% YTD.' }
-      ],
-      orgs: [{ title: 'Analyst', sub: 'TiU Investment Society · 2023 — Present', desc: 'Sector coverage: Financials. Quarterly equity pitch presentations.' }],
-      skills: { technical: ['Excel (Advanced)', 'Bloomberg', 'Python (basic)', 'VBA', 'Power BI'], professional: ['Financial Analysis', 'Modelling', 'Risk Assessment', 'CFA Level 1'], languages: ['Dutch (Native)', 'English (C1)'] },
-      prefs: { type: 'Graduate role', start: 'Sep 2025', duration: 'Ongoing', sectors: 'Finance & Banking, Accounting & Audit', location: 'Tilburg, Amsterdam', roles: ['Financial Analyst', 'Audit Associate', 'Risk Analyst'] },
-      docs: ['CV / Resume', 'Cover letter', 'Transcript']
-    }
-  };
+  // Populated at runtime by openApplicantCVFromDB() and openStudentFromDB()
+  var applicantProfiles = {};
   function openApplicantCV(row) {
     var name = row.querySelector('h4').textContent;
     var appliedDate = row.querySelector('.applied-date') ? row.querySelector('.applied-date').textContent : '';
@@ -4997,6 +4959,7 @@
     btn.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>';
     setTimeout(function(){btn.textContent='Edit';},2500);
     var _eb = document.getElementById('edu-req-badge'); if (_eb) _eb.style.display = structured.length >= 1 ? 'none' : '';
+    loadStudentProfile();
   }
   function cancelEducationEdit(){document.getElementById('edu-edit-view').style.display='none';document.getElementById('edu-read-view').style.display='block';document.getElementById('edu-edit-btn').textContent='Edit';}
 
@@ -5109,6 +5072,7 @@
     r.innerHTML=html||'<p style="font-size:13px;color:var(--gray);">No experience added yet.</p>';
     r.style.display='block';e.style.display='none';
     b.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>';setTimeout(function(){b.textContent='Edit';},2500);
+    loadStudentProfile();
   }
   function cancelExperienceEdit(){document.getElementById('exp-edit-view').style.display='none';document.getElementById('exp-read-view').style.display='block';document.getElementById('exp-edit-btn').textContent='Edit';}
 
@@ -5235,6 +5199,7 @@
     r.style.display='block';e.style.display='none';
     b.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>';setTimeout(function(){b.textContent='Edit';},2500);
     var _sb = document.getElementById('skills-req-badge'); if (_sb) _sb.style.display = totalSkillCount >= 3 ? 'none' : '';
+    loadStudentProfile();
   }
   function cancelSkillsEdit(){document.getElementById('skills-edit-view').style.display='none';document.getElementById('skills-read-view').style.display='block';document.getElementById('skills-edit-btn').textContent='Edit';document.getElementById('skill-suggestions').style.display='none';}
   function addCourseEntry(){var list=document.getElementById('courses-list');var d=document.createElement('div');d.className='edu-entry-form';d.style.marginTop='10px';var grid=document.createElement('div');grid.className='edu-form-grid';var f1=document.createElement('div');f1.className='form-group';var l1=document.createElement('label');l1.className='form-label';l1.textContent='Course name ';var b1=document.createElement('span');b1.className='field-badge required';b1.textContent='Required';l1.appendChild(b1);var i1=document.createElement('input');i1.className='form-input';i1.type='text';i1.placeholder='e.g. Corporate Finance';i1.maxLength=150;f1.appendChild(l1);f1.appendChild(i1);var f2=document.createElement('div');f2.className='form-group';var l2=document.createElement('label');l2.className='form-label';l2.textContent='Course code ';var b2=document.createElement('span');b2.className='field-badge optional';b2.textContent='Optional';l2.appendChild(b2);var i2=document.createElement('input');i2.className='form-input';i2.type='text';i2.placeholder='e.g. FIN402';i2.maxLength=50;f2.appendChild(l2);f2.appendChild(i2);grid.appendChild(f1);grid.appendChild(f2);d.appendChild(grid);var rb=document.createElement('button');rb.className='remove-edu-btn';rb.style.marginTop='8px';rb.textContent='Remove';rb.onclick=function(){d.remove();};d.appendChild(rb);list.appendChild(d);}
@@ -5428,6 +5393,7 @@
     var dutchEl = document.getElementById('pref-read-dutch-only'); if (dutchEl) dutchEl.textContent = prefs.dutchOnly ? 'Yes' : 'No';
     r.style.display='block'; e.style.display='none';
     b.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>'; setTimeout(function(){b.textContent='Edit';},2500);
+    loadStudentProfile();
   }
   function cancelPreferencesEdit(){document.getElementById('pref-edit-view').style.display='none';document.getElementById('pref-read-view').style.display='block';document.getElementById('pref-edit-btn').textContent='Edit';}
 
