@@ -924,12 +924,32 @@
     var rgEl=document.getElementById('jd-role-group');
     if(rgEl&&job.role_group) rgEl.innerHTML=job.role_group.split(',').map(function(r){return '<span class="skill-tag">'+r.trim()+'</span>';}).join('');
     var ab=document.getElementById('jd-apply-btn');
+    var alreadyEl=document.getElementById('jd-already-applied');
+    if(alreadyEl) { alreadyEl.style.display='none'; alreadyEl.textContent=''; }
     if(ab) {
       if (hideApply || (currentEmployer && !currentStudent)) {
         ab.style.display = 'none';
       } else {
         ab.style.display = '';
         ab.onclick=function(){closeJobDetail();openApplyModal(job.title,job.company_name,job);};
+        if (currentStudent && job.id) {
+          db.from('applications').select('id, status')
+            .eq('student_id', currentStudent.id)
+            .eq('job_id', job.id).limit(1)
+            .then(function(res) {
+              if (res.data && res.data.length > 0) {
+                ab.style.display = 'none';
+                if (alreadyEl) {
+                  var st = res.data[0].status || 'New';
+                  alreadyEl.textContent = st === 'Accepted'   ? '✅ You\'ve been accepted for this role — check My applications!'
+                    : st === 'Shortlisted' ? '⭐ You\'ve been shortlisted — check My applications for updates'
+                    : st === 'Rejected'    ? 'You were not selected for this role.'
+                    : 'You\'ve already applied — check My applications for status updates.';
+                  alreadyEl.style.display = 'block';
+                }
+              }
+            });
+        }
       }
     }
     // Fetch and show company description
@@ -1103,7 +1123,7 @@
             + '<span class="tag tag-new" style="padding:4px 10px;font-size:11px;">Active</span>'
             + '<span class="listing-deadline">' + (job.deadline_month ? 'Closes ' + esc(job.deadline_month) + ' ' + esc(job.deadline_year||'') : 'Open') + '</span>'
             + '<span class="listing-applicants-badge">' + appCount + ' applicant' + (appCount !== 1 ? 's' : '') + '</span>'
-            + '<button class="listing-edit-btn" style="background:#22c55e;color:white;border-color:#22c55e;" onclick="event.stopPropagation();openFilledModal(this)" data-job-id="' + esc(job.id) + '" data-job-title="' + esc(job.title||'') + '">Filled ✓</button>'
+            + '<button class="listing-edit-btn" onclick="event.stopPropagation();openFilledModal(this)" data-job-id="' + esc(job.id) + '" data-job-title="' + esc(job.title||'') + '">Close listing</button>'
             + '<button class="listing-edit-btn" onclick="event.stopPropagation();openEditListing(this)">Edit</button></div>';
           row.onclick = (function(j){ return function(e) {
             if (e.target.closest('.listing-edit-btn')) return;
@@ -3117,7 +3137,7 @@
     else if (tab === 'applicants' && applicantsPanel) { applicantsPanel.style.display = 'block'; loadApplicantsPanel(); }
     else if (tab === 'messages' && messagesPanel) { messagesPanel.style.display = 'block'; loadCompanyMessages(); }
     else if (tab === 'settings' && settingsPanel) { settingsPanel.style.display = 'block'; loadCompanySettings(); }
-    else if (dash) dash.style.display = 'block';
+    else if (dash) { dash.style.display = 'block'; loadCompanyDashboard(); }
   }
 
   // ─── MESSAGING ───
@@ -3145,6 +3165,26 @@
   }());
 
   // ── Company: load all threads ──
+  // ── Real-time message helpers ──
+  var _msgChannel = null;
+  function _unsubscribeMessages() {
+    if (_msgChannel) { try { db.removeChannel(_msgChannel); } catch(e){} _msgChannel = null; }
+  }
+  function _buildMsgWrap(m, rightAlign) {
+    var wrap = document.createElement('div');
+    wrap.className = 'msg-wrap' + (rightAlign ? ' right' : '');
+    var typeLabel = '';
+    if (m.type && m.type !== 'message') {
+      var tc = m.type==='accepted'?'#22c55e':m.type==='shortlisted'?'#f59e0b':m.type==='invite'?'var(--navy)':'#f43f5e';
+      var tt = m.type==='accepted'?'✅ Accepted':m.type==='shortlisted'?'⭐ Shortlisted':m.type==='invite'?'✉ Invite to apply':'❌ Rejected';
+      typeLabel = '<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;display:block;color:'+tc+'">'+tt+'</span>';
+    }
+    var time = new Date(m.created_at||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    wrap.innerHTML = typeLabel+'<div class="msg-bubble '+(rightAlign?'from-employer':'from-student')+'">'+esc(m.body)+'</div>'
+      +'<div class="msg-meta'+(rightAlign?' right':'')+'">'+time+'</div>';
+    return wrap;
+  }
+
   async function loadCompanyMessages() {
     var listEl = document.getElementById('company-msg-thread-list');
     if (!listEl || !currentEmployer) return;
@@ -3269,6 +3309,20 @@
     });
     msgsEl.scrollTop = msgsEl.scrollHeight;
     loadCompanyMessages();
+    // Subscribe to incoming student messages for this thread
+    _unsubscribeMessages();
+    _msgChannel = db.channel('co-msg-' + thread.studentId + '-' + (thread.jobId||'x'))
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages',
+          filter: 'employer_id=eq.' + currentEmployer.id },
+        function(payload) {
+          var m = payload.new;
+          if (m.sender !== 'student') return;
+          if (m.student_id !== thread.studentId) return;
+          if ((m.job_id||null) !== (thread.jobId||null)) return;
+          var msgsEl2 = document.getElementById('company-msg-messages');
+          if (msgsEl2) { msgsEl2.appendChild(_buildMsgWrap(m, false)); msgsEl2.scrollTop = msgsEl2.scrollHeight; }
+          loadCompanyMessages();
+        }).subscribe();
   }
 
   async function sendCompanyMessage() {
@@ -3277,7 +3331,9 @@
     var body = (input.value || '').trim();
     if (!body) return;
     input.value = '';
-    await db.from('messages').insert({
+    var msgsEl = document.getElementById('company-msg-messages');
+    if (msgsEl) { msgsEl.appendChild(_buildMsgWrap({sender:'employer',body:body,created_at:new Date().toISOString(),type:'message'}, true)); msgsEl.scrollTop = msgsEl.scrollHeight; }
+    var res = await db.from('messages').insert({
       job_id: currentCompanyThread.jobId,
       application_id: null,
       student_id: currentCompanyThread.studentId,
@@ -3286,7 +3342,8 @@
       body: body,
       type: 'message'
     });
-    openCompanyThread(currentCompanyThread);
+    if (res.error) showToast('Could not send message: ' + res.error.message, 'error');
+    else loadCompanyMessages();
   }
 
   // ── Student: load all threads ──
@@ -3425,6 +3482,19 @@
     });
     msgsEl.scrollTop = msgsEl.scrollHeight;
     loadStudentMessages();
+    // Subscribe to incoming employer messages for this thread
+    _unsubscribeMessages();
+    _msgChannel = db.channel('st-msg-' + currentStudent.id + '-' + (thread.jobId||'x'))
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages',
+          filter: 'student_id=eq.' + currentStudent.id },
+        function(payload) {
+          var m = payload.new;
+          if (m.sender !== 'employer') return;
+          if ((m.job_id||null) !== (thread.jobId||null)) return;
+          var msgsEl2 = document.getElementById('student-msg-messages');
+          if (msgsEl2) { msgsEl2.appendChild(_buildMsgWrap(m, false)); msgsEl2.scrollTop = msgsEl2.scrollHeight; }
+          loadStudentMessages();
+        }).subscribe();
   }
 
   function applyFromInvite() {
@@ -3447,11 +3517,18 @@
 
   async function sendStudentMessage() {
     if (!currentStudentThread || !currentStudent) return;
+    var sess = await db.auth.getSession();
+    if (!sess.data.session || sess.data.session.user.id !== currentStudent.id) {
+      showToast('Session expired — please log in again', 'error');
+      return;
+    }
     var input = document.getElementById('student-msg-input');
     var body = (input.value || '').trim();
     if (!body) return;
     input.value = '';
-    await db.from('messages').insert({
+    var msgsEl = document.getElementById('student-msg-messages');
+    if (msgsEl) { msgsEl.appendChild(_buildMsgWrap({sender:'student',body:body,created_at:new Date().toISOString(),type:'message'}, true)); msgsEl.scrollTop = msgsEl.scrollHeight; }
+    var res = await db.from('messages').insert({
       job_id: currentStudentThread.jobId,
       application_id: null,
       student_id: currentStudent.id,
@@ -3460,7 +3537,8 @@
       body: body,
       type: 'message'
     });
-    openStudentThread(currentStudentThread);
+    if (res.error) { showToast('Could not send message: ' + res.error.message, 'error'); return; }
+    loadStudentMessages();
   }
 
   // Click job title in student message header → open job detail modal
@@ -3607,7 +3685,11 @@
     } catch(err) {
       console.error('Application save error — full object:', JSON.stringify(err));
       var msg = err.message || err.details || err.hint || JSON.stringify(err);
-      showToast('Failed: ' + msg, 'error');
+      if (msg.includes('unique_student_job_application') || msg.includes('duplicate key')) {
+        showToast('You\'ve already applied to this job — check My applications for your status.', 'error');
+      } else {
+        showToast('Failed: ' + msg, 'error');
+      }
     }
   }
   document.getElementById('apply-modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
@@ -3896,8 +3978,13 @@
   async function setApplicantStatus(status) {
     if (!currentCVRow) return;
     var appId = currentCVRow.dataset.id;
-    if (!appId) return;
-    await db.from('applications').update({ status: status }).eq('id', appId);
+    if (!appId) { showToast('Error: could not find application ID', 'error'); return; }
+    var upd = await db.from('applications').update({ status: status }).eq('id', appId);
+    if (upd.error) {
+      console.error('Status update failed:', upd.error);
+      showToast('Failed to save status: ' + (upd.error.message || upd.error.code || JSON.stringify(upd.error)), 'error');
+      return;
+    }
     currentCVRow.dataset.status = status;
     // Update badge on applicant row
     var statusColors = {'New':'background:#f0f4ff;color:#1a3260;','Accepted':'background:#e8f5e9;color:#2e7d32;','Shortlisted':'background:#fff8e1;color:#e65100;','Rejected':'background:#ffeaea;color:#c62828;'};
@@ -3905,54 +3992,31 @@
     if (badge) { badge.textContent = status; badge.style.cssText = (statusColors[status]||statusColors['New']) + 'padding:4px 12px;border-radius:100px;font-size:12px;font-weight:600;'; }
     _highlightStatusBtns(status);
 
-    // Auto-send message template if one exists for this job
-    try {
-      var appRes = await db.from('applications').select('student_id, job_id, student_name').eq('id', appId).single();
-      if (appRes.data) {
-        var jobRes = await db.from('jobs').select('msg_accepted, msg_shortlisted, msg_rejected, title').eq('id', appRes.data.job_id).single();
-        if (jobRes.data) {
-          var msgKey = status === 'Accepted' ? 'msg_accepted' : status === 'Shortlisted' ? 'msg_shortlisted' : 'msg_rejected';
-          var template = jobRes.data[msgKey];
-          if (template) {
-            var body = template
-              .replace(/\[name\]/gi, appRes.data.student_name || 'there')
-              .replace(/\[role\]/gi, jobRes.data.title || 'the role');
-            await db.from('messages').insert({
-              job_id: appRes.data.job_id,
-              application_id: appId,
-              student_id: appRes.data.student_id,
-              employer_id: currentEmployer ? currentEmployer.id : null,
-              sender: 'employer',
-              body: body,
-              type: status.toLowerCase()
-            });
-          }
+    // Send the message the employer wrote (or edited) in the compose area
+    var messageBody = (document.getElementById('cv-message-text') || {}).value || '';
+    var messageSent = false;
+    if (messageBody.trim()) {
+      try {
+        var appRes = await db.from('applications').select('student_id, job_id').eq('id', appId).single();
+        if (appRes.data) {
+          await db.from('messages').insert({
+            job_id: appRes.data.job_id,
+            application_id: appId,
+            student_id: appRes.data.student_id,
+            employer_id: currentEmployer ? currentEmployer.id : null,
+            sender: 'employer',
+            body: messageBody.trim(),
+            type: status.toLowerCase()
+          });
+          messageSent = true;
         }
-      }
-    } catch(e) { console.error('Message send error:', e.message); }
-
-    // Sync myApplicants in memory + update dashboard
-    if (typeof myApplicants !== 'undefined') {
-      var app = myApplicants.find(function(a){ return a.id === appId; });
-      if (app) {
-        app.status = status;
-        var appList = document.getElementById('dash-applicant-list');
-        if (appList) {
-          var colors = ['#e8622a','#2e7d52','#1a3260','#6a1b9a','#5d4037','#c0392b','#0288d1'];
-          appList.innerHTML = myApplicants.slice(0, 5).map(function(a, i) {
-            var sc = {'New':'background:#f0f4ff;color:#1a3260;','Accepted':'background:#e8f5e9;color:#2e7d32;','Shortlisted':'background:#fff8e1;color:#e65100;','Rejected':'background:#ffeaea;color:#c62828;'};
-            var st = a.status || 'New';
-            var initial = (a.student_name || 'A').charAt(0).toUpperCase();
-            return '<div class="applicant-row">'
-              + '<div class="applicant-avatar" style="background:' + colors[i % colors.length] + ';">' + esc(initial) + '</div>'
-              + '<div class="applicant-info"><h4>' + esc(a.student_name || 'Applicant') + '</h4>'
-              + '<p>Applied for ' + esc(a.job_title || 'a role') + '</p></div>'
-              + '<span style="' + (sc[st]||sc['New']) + 'padding:3px 10px;border-radius:100px;font-size:12px;font-weight:600;">' + esc(st) + '</span></div>';
-          }).join('');
-        }
-      }
+      } catch(e) { console.error('Message send error:', e.message); }
     }
-    showToast(status === 'Accepted' ? '✅ Accepted — message sent' : status === 'Shortlisted' ? '⭐ Shortlisted — message sent' : '❌ Rejected — message sent');
+    showToast(
+      status === 'Accepted'    ? ('✅ Accepted' + (messageSent ? ' — message sent' : ''))
+      : status === 'Shortlisted' ? ('⭐ Shortlisted' + (messageSent ? ' — message sent' : ''))
+      : ('❌ Rejected' + (messageSent ? ' — message sent' : ''))
+    );
   }
 
   var _pendingStatus = null;
@@ -3981,6 +4045,18 @@
         btn.style.opacity = '0.5';
       }
     });
+    // Pre-fill message template
+    var name = window._cvStudentName || 'there';
+    var role = window._cvJobTitle || 'the role';
+    var templates = {
+      'Accepted':    'Hi ' + name + ', we\'re delighted to let you know that you\'ve been selected for the ' + role + ' position. We\'ll be in touch shortly with the next steps. Looking forward to working with you!',
+      'Shortlisted': 'Hi ' + name + ', thank you for applying to ' + role + '. We\'ve reviewed your application and are happy to let you know that you\'ve been shortlisted. We\'ll be in touch soon with further details.',
+      'Rejected':    'Hi ' + name + ', thank you for your interest in ' + role + '. After careful consideration, we\'ve decided to move forward with other candidates. We wish you all the best in your search.'
+    };
+    var compose = document.getElementById('cv-message-compose');
+    var textarea = document.getElementById('cv-message-text');
+    if (compose) compose.style.display = 'block';
+    if (textarea) textarea.value = templates[status] || '';
     // Enable Send button
     var sendBtn = document.getElementById('cv-send-btn');
     if (sendBtn) {
@@ -4022,6 +4098,11 @@
       btn.style.background = 'rgba(0,0,0,0.0)'; btn.style.color = c.color;
       btn.style.border = '2px solid ' + c.color; btn.style.opacity = '1';
     });
+    // Hide and clear message compose area
+    var compose = document.getElementById('cv-message-compose');
+    var textarea = document.getElementById('cv-message-text');
+    if (compose) compose.style.display = 'none';
+    if (textarea) textarea.value = '';
   }
 
   function _highlightStatusBtns(status) {
@@ -4074,6 +4155,8 @@
       var stuRes = await db.from('students').select('*').eq('id', app.student_id).single();
       if (stuRes.error || !stuRes.data) { showToast('Could not load student profile', 'error'); return; }
       var s = stuRes.data;
+      window._cvStudentName = s.name || '';
+      window._cvJobTitle = app.job_title || '';
 
       // Build profile object compatible with openApplicantCV
       var normSkills = function(arr) {
@@ -4283,11 +4366,11 @@
         row.innerHTML='<div class="listing-full-left"><div class="listing-full-title">'+title+'</div><div class="listing-full-meta">'+type+(field?' · '+field:'')+(location?' · '+location:'')+(duration?' · '+duration:'')+'</div></div><div class="listing-full-right"><span class="tag tag-new" style="padding:4px 10px;font-size:11px;">Active</span><span class="listing-deadline">'+deadline+'</span><span class="listing-applicants-badge">0 applicants</span><button class="listing-edit-btn" onclick="openEditListing(this)">Edit</button></div>';
         list.appendChild(row);
       }
-      var countEl=document.getElementById('listings-count');
-      if (countEl) { var count=document.querySelectorAll('#listings-full-list .listing-full-row').length; countEl.textContent=count+' listing'+(count!==1?'s':''); }
       document.getElementById('post-listing-form').style.display='none';
       document.getElementById('post-listing-success').style.display='block';
       showToast('Listing saved to Rookies!');
+      // Refresh dashboard metrics + listings panel without page reload
+      loadCompanyDashboard();
     } catch(err) {
       console.error('Save error:', err.message);
       showToast('Could not save: '+err.message, 'error');
@@ -4696,49 +4779,16 @@
         var res = await db.from('jobs').update(updates).eq('id', jobId);
         if (res.error) throw res.error;
         showToast('Listing updated!');
+        closeEditModal();
+        loadCompanyDashboard();
       } catch(err) {
         console.error('Update error:', err.message);
         showToast('Could not update: ' + err.message, 'error');
       }
     } else {
       showToast('Saved locally (no DB id found)', 'error');
+      closeEditModal();
     }
-
-    if (editTargetRow) {
-      editTargetRow.dataset.title=title;
-      editTargetRow.dataset.type=type;
-      editTargetRow.dataset.appMethod=getChip('edit-app-method');
-      editTargetRow.dataset.empType=getChip('edit-emp-type');
-      editTargetRow.dataset.field=field;
-      editTargetRow.dataset.duration=dur;
-      editTargetRow.dataset.location=location;
-      editTargetRow.dataset.workAuth=getChip('edit-work-auth');
-      editTargetRow.dataset.startMonth=getVal('edit-start-month');
-      editTargetRow.dataset.startYear=getVal('edit-start-year');
-      editTargetRow.dataset.deadlineMonth=dMonth;
-      editTargetRow.dataset.deadlineYear=dYear;
-      editTargetRow.dataset.ats=getVal('edit-ats');
-      editTargetRow.dataset.division=getVal('edit-division');
-      editTargetRow.dataset.description=getVal('edit-description');
-      editTargetRow.dataset.roleGroup=getVal('edit-role-group');
-      editTargetRow.dataset.numHires=getVal('edit-num-hires');
-      editTargetRow.dataset.pay=getVal('edit-pay');
-      editTargetRow.dataset.docs=getChips('edit-docs');
-      editTargetRow.dataset.qualifications=getVal('edit-qualifications');
-      editTargetRow.dataset.gradFrom=getVal('edit-grad-from');
-      editTargetRow.dataset.gradTo=getVal('edit-grad-to');
-      editTargetRow.dataset.schoolYear=getChips('edit-school-year');
-      editTargetRow.dataset.majors=getChips('edit-majors');
-      editTargetRow.dataset.gpaMin=getVal('edit-gpa-min');
-      editTargetRow.dataset.messaging=getChip('edit-messaging');
-      editTargetRow.dataset.interview=getChip('edit-interview');
-      editTargetRow.dataset.hiringTeam=getVal('edit-hiring-team');
-      editTargetRow.querySelector('.listing-full-title').textContent=title;
-      var metaParts=[type,field,location,dur].filter(Boolean);
-      editTargetRow.querySelector('.listing-full-meta').innerHTML=metaParts.join(' \u00b7 ');
-      var dl=editTargetRow.querySelector('.listing-deadline'); if(dl) dl.textContent=deadline;
-    }
-    closeEditModal();
   }
   document.getElementById('edit-listing-modal').addEventListener('click', function(e){ if(e.target===this) closeEditModal(); });
 

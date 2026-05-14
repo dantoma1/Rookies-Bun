@@ -2477,6 +2477,11 @@
           <button id="cv-reject-btn" class="btn" style="background:rgba(244,63,94,0.2);color:#f43f5e;border:2px solid #f43f5e;font-size:14px;padding:11px 24px;font-weight:600;border-radius:8px;" onclick="selectApplicantStatus('Rejected')">❌ Reject</button>
           <button id="cv-send-btn" class="btn" style="background:white;color:var(--gray);border:2px solid var(--border);font-size:14px;padding:11px 24px;font-weight:600;border-radius:8px;margin-left:8px;cursor:not-allowed;opacity:0.5;" disabled onclick="confirmApplicantStatus()">Send →</button>
         </div>
+        <!-- Message compose — appears after selecting a decision -->
+        <div id="cv-message-compose" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.12);">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.5);margin-bottom:8px;">Message to student</div>
+          <textarea id="cv-message-text" rows="3" placeholder="Write a message to the student..." style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:10px 12px;font-size:13.5px;color:white;font-family:'DM Sans',sans-serif;line-height:1.5;resize:vertical;box-sizing:border-box;"></textarea>
+        </div>
       </div>
     </div>
 
@@ -2709,6 +2714,7 @@
       </div>
 
       <!-- footer -->
+      <div id="jd-already-applied" style="display:none;padding:10px 14px;border-radius:8px;background:var(--cream);color:var(--navy);font-size:13.5px;font-weight:500;margin-bottom:6px;"></div>
       <div style="display:flex;gap:10px;padding-top:8px;">
         <button id="jd-apply-btn" class="btn btn-primary" style="flex:1;justify-content:center;" onclick="">Apply now →</button>
         <button class="btn btn-outline-navy" onclick="closeJobDetail()">Close</button>
