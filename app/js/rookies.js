@@ -350,7 +350,7 @@
   }
   try {
     var _sb = window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
-    if (_sb) { db = _sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+    if (_sb) { db = _sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: window.sessionStorage } }); }
     else { console.warn('Supabase CDN not loaded yet — db will init on DOMContentLoaded'); }
   } catch(e) { console.warn('Supabase init error:', e.message); }
 
@@ -3060,7 +3060,7 @@
     if (!db) {
       try {
         var _sb = window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
-        if (_sb) { db = _sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); console.log('Supabase db initialized on DOMContentLoaded'); }
+        if (_sb) { db = _sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: window.sessionStorage } }); console.log('Supabase db initialized on DOMContentLoaded'); }
         else { console.error('Supabase CDN failed to load'); }
       } catch(e) { console.error('Supabase DOMContentLoaded init error:', e.message); }
     }
@@ -3327,6 +3327,11 @@
 
   async function sendCompanyMessage() {
     if (!currentCompanyThread || !currentEmployer) return;
+    var sess = await db.auth.getSession();
+    if (!sess.data.session || sess.data.session.user.id !== currentEmployer.id) {
+      showToast('Session expired — please reload and log in again', 'error');
+      return;
+    }
     var input = document.getElementById('company-msg-input');
     var body = (input.value || '').trim();
     if (!body) return;
@@ -3476,7 +3481,7 @@
       wrap.className = 'msg-wrap' + (!isEmployer ? ' right' : '');
       var typeLabel = m.type && m.type !== 'message' ? ('<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;display:block;color:'+(m.type==='accepted'?'#22c55e':m.type==='shortlisted'?'#f59e0b':m.type==='invite'?'var(--navy)':'#f43f5e')+'">'+(m.type==='accepted'?'✅ Accepted':m.type==='shortlisted'?'⭐ Shortlisted':m.type==='invite'?'✉ Invite to apply':'❌ Rejected')+'</span>') : '';
       var time = new Date(m.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-      wrap.innerHTML = typeLabel + '<div class="msg-bubble ' + (!isEmployer?'from-employer':'from-student') + '">' + esc(m.body) + '</div>'
+      wrap.innerHTML = typeLabel + '<div class="msg-bubble ' + (isEmployer?'from-employer':'from-student') + '">' + esc(m.body) + '</div>'
         + '<div class="msg-meta' + (!isEmployer?' right':'') + '">' + time + '</div>';
       msgsEl.appendChild(wrap);
     });
