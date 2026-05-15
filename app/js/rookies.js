@@ -520,7 +520,7 @@
     var box = document.getElementById('cv-upload-box');
     if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--gray)'; statusEl.textContent = 'Uploading…'; }
 
-    var path = currentStudent.id + '.pdf';
+    var path = currentStudent.id + '/cv.pdf';
     var uploadRes = await db.storage.from('cvs').upload(path, file, { upsert: true, contentType: 'application/pdf' });
     if (uploadRes.error) { showToast('Upload failed: ' + uploadRes.error.message, 'error'); if (statusEl) statusEl.textContent = 'Upload failed.'; return; }
 
@@ -550,7 +550,7 @@
 
     showToast('Uploading photo…');
     var ext = file.name.split('.').pop();
-    var path = currentStudent.id + '.' + ext;
+    var path = currentStudent.id + '/avatar.' + ext;
 
     var uploadRes = await db.storage.from('avatars').upload(path, file, { upsert: true });
     if (uploadRes.error) { showToast('Upload failed: ' + uploadRes.error.message, 'error'); return; }
@@ -1766,12 +1766,12 @@
 
     var s = currentStudent;
 
-    // Get email from Supabase Auth
-    var email = '—';
-    try {
-      var authRes = await db.auth.getUser();
-      if (authRes.data?.user?.email) email = authRes.data.user.email;
-    } catch(e) {}
+    // Convert newlines to <br> for display — preserves multiline input
+    var nl2br = function(str) {
+      if (!str) return '—';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    };
+    var setText = function(id, val) { var el = document.getElementById(id); if (el) el.innerHTML = nl2br(val); };
 
     // Header
     var av = document.getElementById('profile-avatar');
@@ -1785,13 +1785,6 @@
       }
     }
 
-    // Convert newlines to <br> for display — preserves multiline input
-    var nl2br = function(str) {
-      if (!str) return '—';
-      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-    };
-    var setText = function(id, val) { var el = document.getElementById(id); if (el) el.innerHTML = nl2br(val); };
-
     setText('profile-header-name', s.name);
     var subParts = [s.university, s.degree, s.avail ? 'Available ' + s.avail : null].filter(Boolean);
     setText('profile-header-sub', subParts.join(' · '));
@@ -1799,7 +1792,12 @@
 
     // Basic info read view
     setText('profile-name', s.name);
-    setText('profile-email', email);
+    // Email: read from session (sessionStorage, no network round-trip) and update non-blocking
+    db.auth.getSession().then(function(sessRes) {
+      var em = sessRes.data && sessRes.data.session ? sessRes.data.session.user.email : '—';
+      var emailEl = document.getElementById('profile-email');
+      if (emailEl) emailEl.innerHTML = nl2br(em || '—');
+    }).catch(function(){});
     setText('profile-work-auth', s.work_auth || '—');
     setText('profile-location', s.location || '—');
     setText('profile-field-of-study', s.field_of_study || '—');
@@ -2449,6 +2447,7 @@
       }).filter(Boolean);
       var card = document.createElement('div');
       card.className = 'student-card';
+      card.dataset.studentId = s.id;
       var uniShort = (s.university||'').includes('Tilburg') ? 'TiU' : (s.university||'University').split(' ')[0];
       var matchBadge = matchBadgeHTML(s._matchPct);
       var bestFitLine = s._matchJobTitle
@@ -2457,9 +2456,12 @@
       var rightTop = matchBadge
         ? '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">' + matchBadge + '<span class="avail-badge">' + esc(s.avail||'Available') + '</span></div>'
         : '<span class="avail-badge">' + esc(s.avail||'Available') + '</span>';
+      var cardAvatarHtml = s.avatar_url
+        ? '<div class="student-card-avatar" style="background:' + esc(s.color) + ';padding:0;overflow:hidden;"><img src="' + esc(s.avatar_url) + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"></div>'
+        : '<div class="student-card-avatar" style="background:' + esc(s.color) + ';">' + esc(s.initial) + '</div>';
       card.innerHTML =
         '<div class="student-card-top">'
-        + '<div class="student-card-avatar" style="background:' + esc(s.color) + ';">' + esc(s.initial) + '</div>'
+        + cardAvatarHtml
         + '<div><h4>' + esc(s.name||'') + '</h4><p>' + esc(s.degree||'Student') + ' &middot; ' + esc(uniShort) + '</p>' + bestFitLine + '</div>'
         + rightTop
         + '</div>'
@@ -2469,7 +2471,7 @@
         + '</div>'
         + '<div class="student-card-footer">'
         + '<span>' + esc(s.location) + ((s.pref_locations || s.pref_location || '').toLowerCase().includes('hybrid') ? ' / Hybrid' : '') + '</span>'
-        + '<button class="shortlist-btn" onclick="event.stopPropagation();shortlistStudent(this)">&#9734; Save</button>'
+        + (function(){ var sv = window._savedStudentIds && window._savedStudentIds.has(s.id); return '<button class="shortlist-btn'+(sv?' saved':'')+'" onclick="event.stopPropagation();shortlistStudent(this)">'+(sv?'&#9733; Saved':'&#9734; Save')+'</button>'; }())
         + '</div>';
       card.onclick = (function(student) {
         return function() { openStudentFromDB(student); };
@@ -2478,7 +2480,7 @@
     });
   }
 
-  function openStudentFromDB(s, hideInvite) {
+  async function openStudentFromDB(s, hideInvite) {
     // Normalize an entry to {title, sub, desc} regardless of which shape it was saved in
     function normalizeEdu(e) {
       if (!e) return e;
@@ -2529,6 +2531,7 @@
       avail: [(s.avail_month||''), (s.avail_year||'')].filter(Boolean).join(' ') || s.avail || '—',
       color: s.color || 'var(--navy)',
       initial: s.initial || (s.name||'A')[0].toUpperCase(),
+      avatar_url: s.avatar_url || null,
       workAuth: s.work_auth || '—',
       bio: s.bio || '',
       education:  parseArr(s.education).map(normalizeEdu),
@@ -2551,6 +2554,27 @@
     };
     if (typeof applicantProfiles !== 'undefined') { applicantProfiles[s.name] = p; }
     openStudentModalWithProfile(s.name, p, hideInvite);
+
+    // After modal is open, check if this employer already sent an invite to this student
+    if (!hideInvite && currentEmployer && s.id) {
+      var invCheck = await db.from('messages')
+        .select('created_at')
+        .eq('student_id', s.id)
+        .eq('employer_id', currentEmployer.id)
+        .eq('type', 'invite')
+        .order('created_at', { ascending: false })
+        .limit(1);
+      var alreadyInvEl = document.getElementById('smodal-already-invited');
+      if (alreadyInvEl) {
+        if (!invCheck.error && invCheck.data && invCheck.data.length > 0) {
+          var lastDate = new Date(invCheck.data[0].created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+          alreadyInvEl.style.display = 'block';
+          alreadyInvEl.textContent = '⚠ You already invited this student on ' + lastDate + '. You can send another invite below if you\'d like.';
+        } else {
+          alreadyInvEl.style.display = 'none';
+        }
+      }
+    }
   }
 
   // ─── BROWSE STUDENTS — SPONTANEOUS VIEW FILTERS ─────────────────────────
@@ -2859,12 +2883,16 @@
     var fAuth    = getCheckedFilterValues('filter-work-auth');
     var gpaEl    = document.getElementById('filter-gpa-min');
     var fGpaMin  = gpaEl ? parseFloat(gpaEl.value || '0') : 0;
+    var savedOnlyEl = document.getElementById('filter-saved-only');
+    var fSavedOnly  = !!(savedOnlyEl && savedOnlyEl.checked);
 
     function splitList(v) {
       return (v || '').split(',').map(function(t){ return t.trim(); }).filter(Boolean);
     }
 
     var filtered = all.filter(function(s) {
+      // saved only
+      if (fSavedOnly && !(window._savedStudentIds && window._savedStudentIds.has(s.id))) return false;
       // pref_type — student may list multiple, ANY match keeps them
       if (fType.length) {
         var st = splitList(s.pref_type);
@@ -2929,6 +2957,8 @@
 
   function resetSpontFilters() {
     document.querySelectorAll('#browse-spontaneous-view .filter-scroll input[type="checkbox"]').forEach(function(c){ c.checked = false; });
+    var savedEl = document.getElementById('filter-saved-only');
+    if (savedEl) savedEl.checked = false;
     var gpaEl = document.getElementById('filter-gpa-min');
     if (gpaEl) gpaEl.value = '';
     applySpontFilters();
@@ -2975,7 +3005,16 @@
         console.warn('loadStudentsFromDB error:', res.error.message);
         return;
       }
-      var students = (res.data || []).filter(isStudentComplete);
+      var students = (res.data || []).filter(isStudentComplete).filter(function(s){ return s.visibility !== 'Private'; });
+
+      // Fetch saved student IDs for this employer so cards render with correct state
+      window._savedStudentIds = new Set();
+      if (currentEmployer) {
+        var savedRes = await db.from('saved_students').select('student_id').eq('employer_id', currentEmployer.id);
+        if (!savedRes.error && savedRes.data) {
+          savedRes.data.forEach(function(r){ window._savedStudentIds.add(r.student_id); });
+        }
+      }
 
       // Update count label in spontaneous browse
       var countEl = document.querySelector('#browse-spontaneous-view .results-count strong');
@@ -3094,6 +3133,71 @@
   // ─── CORE NAVIGATION ───
   var _studentScreens = ['student-browse', 'student-dash', 'student-profile'];
   var _employerScreens = ['company-dash', 'company-pending', 'company-rejected'];
+  // ─── HISTORY / BACK-BUTTON SUPPORT ───────────────────────────────────────
+  // Pushes history entries on navigation so the browser back button works
+  // within the SPA instead of leaving the page entirely.
+  var _navFromPop = false;
+  var _currentNavState = null;
+
+  function _navPush(state) {
+    if (_navFromPop) return;
+    _currentNavState = state;
+    window.history.pushState(state, '');
+  }
+
+  var _MODALS = [
+    { id: 'job-detail-modal',      close: function(){ closeJobDetail(); } },
+    { id: 'apply-modal',           close: function(){ closeModal(); } },
+    { id: 'student-modal',         close: function(){ closeStudentModal(); } },
+    { id: 'applicant-cv-modal',    close: function(){ closeApplicantCV(); } },
+    { id: 'post-listing-modal',    close: function(){ closePostModal(); } },
+    { id: 'edit-listing-modal',    close: function(){ closeEditModal(); } },
+    { id: 'company-profile-modal', close: function(){ closeCompanyProfileModal(); } },
+    { id: 'listing-filled-modal',  close: function(){ closeFilledModal(); } },
+    { id: 'confirm-modal',         close: function(){ closeConfirmModal(); } },
+  ];
+
+  window.addEventListener('popstate', function(e) {
+    _navFromPop = true;
+
+    // Priority 1 — close topmost open modal and re-push current state
+    for (var i = 0; i < _MODALS.length; i++) {
+      var mel = document.getElementById(_MODALS[i].id);
+      if (mel && mel.classList.contains('open')) {
+        _MODALS[i].close();
+        if (_currentNavState) window.history.pushState(_currentNavState, '');
+        _navFromPop = false;
+        return;
+      }
+    }
+
+    // Priority 2 — close browse sub-views
+    var browseRole = document.getElementById('browse-role-view');
+    var browseSpon = document.getElementById('browse-spontaneous-view');
+    if (browseRole && browseRole.style.display !== 'none') {
+      closeBrowseRole();
+      _currentNavState = e.state;
+      _navFromPop = false;
+      return;
+    }
+    if (browseSpon && browseSpon.style.display !== 'none') {
+      closeBrowseSpontaneous();
+      _currentNavState = e.state;
+      _navFromPop = false;
+      return;
+    }
+
+    // Priority 3 — restore screen or company tab
+    var state = e.state;
+    if (state) {
+      if (state.type === 'screen') showScreen(state.name);
+      else if (state.type === 'company-tab') showCompanyTab(state.tab);
+    }
+    _currentNavState = state;
+    _navFromPop = false;
+  });
+  // ─────────────────────────────────────────────────────────────────────────
+
   function showScreen(name) {
     // Require authentication for protected screens
     if (_studentScreens.indexOf(name) !== -1 && !currentStudent) {
@@ -3109,6 +3213,7 @@
     document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
     document.getElementById('screen-' + name).classList.add('active');
     window.scrollTo(0, 0);
+    _navPush({ type: 'screen', name: name });
   }
 
   // ─── CAREER OFFICER CONSOLE LAUNCH ───
@@ -3138,6 +3243,7 @@
     else if (tab === 'messages' && messagesPanel) { messagesPanel.style.display = 'block'; loadCompanyMessages(); }
     else if (tab === 'settings' && settingsPanel) { settingsPanel.style.display = 'block'; loadCompanySettings(); }
     else if (dash) { dash.style.display = 'block'; loadCompanyDashboard(); }
+    _navPush({ type: 'company-tab', tab: tab });
   }
 
   // ─── MESSAGING ───
@@ -3149,8 +3255,8 @@
     var s = document.createElement('style');
     s.textContent = [
       '.msg-bubble{max-width:75%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;}',
-      '.msg-bubble.from-employer{background:var(--navy);color:white;border-bottom-right-radius:3px;align-self:flex-end;}',
-      '.msg-bubble.from-student{background:white;color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px;align-self:flex-start;}',
+      '.msg-bubble.from-employer{background:var(--navy);color:white;border-bottom-left-radius:3px;}',
+      '.msg-bubble.from-student{background:white;color:var(--text);border:1px solid var(--border);border-bottom-right-radius:3px;}',
       '.msg-meta{font-size:11px;color:var(--gray);margin-top:3px;}',
       '.msg-meta.right{text-align:right;}',
       '.msg-wrap{display:flex;flex-direction:column;}',
@@ -3170,9 +3276,9 @@
   function _unsubscribeMessages() {
     if (_msgChannel) { try { db.removeChannel(_msgChannel); } catch(e){} _msgChannel = null; }
   }
-  function _buildMsgWrap(m, rightAlign) {
+  function _buildMsgWrap(m, isSelf, studentAvatarUrl) {
     var wrap = document.createElement('div');
-    wrap.className = 'msg-wrap' + (rightAlign ? ' right' : '');
+    wrap.className = 'msg-wrap' + (isSelf ? '' : ' right');
     var typeLabel = '';
     if (m.type && m.type !== 'message') {
       var tc = m.type==='accepted'?'#22c55e':m.type==='shortlisted'?'#f59e0b':m.type==='invite'?'var(--navy)':'#f43f5e';
@@ -3180,8 +3286,21 @@
       typeLabel = '<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;display:block;color:'+tc+'">'+tt+'</span>';
     }
     var time = new Date(m.created_at||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    wrap.innerHTML = typeLabel+'<div class="msg-bubble '+(rightAlign?'from-employer':'from-student')+'">'+esc(m.body)+'</div>'
-      +'<div class="msg-meta'+(rightAlign?' right':'')+'">'+time+'</div>';
+    var isStudent = m.sender === 'student';
+    var avHtml = '';
+    if (isStudent && studentAvatarUrl) {
+      avHtml = '<img src="' + esc(studentAvatarUrl) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">';
+    } else if (isStudent) {
+      avHtml = '<div style="width:28px;height:28px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;">' + esc((m.sender_name||'S')[0].toUpperCase()) + '</div>';
+    }
+    var bubbleClass = isSelf ? 'from-employer' : 'from-student';
+    var bubbleHtml = '<div class="msg-bubble ' + bubbleClass + '">' + esc(m.body) + '</div>';
+    var rowHtml = isStudent
+      ? (isSelf
+          ? '<div style="display:flex;align-items:flex-end;gap:8px;">' + avHtml + bubbleHtml + '</div>'
+          : '<div style="display:flex;align-items:flex-end;gap:8px;justify-content:flex-end;">' + bubbleHtml + avHtml + '</div>')
+      : bubbleHtml;
+    wrap.innerHTML = typeLabel + rowHtml + '<div class="msg-meta' + (isSelf ? '' : ' right') + '">' + time + '</div>';
     return wrap;
   }
 
@@ -3190,7 +3309,7 @@
     if (!listEl || !currentEmployer) return;
     listEl.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--gray);">Loading...</div>';
     var res = await db.from('messages')
-      .select('*, jobs(title, company_name), students(name)')
+      .select('*, jobs(title, company_name), students(name, avatar_url)')
       .eq('employer_id', currentEmployer.id)
       .order('created_at', {ascending:false});
     if (res.error || !res.data || !res.data.length) {
@@ -3206,7 +3325,7 @@
     var threads = {};
     res.data.forEach(function(m) {
       var key = (m.job_id || 'nojob') + '_' + (m.student_id || 'nostudent');
-      if (!threads[key]) threads[key] = { msgs: [], jobTitle: m.jobs ? m.jobs.title : null, studentName: m.students ? m.students.name : '—', studentId: m.student_id, jobId: m.job_id };
+      if (!threads[key]) threads[key] = { msgs: [], jobTitle: m.jobs ? m.jobs.title : null, studentName: m.students ? m.students.name : '—', studentAvatarUrl: m.students ? m.students.avatar_url : null, studentId: m.student_id, jobId: m.job_id };
       threads[key].msgs.push(m);
     });
 
@@ -3237,12 +3356,21 @@
       var item = document.createElement('div');
       var isActive = currentCompanyThread && currentCompanyThread.jobId === thread.jobId && currentCompanyThread.studentId === thread.studentId;
       item.className = 'msg-thread-item' + (isActive ? ' active' : '');
-      item.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
-        + '<h4>' + esc(thread.studentName) + '</h4>'
+      var cAvUrl = thread.studentAvatarUrl;
+      var cAvHtml = cAvUrl
+        ? '<div style="width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;"><img src="' + esc(cAvUrl) + '" style="width:100%;height:100%;object-fit:cover;"></div>'
+        : '<div style="width:38px;height:38px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:15px;flex-shrink:0;">' + esc((thread.studentName||'?')[0].toUpperCase()) + '</div>';
+      item.innerHTML = '<div style="display:flex;align-items:center;gap:10px;">'
+        + cAvHtml
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
+        + '<h4 style="margin:0;">' + esc(thread.studentName) + '</h4>'
         + (hasUnread ? '<span class="msg-unread-dot"></span>' : '')
         + '</div>'
-        + '<p>' + esc(thread.jobTitle) + '</p>'
-        + '<p style="margin-top:2px;">' + esc((last.body||'').substring(0,60)) + (last.body && last.body.length>60?'…':'') + '</p>';
+        + '<p style="margin:2px 0 0;">' + esc(thread.jobTitle) + '</p>'
+        + '<p style="margin-top:2px;">' + esc((last.body||'').substring(0,60)) + (last.body && last.body.length>60?'…':'') + '</p>'
+        + '</div>'
+        + '</div>';
       item.onclick = function() { openCompanyThread(thread); };
       listEl.appendChild(item);
     });
@@ -3297,15 +3425,10 @@
     if (res.error) return;
 
     msgsEl.innerHTML = '';
+    var coThreadAvUrl = thread.studentAvatarUrl || null;
     (res.data||[]).forEach(function(m) {
       var isEmployer = m.sender === 'employer';
-      var wrap = document.createElement('div');
-      wrap.className = 'msg-wrap' + (isEmployer ? ' right' : '');
-      var typeLabel = m.type && m.type !== 'message' ? ('<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;display:block;color:'+(m.type==='accepted'?'#22c55e':m.type==='shortlisted'?'#f59e0b':m.type==='invite'?'var(--navy)':'#f43f5e')+'">'+(m.type==='accepted'?'✅ Accepted':m.type==='shortlisted'?'⭐ Shortlisted':m.type==='invite'?'✉ Invite to apply':'❌ Rejected')+'</span>') : '';
-      var time = new Date(m.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-      wrap.innerHTML = typeLabel + '<div class="msg-bubble ' + (isEmployer?'from-employer':'from-student') + '">' + esc(m.body) + '</div>'
-        + '<div class="msg-meta' + (isEmployer?' right':'') + '">' + time + '</div>';
-      msgsEl.appendChild(wrap);
+      msgsEl.appendChild(_buildMsgWrap(m, isEmployer, coThreadAvUrl));
     });
     msgsEl.scrollTop = msgsEl.scrollHeight;
     loadCompanyMessages();
@@ -3320,7 +3443,7 @@
           if (m.student_id !== thread.studentId) return;
           if ((m.job_id||null) !== (thread.jobId||null)) return;
           var msgsEl2 = document.getElementById('company-msg-messages');
-          if (msgsEl2) { msgsEl2.appendChild(_buildMsgWrap(m, false)); msgsEl2.scrollTop = msgsEl2.scrollHeight; }
+          if (msgsEl2) { msgsEl2.appendChild(_buildMsgWrap(m, false, coThreadAvUrl)); msgsEl2.scrollTop = msgsEl2.scrollHeight; }
           loadCompanyMessages();
         }).subscribe();
   }
@@ -3337,7 +3460,7 @@
     if (!body) return;
     input.value = '';
     var msgsEl = document.getElementById('company-msg-messages');
-    if (msgsEl) { msgsEl.appendChild(_buildMsgWrap({sender:'employer',body:body,created_at:new Date().toISOString(),type:'message'}, true)); msgsEl.scrollTop = msgsEl.scrollHeight; }
+    if (msgsEl) { msgsEl.appendChild(_buildMsgWrap({sender:'employer',body:body,created_at:new Date().toISOString(),type:'message'}, true, null)); msgsEl.scrollTop = msgsEl.scrollHeight; }
     var res = await db.from('messages').insert({
       job_id: currentCompanyThread.jobId,
       application_id: null,
@@ -3404,12 +3527,18 @@
       var item = document.createElement('div');
       var isActive = currentStudentThread && currentStudentThread.jobId === thread.jobId && currentStudentThread.employerId === thread.employerId;
       item.className = 'msg-thread-item' + (isActive ? ' active' : '');
-      item.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
-        + '<h4>' + esc(thread.companyName) + '</h4>'
+      var stAvHtml = '<div style="width:38px;height:38px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:15px;flex-shrink:0;">' + esc((thread.companyName||'?')[0].toUpperCase()) + '</div>';
+      item.innerHTML = '<div style="display:flex;align-items:center;gap:10px;">'
+        + stAvHtml
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
+        + '<h4 style="margin:0;">' + esc(thread.companyName) + '</h4>'
         + (hasUnread ? '<span class="msg-unread-dot"></span>' : '')
         + '</div>'
-        + (thread.jobTitle && thread.jobTitle !== '—' ? '<p>' + esc(thread.jobTitle) + '</p>' : '')
-        + '<p style="margin-top:2px;">' + esc((last.body||'').substring(0,60)) + (last.body && last.body.length>60?'…':'') + '</p>';
+        + (thread.jobTitle && thread.jobTitle !== '—' ? '<p style="margin:2px 0 0;">' + esc(thread.jobTitle) + '</p>' : '')
+        + '<p style="margin-top:2px;">' + esc((last.body||'').substring(0,60)) + (last.body && last.body.length>60?'…':'') + '</p>'
+        + '</div>'
+        + '</div>';
       item.onclick = function() { openStudentThread(thread); };
       listEl.appendChild(item);
     });
@@ -3475,15 +3604,10 @@
     }
 
     msgsEl.innerHTML = '';
+    var stSelfAvUrl = (currentStudent && currentStudent.avatar_url) || null;
     (res.data||[]).forEach(function(m) {
       var isEmployer = m.sender === 'employer';
-      var wrap = document.createElement('div');
-      wrap.className = 'msg-wrap' + (!isEmployer ? ' right' : '');
-      var typeLabel = m.type && m.type !== 'message' ? ('<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;display:block;color:'+(m.type==='accepted'?'#22c55e':m.type==='shortlisted'?'#f59e0b':m.type==='invite'?'var(--navy)':'#f43f5e')+'">'+(m.type==='accepted'?'✅ Accepted':m.type==='shortlisted'?'⭐ Shortlisted':m.type==='invite'?'✉ Invite to apply':'❌ Rejected')+'</span>') : '';
-      var time = new Date(m.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-      wrap.innerHTML = typeLabel + '<div class="msg-bubble ' + (isEmployer?'from-employer':'from-student') + '">' + esc(m.body) + '</div>'
-        + '<div class="msg-meta' + (!isEmployer?' right':'') + '">' + time + '</div>';
-      msgsEl.appendChild(wrap);
+      msgsEl.appendChild(_buildMsgWrap(m, !isEmployer, stSelfAvUrl));
     });
     msgsEl.scrollTop = msgsEl.scrollHeight;
     loadStudentMessages();
@@ -3532,7 +3656,7 @@
     if (!body) return;
     input.value = '';
     var msgsEl = document.getElementById('student-msg-messages');
-    if (msgsEl) { msgsEl.appendChild(_buildMsgWrap({sender:'student',body:body,created_at:new Date().toISOString(),type:'message'}, true)); msgsEl.scrollTop = msgsEl.scrollHeight; }
+    if (msgsEl) { msgsEl.appendChild(_buildMsgWrap({sender:'student',body:body,created_at:new Date().toISOString(),type:'message'}, true, (currentStudent && currentStudent.avatar_url)||null)); msgsEl.scrollTop = msgsEl.scrollHeight; }
     var res = await db.from('messages').insert({
       job_id: currentStudentThread.jobId,
       application_id: null,
@@ -3644,10 +3768,50 @@
     document.getElementById('modal-apply-form').style.display = 'block';
     document.getElementById('modal-success').style.display = 'none';
     currentApplyJob = jobObj || { title: jobTitle, company_name: companyName };
+
+    // CV section — show only when the job requires a CV
+    var docs = (jobObj && jobObj.required_docs) ? jobObj.required_docs.toLowerCase() : '';
+    var cvRequired = docs.includes('cv') || docs.includes('resume');
+    var cvSection = document.getElementById('apply-cv-section');
+    var cvProfileOpt = document.getElementById('apply-cv-profile-option');
+    var cvFileInput = document.getElementById('apply-cv-file');
+    var cvUploadStatus = document.getElementById('apply-cv-upload-status');
+    if (cvSection) {
+      cvSection.style.display = cvRequired ? 'block' : 'none';
+      // Reset state
+      document.querySelectorAll('input[name="apply-cv-choice"]').forEach(function(r){ r.checked = false; });
+      if (cvFileInput) { cvFileInput.style.display = 'none'; cvFileInput.value = ''; }
+      if (cvUploadStatus) cvUploadStatus.textContent = '';
+
+      if (cvRequired) {
+        var hasProfileCv = currentStudent && currentStudent.cv_url;
+        if (cvProfileOpt) cvProfileOpt.style.display = hasProfileCv ? 'block' : 'none';
+        if (hasProfileCv) {
+          var link = document.getElementById('apply-cv-profile-link');
+          if (link) link.href = currentStudent.cv_url;
+          // Pre-select profile CV if available
+          var profileRadio = document.querySelector('input[name="apply-cv-choice"][value="profile"]');
+          if (profileRadio) profileRadio.checked = true;
+        } else {
+          // No profile CV — pre-select upload
+          var uploadRadio = document.querySelector('input[name="apply-cv-choice"][value="upload"]');
+          if (uploadRadio) { uploadRadio.checked = true; if (cvFileInput) cvFileInput.style.display = 'block'; }
+        }
+      }
+    }
+
     document.getElementById('apply-modal').classList.add('open');
     var motivEl = document.getElementById('apply-motivation');
     if (motivEl) motivEl.value = '';
     refreshCharCounters();
+  }
+
+  function handleCvChoiceChange() {
+    var choice = (document.querySelector('input[name="apply-cv-choice"]:checked') || {}).value;
+    var fileInput = document.getElementById('apply-cv-file');
+    var status = document.getElementById('apply-cv-upload-status');
+    if (fileInput) fileInput.style.display = choice === 'upload' ? 'block' : 'none';
+    if (status && choice !== 'upload') status.textContent = '';
   }
   function closeModal() { document.getElementById('apply-modal').classList.remove('open'); }
   async function submitApplication() {
@@ -3655,6 +3819,34 @@
     var motivation = document.getElementById('apply-motivation') || document.querySelector('#modal-apply-form textarea');
     var startDate  = document.querySelector('#modal-apply-form input[type="text"]');
     var job = currentApplyJob || {};
+
+    // Handle CV requirement
+    var docs = (job.required_docs || '').toLowerCase();
+    var cvRequired = docs.includes('cv') || docs.includes('resume');
+    var applicationCvUrl = null;
+
+    if (cvRequired) {
+      var choice = (document.querySelector('input[name="apply-cv-choice"]:checked') || {}).value;
+      if (!choice) { showToast('Please select a CV option before submitting.', 'error'); return; }
+
+      if (choice === 'profile') {
+        if (!currentStudent.cv_url) { showToast('No profile CV found. Please upload one.', 'error'); return; }
+        applicationCvUrl = currentStudent.cv_url;
+      } else {
+        var fileInput = document.getElementById('apply-cv-file');
+        var file = fileInput && fileInput.files[0];
+        if (!file) { showToast('Please select a PDF file to upload.', 'error'); return; }
+        if (file.size > 5 * 1024 * 1024) { showToast('File too large — max 5 MB.', 'error'); return; }
+        var statusEl = document.getElementById('apply-cv-upload-status');
+        if (statusEl) statusEl.textContent = 'Uploading…';
+        var path = currentStudent.id + '/app-' + Date.now() + '.pdf';
+        var upRes = await db.storage.from('cvs').upload(path, file, { upsert: false, contentType: 'application/pdf' });
+        if (upRes.error) { showToast('CV upload failed: ' + upRes.error.message, 'error'); if (statusEl) statusEl.textContent = ''; return; }
+        var urlRes = db.storage.from('cvs').getPublicUrl(path);
+        applicationCvUrl = urlRes.data.publicUrl;
+        if (statusEl) statusEl.textContent = 'Uploaded ✓';
+      }
+    }
 
     var application = {
       job_id:          job.id || null,
@@ -3675,6 +3867,7 @@
       student_id:      currentStudent.id,
       student_name:    currentStudent.name,
       employer_id:     job.employer_id || null,
+      cv_url:          applicationCvUrl,
     };
 
     try {
@@ -3737,8 +3930,16 @@
     if (nameHero) nameHero.textContent = name;
 
     var av = document.getElementById('smodal-avatar');
-    av.style.background = p ? p.color : color;
-    av.textContent = p ? p.initial : (initial || name[0]);
+    var avatarUrl = p ? p.avatar_url : null;
+    if (avatarUrl) {
+      av.style.background = 'transparent';
+      av.textContent = '';
+      av.innerHTML = '<img src="' + esc(avatarUrl) + '" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">';
+    } else {
+      av.style.background = p ? p.color : color;
+      av.textContent = p ? p.initial : (initial || name[0]);
+      av.innerHTML = '';
+    }
 
     // Bio
     var bioBlock = document.getElementById('smodal-bio-block');
@@ -3785,10 +3986,18 @@
     }
 
     document.getElementById('smodal-invited').style.display = 'none';
+    var alreadyInvEl = document.getElementById('smodal-already-invited');
+    if (alreadyInvEl) alreadyInvEl.style.display = 'none';
     var inviteBtn = document.getElementById('smodal-invite-btn');
     if (inviteBtn) inviteBtn.style.display = hideInvite ? 'none' : '';
     var saveBtn = document.getElementById('smodal-save-btn');
-    if (saveBtn) { saveBtn.textContent = '✴ Save'; saveBtn.style.borderColor = ''; saveBtn.style.color = ''; }
+    if (saveBtn) {
+      var alreadySaved = !!(p && p.id && window._savedStudentIds && window._savedStudentIds.has(p.id));
+      saveBtn.classList.toggle('saved', alreadySaved);
+      saveBtn.textContent = alreadySaved ? '★ Saved' : '✴ Save';
+      saveBtn.style.borderColor = alreadySaved ? 'var(--orange)' : '';
+      saveBtn.style.color = alreadySaved ? 'var(--orange)' : '';
+    }
     // Store student name for inviteStudent to use
     _inviteTargetName = name;
     _inviteTargetProfile = p;
@@ -3850,13 +4059,52 @@
     document.getElementById('smodal-invited').textContent = '✓ Invitation sent to ' + studentName + '!';
     showToast('✉ Invitation sent to ' + studentName);
   }
-  function saveStudentFromModal() {
+  async function saveStudentFromModal() {
+    if (!currentEmployer || !_inviteTargetProfile || !_inviteTargetProfile.id) return;
     var btn = document.getElementById('smodal-save-btn');
-    btn.textContent = '\u2605 Saved'; btn.style.borderColor = 'var(--orange)'; btn.style.color = 'var(--orange)';
+    var studentId = _inviteTargetProfile.id;
+    var isSaved = btn.classList.contains('saved');
+    if (isSaved) {
+      btn.classList.remove('saved');
+      btn.textContent = '\u2734 Save'; btn.style.borderColor = ''; btn.style.color = '';
+      if (window._savedStudentIds) window._savedStudentIds.delete(studentId);
+      await db.from('saved_students').delete().eq('employer_id', currentEmployer.id).eq('student_id', studentId);
+      _syncCardSaveBtn(studentId, false);
+    } else {
+      btn.classList.add('saved');
+      btn.textContent = '\u2605 Saved'; btn.style.borderColor = 'var(--orange)'; btn.style.color = 'var(--orange)';
+      var res = await db.from('saved_students').insert({ employer_id: currentEmployer.id, student_id: studentId });
+      if (!res.error || (res.error && res.error.code === '23505')) {
+        if (window._savedStudentIds) window._savedStudentIds.add(studentId);
+        _syncCardSaveBtn(studentId, true);
+      }
+    }
   }
-  function shortlistStudent(btn) {
-    btn.classList.toggle('saved');
-    btn.textContent = btn.classList.contains('saved') ? '\u2605 Saved' : '\u2734 Save';
+  function _syncCardSaveBtn(studentId, saved) {
+    var card = document.querySelector('.student-card[data-student-id="' + studentId + '"]');
+    if (!card) return;
+    var btn = card.querySelector('.shortlist-btn');
+    if (!btn) return;
+    btn.classList.toggle('saved', saved);
+    btn.innerHTML = saved ? '&#9733; Saved' : '&#9734; Save';
+  }
+  async function shortlistStudent(btn) {
+    if (!currentEmployer) return;
+    var card = btn.closest('.student-card');
+    if (!card || !card.dataset.studentId) return;
+    var studentId = card.dataset.studentId;
+    var isSaved = btn.classList.contains('saved');
+    if (isSaved) {
+      btn.classList.remove('saved');
+      btn.innerHTML = '&#9734; Save';
+      if (window._savedStudentIds) window._savedStudentIds.delete(studentId);
+      await db.from('saved_students').delete().eq('employer_id', currentEmployer.id).eq('student_id', studentId);
+    } else {
+      btn.classList.add('saved');
+      btn.innerHTML = '&#9733; Saved';
+      if (window._savedStudentIds) window._savedStudentIds.add(studentId);
+      await db.from('saved_students').insert({ employer_id: currentEmployer.id, student_id: studentId });
+    }
   }
   document.getElementById('student-modal').addEventListener('click', function(e){ if(e.target===this) closeStudentModal(); });
 
@@ -3935,9 +4183,14 @@
     set('cv-pref-roles', tags(profile.prefs.roles));
 
     // Documents
-    set('cv-docs', profile.docs.map(function(d){
+    var docsHtml = (profile.docs||[]).map(function(d){
       return '<span class="cv-doc-chip">&#128196; ' + d + '</span>';
-    }).join(''));
+    }).join('');
+    if (profile.cv_url) {
+      docsHtml = '<a href="' + esc(profile.cv_url) + '" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:var(--navy);color:white;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;margin-bottom:8px;">&#128196; Download PDF CV</a>'
+               + (docsHtml ? '<div style="margin-top:8px;">' + docsHtml + '</div>' : '');
+    }
+    set('cv-docs', docsHtml);
 
     // Store ref for status sync
     document.getElementById('applicant-cv-modal').dataset.rowRef = name;
@@ -4200,7 +4453,8 @@
           location: s.pref_locations||'—',
           roles: (s.role_interests||[]).map(function(r){ return {name:r}; })
         },
-        docs: []
+        docs: [],
+        cv_url: app.cv_url || null
       };
 
       // Temporarily inject into applicantProfiles so openApplicantCV works
@@ -4306,6 +4560,7 @@
     Object.keys(defMap).forEach(function(id){ var g=document.getElementById(id); if(g){var c=g.querySelector('[data-val="'+defMap[id]+'"]');if(c)c.classList.add('active');}});
     ['post-title','post-location','post-ats','post-division','post-description','post-role-group','post-pay','post-qualifications','post-gpa-min','post-hiring-team'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
     var n=document.getElementById('post-num-hires'); if(n) n.value='';
+    var rcv=document.getElementById('post-require-cv'); if(rcv) rcv.checked=false;
     document.getElementById('post-listing-modal').classList.add('open');
   }
   function closePostModal() { document.getElementById('post-listing-modal').classList.remove('open'); }
@@ -4324,7 +4579,7 @@
       deadline_year:getVal('post-deadline-year'), ats_url:getVal('post-ats'),
       division:getVal('post-division'), description:getVal('post-description'),
       role_group:getVal('post-role-group'), num_hires:parseInt(getVal('post-num-hires'))||1,
-      pay:getVal('post-pay'), required_docs:getChips('post-docs'),
+      pay:getVal('post-pay'), required_docs:(document.getElementById('post-require-cv')||{}).checked ? 'CV / Resume' : '',
       qualifications:getVal('post-qualifications'), grad_from:getVal('post-grad-from'),
       grad_to:getVal('post-grad-to'), school_year:getChips('post-school-year'),
       majors:getMajorsValue('post'), gpa_min:getVal('post-gpa-min'),
@@ -4472,7 +4727,8 @@
     setInput('edit-role-group',  job.role_group);
     setInput('edit-num-hires',   job.num_hires);
     setInput('edit-pay',         job.pay);
-    setChip('edit-docs',         job.required_docs);
+    var editCvBox = document.getElementById('edit-require-cv');
+    if (editCvBox) editCvBox.checked = !!(job.required_docs && job.required_docs.toLowerCase().includes('cv'));
     setTA('edit-qualifications', job.qualifications);
     var parsedSkills = job.searched_skills || {};
     if (typeof parsedSkills === 'string') { try { parsedSkills = JSON.parse(parsedSkills); } catch(e) { parsedSkills = {}; } }
@@ -4759,7 +5015,7 @@
       role_group: getVal('edit-role-group'),
       num_hires: parseInt(getVal('edit-num-hires'))||1,
       pay: getVal('edit-pay'),
-      required_docs: getChips('edit-docs'),
+      required_docs: (document.getElementById('edit-require-cv')||{}).checked ? 'CV / Resume' : '',
       qualifications: getVal('edit-qualifications'),
       grad_from: getVal('edit-grad-from'),
       grad_to: getVal('edit-grad-to'),
@@ -5194,9 +5450,11 @@
     try {
       var {error} = await db.from('students').update({organisations: structured}).eq('id', currentStudent.id);
       if (error) throw error;
+      if (currentStudent) currentStudent.organisations = structured;
     } catch(err) { showToast('Failed to save organisations: ' + err.message, 'error'); }
     r.innerHTML=html||'<p style="font-size:13px;color:var(--gray);">No organisations added.</p>';r.style.display='block';e.style.display='none';
     b.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>';setTimeout(function(){b.textContent='Edit';},2500);
+    loadStudentProfile();
   }
   function cancelOrgsEdit(){document.getElementById('orgs-edit-view').style.display='none';document.getElementById('orgs-read-view').style.display='block';document.getElementById('orgs-edit-btn').textContent='Edit';}
 
@@ -5810,6 +6068,7 @@
     } catch(err) { showToast('Failed to save: ' + err.message, 'error'); }
     r.style.display='block';e.style.display='none';
     b.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>';setTimeout(function(){b.textContent='Edit';},2500);
+    loadStudentProfile();
   }
   function cancelDocsEdit(){document.getElementById('docs-edit-view').style.display='none';document.getElementById('docs-read-view').style.display='block';document.getElementById('docs-edit-btn').textContent='Edit';}
 
@@ -5834,6 +6093,7 @@
     }
     // Load all students from DB into the grid (will score against _currentRoleJob)
     loadStudentsFromDB();
+    _navPush({ type: 'browse-role' });
   }
 
   function closeBrowseRole() {
@@ -5846,6 +6106,7 @@
     document.getElementById('browse-students-landing').style.display = 'none';
     document.getElementById('browse-role-view').style.display = 'none';
     document.getElementById('browse-spontaneous-view').style.display = 'block';
+    _navPush({ type: 'browse-spontaneous' });
   }
 
   function closeBrowseSpontaneous() {

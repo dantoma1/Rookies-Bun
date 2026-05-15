@@ -1804,6 +1804,16 @@
               style="background:none;border:none;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;">Reset</button>
           </div>
 
+          <!-- Saved students -->
+          <div class="filter-group">
+            <div class="filter-label">My saved</div>
+            <div style="padding:4px 0;">
+              <label class="filter-option" style="font-weight:600;color:var(--navy);">
+                <input type="checkbox" id="filter-saved-only" onchange="applySpontFilters()"> &#9733; Saved students only
+              </label>
+            </div>
+          </div>
+
           <!-- Looking for (pref_type) -->
           <div class="filter-group">
             <div class="filter-label">Looking for</div>
@@ -1980,6 +1990,15 @@
           <div class="form-group"><label class="form-label">Estimated start date</label><div style="display:flex;gap:8px;"><select class="form-input" id="post-start-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select><select class="form-input" id="post-start-year" style="flex:1;"><option>2025</option><option>2026</option><option>2027</option></select></div></div>
           <div class="form-group"><label class="form-label">Application deadline</label><div style="display:flex;gap:8px;"><select class="form-input" id="post-deadline-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select><select class="form-input" id="post-deadline-year" style="flex:1;"><option>2025</option><option>2026</option><option>2027</option></select></div></div>
           <div class="form-group"><label class="form-label">Company division </label><input class="form-input" type="text" id="post-division" placeholder="e.g. Advisory, Finance Department..." maxlength="100"></div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--cream);">
+              <input type="checkbox" id="post-require-cv" style="width:16px;height:16px;flex-shrink:0;accent-color:var(--navy);">
+              <div>
+                <div style="font-weight:600;font-size:14px;color:var(--navy);">Require CV from applicants</div>
+                <div style="font-size:12px;color:var(--gray);margin-top:1px;">Students must upload or select a CV before they can submit their application.</div>
+              </div>
+            </label>
+          </div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-top:16px;"><button class="btn btn-navy" onclick="switchListingTab('post','details')">Next: Details &#8594;</button></div>
       </div>
@@ -2109,6 +2128,15 @@
           <div class="form-group"><label class="form-label">Estimated start date</label><div style="display:flex;gap:8px;"><select class="form-input" id="edit-start-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select><select class="form-input" id="edit-start-year" style="flex:1;"><option>2025</option><option>2026</option><option>2027</option></select></div></div>
           <div class="form-group"><label class="form-label">Application deadline</label><div style="display:flex;gap:8px;"><select class="form-input" id="edit-deadline-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select><select class="form-input" id="edit-deadline-year" style="flex:1;"><option>2025</option><option>2026</option><option>2027</option></select></div></div>
           <div class="form-group"><label class="form-label">Company division </label><input class="form-input" type="text" id="edit-division" placeholder="e.g. Advisory, Finance Dept..." maxlength="100"></div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--cream);">
+              <input type="checkbox" id="edit-require-cv" style="width:16px;height:16px;flex-shrink:0;accent-color:var(--navy);">
+              <div>
+                <div style="font-weight:600;font-size:14px;color:var(--navy);">Require CV from applicants</div>
+                <div style="font-size:12px;color:var(--gray);margin-top:1px;">Students must upload or select a CV before they can submit their application.</div>
+              </div>
+            </label>
+          </div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-top:16px;"><button class="btn btn-navy" onclick="switchListingTab('edit','details')">Next: Details &#8594;</button></div>
       </div>
@@ -2338,7 +2366,28 @@
         <label class="form-label">Earliest start date</label>
         <input class="form-input" type="text" value="June 2025" maxlength="50">
       </div>
-      <div style="display:flex;gap:12px;margin-top:8px;">
+      <div id="apply-cv-section" style="display:none;margin-top:8px;">
+        <div class="form-label" style="margin-bottom:8px;">CV <span style="color:#dc2626;font-weight:400;font-size:12px;">Required for this role</span></div>
+        <div id="apply-cv-profile-option" style="display:none;">
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:8px;transition:border-color 0.15s;">
+            <input type="radio" name="apply-cv-choice" value="profile" style="margin-top:2px;flex-shrink:0;" onchange="handleCvChoiceChange()">
+            <div>
+              <div style="font-weight:600;font-size:14px;color:var(--navy);">Use my profile CV</div>
+              <a id="apply-cv-profile-link" href="#" target="_blank" style="font-size:12px;color:var(--orange);text-decoration:none;">View uploaded CV &rarr;</a>
+            </div>
+          </label>
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color 0.15s;">
+          <input type="radio" name="apply-cv-choice" value="upload" style="margin-top:2px;flex-shrink:0;" onchange="handleCvChoiceChange()">
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:14px;color:var(--navy);">Upload a CV for this application</div>
+            <div style="font-size:12px;color:var(--gray);margin-top:1px;">PDF only, max 5 MB</div>
+            <input type="file" id="apply-cv-file" accept=".pdf" style="margin-top:8px;display:none;">
+            <div id="apply-cv-upload-status" style="font-size:12px;margin-top:4px;"></div>
+          </div>
+        </label>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
         <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="submitApplication()">Submit application &#8594;</button>
         <button class="btn btn-outline-navy" onclick="closeModal()">Cancel</button>
       </div>
@@ -2434,6 +2483,9 @@
         <div style="grid-column:1/-1;"><span style="color:var(--gray);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">Role interests</span><div id="smodal-pref-roles" class="skills-list" style="flex-wrap:wrap;gap:5px;margin-top:4px;"></div></div>
       </div>
     </div>
+
+    <!-- Already-invited warning (shown before sending if student was already invited) -->
+    <div id="smodal-already-invited" style="display:none;padding:12px 16px;background:#fff8e1;border:1px solid #f59e0b;border-radius:8px;font-size:13.5px;color:#92400e;margin-bottom:10px;"></div>
 
     <!-- Footer buttons -->
     <div style="display:flex;gap:10px;padding-top:8px;">
