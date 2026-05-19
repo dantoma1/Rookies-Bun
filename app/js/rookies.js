@@ -3215,12 +3215,20 @@
     window.scrollTo(0, 0);
     _navPush({ type: 'screen', name: name });
   }
-
+  
   // ─── CAREER OFFICER CONSOLE LAUNCH ───
   // Opens the standalone Career Officer Console HTML (same folder) in a new tab.
   function openCareerConsole() {
-    window.open('career-console.html', '_blank');
+    //window.open('career-console.html', '_blank');
+    const toast = document.getElementById('construction-toast');
+    
+    toast.classList.add('show');
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+    }, 3000); 
   }
+  
 
 
   // ─── COMPANY TABS ───
@@ -3255,11 +3263,11 @@
     var s = document.createElement('style');
     s.textContent = [
       '.msg-bubble{max-width:75%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;}',
-      '.msg-bubble.from-employer{background:var(--navy);color:white;border-bottom-left-radius:3px;}',
-      '.msg-bubble.from-student{background:white;color:var(--text);border:1px solid var(--border);border-bottom-right-radius:3px;}',
+      '.msg-bubble.from-employer{background:var(--navy);color:white;border-bottom-right-radius:3px;}',
+      '.msg-bubble.from-student{background:white;color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px;}',
       '.msg-meta{font-size:11px;color:var(--gray);margin-top:3px;}',
       '.msg-meta.right{text-align:right;}',
-      '.msg-wrap{display:flex;flex-direction:column;}',
+      '.msg-wrap{display:flex;flex-direction:column;align-items:flex-start;}',
       '.msg-wrap.right{align-items:flex-end;}',
       '.msg-thread-item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;}',
       '.msg-thread-item:hover,.msg-thread-item.active{background:var(--cream);}',
@@ -3278,7 +3286,7 @@
   }
   function _buildMsgWrap(m, isSelf, studentAvatarUrl) {
     var wrap = document.createElement('div');
-    wrap.className = 'msg-wrap' + (isSelf ? '' : ' right');
+    wrap.className = 'msg-wrap' + (isSelf ? ' right' : '');
     var typeLabel = '';
     if (m.type && m.type !== 'message') {
       var tc = m.type==='accepted'?'#22c55e':m.type==='shortlisted'?'#f59e0b':m.type==='invite'?'var(--navy)':'#f43f5e';
@@ -3300,7 +3308,7 @@
           ? '<div style="display:flex;align-items:flex-end;gap:8px;">' + avHtml + bubbleHtml + '</div>'
           : '<div style="display:flex;align-items:flex-end;gap:8px;justify-content:flex-end;">' + bubbleHtml + avHtml + '</div>')
       : bubbleHtml;
-    wrap.innerHTML = typeLabel + rowHtml + '<div class="msg-meta' + (isSelf ? '' : ' right') + '">' + time + '</div>';
+    wrap.innerHTML = typeLabel + rowHtml + '<div class="msg-meta' + (isSelf ? ' right' : '') + '">' + time + '</div>';
     return wrap;
   }
 

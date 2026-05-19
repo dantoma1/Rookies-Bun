@@ -2187,3 +2187,46 @@
     /* Padding of the navy CTA at the bottom */
     div[style*="background:var(--navy)"][style*="padding:120px"] { padding: 60px 20px !important; }
   }
+/*aberatie pt a scoate butonul de career officer */
+.toast-message {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99999;
+    background: var(--white);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14.5px;
+    font-weight: 500;
+    padding: 14px 22px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(15, 31, 61, 0.12);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.toast-message .dot {
+    width: 8px; 
+    height: 8px; 
+    border-radius: 50%;
+    background: var(--orange);
+    animation: toastPulse 2s ease-in-out infinite;
+}
+
+@keyframes toastPulse { 
+    0%, 100% { opacity: 1; } 
+    50% { opacity: 0.4; } 
+}
+
+.toast-message.show {
+    opacity: 1;
+    visibility: visible;
+    bottom: 40px;
+}
