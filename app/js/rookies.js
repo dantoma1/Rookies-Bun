@@ -575,6 +575,17 @@
     await db.auth.signOut();
     currentEmployer = null;
     currentStudent = null;
+    currentCompanyThread = null;
+    currentStudentThread = null;
+    _invalidateCompanyCache();
+    var sb = document.getElementById('student-msg-body');
+    var se = document.getElementById('student-msg-empty');
+    var cb = document.getElementById('company-msg-body');
+    var ce = document.getElementById('company-msg-empty');
+    if (sb) sb.style.display = 'none';
+    if (se) se.style.display = 'flex';
+    if (cb) cb.style.display = 'none';
+    if (ce) ce.style.display = 'flex';
     updateNav();
     showScreen('landing');
     showToast('Signed out successfully.');
@@ -1016,27 +1027,43 @@
     var descEl = document.getElementById('dash-company-desc');
     if (descEl) descEl.textContent = currentEmployer.description || 'No description yet — click Edit profile to add one.';
 
-    // Fetch jobs and applications in parallel
-    var [jobsRes, appsRes] = await Promise.all([
-      db.from('jobs').select('*').eq('employer_id', currentEmployer.id).order('created_at', { ascending: false }),
-      db.from('applications').select('*').eq('employer_id', currentEmployer.id).order('created_at', { ascending: false })
-    ]);
-    var myJobs = (jobsRes.data || []).filter(function(j){ return j.is_active; });
-    var myPastJobs = (jobsRes.data || []).filter(function(j){ return !j.is_active; });
-    var myApplicants = appsRes.data || [];
+    // Fetch jobs and applications in parallel (cached between tab switches)
+    var myJobs, myPastJobs, myApplicants;
+    if (_companyTabCache.dashboard) {
+      myJobs = _companyTabCache.dashboard.myJobs;
+      myPastJobs = _companyTabCache.dashboard.myPastJobs;
+      myApplicants = _companyTabCache.dashboard.myApplicants;
+    } else {
+      var [jobsRes, appsRes] = await Promise.all([
+        db.from('jobs').select('*').eq('employer_id', currentEmployer.id).order('created_at', { ascending: false }),
+        db.from('applications').select('*').eq('employer_id', currentEmployer.id).order('created_at', { ascending: false })
+      ]);
+      myJobs = (jobsRes.data || []).filter(function(j){ return j.is_active; });
+      myPastJobs = (jobsRes.data || []).filter(function(j){ return !j.is_active; });
+      myApplicants = appsRes.data || [];
 
-    // Auto-archive: if the employer opted in, deactivate listings whose
-    // deadline passed >14 days ago. Runs once per dashboard load.
-    if (currentEmployer.auto_archive) {
-      var stale = autoArchiveStaleJobs(myJobs);
-      if (stale.length) {
-        var staleIds = stale.map(function(j){ return j.id; });
-        await db.from('jobs').update({ is_active: false }).in('id', staleIds);
-        // Move them out of myJobs and into myPastJobs locally so the UI matches
-        myJobs = myJobs.filter(function(j){ return staleIds.indexOf(j.id) === -1; });
-        myPastJobs = myPastJobs.concat(stale.map(function(j){ j.is_active = false; return j; }));
-        showToast('Auto-archived ' + stale.length + ' listing' + (stale.length !== 1 ? 's' : ''));
+      // Keep only applications whose student still exists and is active
+      if (myApplicants.length) {
+        var _sids = Array.from(new Set(myApplicants.map(function(a){ return a.student_id; }).filter(Boolean)));
+        var _activeRes = await db.from('students').select('id').in('id', _sids).eq('is_active', true);
+        var _activeIds = new Set((_activeRes.data || []).map(function(s){ return s.id; }));
+        myApplicants = myApplicants.filter(function(a){ return _activeIds.has(a.student_id); });
       }
+
+      // Auto-archive: if the employer opted in, deactivate listings whose
+      // deadline passed >14 days ago. Runs once per dashboard load.
+      if (currentEmployer.auto_archive) {
+        var stale = autoArchiveStaleJobs(myJobs);
+        if (stale.length) {
+          var staleIds = stale.map(function(j){ return j.id; });
+          await db.from('jobs').update({ is_active: false }).in('id', staleIds);
+          // Move them out of myJobs and into myPastJobs locally so the UI matches
+          myJobs = myJobs.filter(function(j){ return staleIds.indexOf(j.id) === -1; });
+          myPastJobs = myPastJobs.concat(stale.map(function(j){ j.is_active = false; return j; }));
+          showToast('Auto-archived ' + stale.length + ' listing' + (stale.length !== 1 ? 's' : ''));
+        }
+      }
+      _companyTabCache.dashboard = { myJobs: myJobs, myPastJobs: myPastJobs, myApplicants: myApplicants };
     }
 
     // Render the hiring-team strip (uses myJobs to compute per-recruiter listing counts)
@@ -1411,6 +1438,7 @@
     closeRecruiterModal();
     if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
     // Refresh dashboard so the strip and the per-recruiter counts update
+    _invalidateCompanyCache(['dashboard']);
     if (typeof loadCompanyDashboard === 'function') loadCompanyDashboard();
   }
 
@@ -1426,6 +1454,7 @@
         var res = await db.from('company_recruiters').delete().eq('id', id);
         if (res.error) { showToast('Could not remove: ' + res.error.message); return; }
         showToast('Recruiter removed');
+        _invalidateCompanyCache(['dashboard']);
         if (typeof loadCompanyDashboard === 'function') loadCompanyDashboard();
       }
     );
@@ -1434,47 +1463,64 @@
   async function loadApplicantsPanel() {
     var body = document.getElementById('applicants-panel-body');
     if (!body || !currentEmployer) return;
-    body.innerHTML = '<p style="color:var(--text-light);padding:24px 0;">Loading applicants…</p>';
 
-    // Ensure recruiter cache is populated so the "Owned by" badges render here
-    // even when this tab is opened directly (without dashboard having loaded first).
-    if (!window._companyRecruiters || !window._companyRecruiters.length) {
+    var apps, jobsById = {}, studentsById = {};
+    if (_companyTabCache.applicants) {
+      apps = _companyTabCache.applicants.apps;
+      jobsById = _companyTabCache.applicants.jobsById;
+      studentsById = _companyTabCache.applicants.studentsById;
+      if (!apps || apps.length === 0) { body.innerHTML = '<p style="color:var(--text-light);padding:24px 0;">No applications yet.</p>'; return; }
+    } else {
+      body.innerHTML = '<p style="color:var(--text-light);padding:24px 0;">Loading applicants…</p>';
+
+      // Ensure recruiter cache is populated so the "Owned by" badges render here
+      // even when this tab is opened directly (without dashboard having loaded first).
+      if (!window._companyRecruiters || !window._companyRecruiters.length) {
+        try {
+          var rr = await db.from('company_recruiters').select('*').eq('employer_id', currentEmployer.id);
+          window._companyRecruiters = rr.data || [];
+        } catch(e) { window._companyRecruiters = window._companyRecruiters || []; }
+      }
+
+      var appsRes = await db
+        .from('applications')
+        .select('*')
+        .eq('employer_id', currentEmployer.id)
+        .order('created_at', { ascending: false });
+
+      if (appsRes.error) { body.innerHTML = '<p style="color:#dc2626;padding:24px 0;">Error loading applicants: ' + appsRes.error.message + '</p>'; return; }
+      apps = appsRes.data || [];
+      if (!apps.length) { body.innerHTML = '<p style="color:var(--text-light);padding:24px 0;">No applications yet.</p>'; return; }
+
+      // Fetch the jobs and students referenced by these applications so we can compute match scores
+      var jobIds = Array.from(new Set(apps.map(function(a){return a.job_id;}).filter(Boolean)));
+      var studentIds = Array.from(new Set(apps.map(function(a){return a.student_id;}).filter(Boolean)));
       try {
-        var rr = await db.from('company_recruiters').select('*').eq('employer_id', currentEmployer.id);
-        window._companyRecruiters = rr.data || [];
-      } catch(e) { window._companyRecruiters = window._companyRecruiters || []; }
+        if (jobIds.length) {
+          var jr = await db.from('jobs').select('*').in('id', jobIds);
+          (jr.data || []).forEach(function(j){ jobsById[j.id] = j; });
+        }
+        if (studentIds.length) {
+          var sr = await db.from('students').select('*').in('id', studentIds);
+          (sr.data || []).forEach(function(s){ studentsById[s.id] = s; });
+        }
+      } catch(e) { console.warn('applicants match-score fetch:', e.message); }
+
+      // Keep only applications whose student still exists and is active
+      apps = apps.filter(function(app) {
+        if (!app.student_id) return true;
+        var s = studentsById[app.student_id];
+        return s && s.is_active !== false;
+      });
+
+      // Attach a match-score percentage per application (null if we can't compute it)
+      apps.forEach(function(app) {
+        var s = studentsById[app.student_id];
+        var j = jobsById[app.job_id];
+        app._matchPct = (s && j) ? matchScore(s, j) : null;
+      });
+      _companyTabCache.applicants = { apps: apps, jobsById: jobsById, studentsById: studentsById };
     }
-
-    var { data: apps, error } = await db
-      .from('applications')
-      .select('*')
-      .eq('employer_id', currentEmployer.id)
-      .order('created_at', { ascending: false });
-
-    if (error) { body.innerHTML = '<p style="color:#dc2626;padding:24px 0;">Error loading applicants: ' + error.message + '</p>'; return; }
-    if (!apps || apps.length === 0) { body.innerHTML = '<p style="color:var(--text-light);padding:24px 0;">No applications yet.</p>'; return; }
-
-    // Fetch the jobs and students referenced by these applications so we can compute match scores
-    var jobIds = Array.from(new Set(apps.map(function(a){return a.job_id;}).filter(Boolean)));
-    var studentIds = Array.from(new Set(apps.map(function(a){return a.student_id;}).filter(Boolean)));
-    var jobsById = {}, studentsById = {};
-    try {
-      if (jobIds.length) {
-        var jr = await db.from('jobs').select('*').in('id', jobIds);
-        (jr.data || []).forEach(function(j){ jobsById[j.id] = j; });
-      }
-      if (studentIds.length) {
-        var sr = await db.from('students').select('*').in('id', studentIds);
-        (sr.data || []).forEach(function(s){ studentsById[s.id] = s; });
-      }
-    } catch(e) { console.warn('applicants match-score fetch:', e.message); }
-
-    // Attach a match-score percentage per application (null if we can't compute it)
-    apps.forEach(function(app) {
-      var s = studentsById[app.student_id];
-      var j = jobsById[app.job_id];
-      app._matchPct = (s && j) ? matchScore(s, j) : null;
-    });
 
     // Group by job_id / job_title
     var groups = {};
@@ -1543,6 +1589,7 @@
     var row = select.closest('.applicant-full-row');
     if (row) row.dataset.status = newStatus;
     await db.from('applications').update({ status: newStatus }).eq('id', appId);
+    _invalidateCompanyCache(['applicants', 'dashboard']);
   }
 
   // ─── STUDENTS DB ───
@@ -2666,6 +2713,7 @@
 
   async function loadCompanySettings() {
     if (!currentEmployer) return;
+    if (_companyTabCache.settings) return;
     var session = await db.auth.getSession();
     var user = session && session.data && session.data.session ? session.data.session.user : null;
     var setText = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
@@ -2686,6 +2734,7 @@
     });
     var aa = document.getElementById('settings-co-auto-archive');
     if (aa) aa.checked = !!currentEmployer.auto_archive;
+    _companyTabCache.settings = true;
   }
 
   function _flashSaved(id) {
@@ -2720,6 +2769,7 @@
     var res = await db.from('employers').update({ notification_prefs: prefs }).eq('id', currentEmployer.id);
     if (!res.error) {
       currentEmployer.notification_prefs = prefs;
+      _invalidateCompanyCache(['settings']);
       _flashSaved('notif-co-saved');
     }
   }
@@ -2731,6 +2781,7 @@
     var res = await db.from('employers').update({ auto_archive: val }).eq('id', currentEmployer.id);
     if (!res.error) {
       currentEmployer.auto_archive = val;
+      _invalidateCompanyCache(['settings']);
       showToast(val ? 'Auto-archive turned on' : 'Auto-archive turned off');
     }
   }
@@ -2829,29 +2880,23 @@
     showConfirmModal(
       'Delete your account?',
       'This permanently removes your profile and everything tied to it. There is no undo.',
-      '<p style="font-size:13px;color:var(--text-light);margin:0;">'
-        + (role === 'student' ? 'Your applications and messages will be deleted along with your profile.' : 'Your listings, applicants and messages will be deleted along with your account.')
-        + '</p>',
+      '<p style="font-size:13px;color:var(--text-light);margin:0;">Your conversations will remain visible to the other party with a notice that your account was deleted.</p>',
       'Delete permanently',
       'danger',
       async function() {
-        try {
-          if (role === 'student' && currentStudent) {
-            await db.from('applications').delete().eq('student_id', currentStudent.id);
-            await db.from('messages').delete().eq('student_id', currentStudent.id);
-            await db.from('students').delete().eq('id', currentStudent.id);
-          } else if (role === 'company' && currentEmployer) {
-            await db.from('messages').delete().eq('employer_id', currentEmployer.id);
-            await db.from('applications').delete().eq('employer_id', currentEmployer.id);
-            await db.from('jobs').delete().eq('employer_id', currentEmployer.id);
-            await db.from('company_recruiters').delete().eq('employer_id', currentEmployer.id);
-            await db.from('employers').delete().eq('id', currentEmployer.id);
-          }
-        } catch(e) { /* ignore — even partial cleanup is better than nothing */ }
+        var rpcRole = (role === 'student') ? 'student' : 'company';
+        var res = await db.rpc('delete_account', { p_role: rpcRole });
+        if (res.error) {
+          showToast('Could not delete account: ' + res.error.message, 'error');
+          return;
+        }
         await db.auth.signOut();
         currentStudent = null; currentEmployer = null;
-        showToast('Account deleted');
+        currentCompanyThread = null; currentStudentThread = null;
+        _invalidateCompanyCache();
+        updateNav();
         showScreen('landing');
+        showToast('Account deleted');
       }
     );
   }
@@ -3257,18 +3302,23 @@
   // ─── MESSAGING ───
   var currentCompanyThread = null;
   var currentStudentThread = null;
+  var _companyTabCache = {};
+  function _invalidateCompanyCache(keys) {
+    (keys || ['dashboard','applicants','messages','settings']).forEach(function(k){ delete _companyTabCache[k]; });
+  }
 
   // ── CSS for message bubbles (injected once) ──
   (function(){
     var s = document.createElement('style');
     s.textContent = [
-      '.msg-bubble{max-width:75%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;}',
-      '.msg-bubble.from-employer{background:var(--navy);color:white;border-bottom-right-radius:3px;}',
-      '.msg-bubble.from-student{background:white;color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px;}',
+      '.msg-wrap{display:flex;flex-direction:column;align-items:flex-start;width:100%;}',
+      '.msg-wrap.right{align-items:flex-end;}',
+      '.msg-row{display:flex;align-items:flex-end;gap:8px;max-width:78%;}',
+      '.msg-bubble{padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;word-wrap:break-word;overflow-wrap:break-word;word-break:break-word;min-width:0;}',
+      '.msg-bubble.from-self{background:var(--navy);color:white;border-bottom-right-radius:3px;}',
+      '.msg-bubble.from-other{background:white;color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px;}',
       '.msg-meta{font-size:11px;color:var(--gray);margin-top:3px;}',
       '.msg-meta.right{text-align:right;}',
-      '.msg-wrap{display:flex;flex-direction:column;align-items:flex-start;}',
-      '.msg-wrap.right{align-items:flex-end;}',
       '.msg-thread-item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;}',
       '.msg-thread-item:hover,.msg-thread-item.active{background:var(--cream);}',
       '.msg-thread-item h4{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:2px;}',
@@ -3284,56 +3334,99 @@
   function _unsubscribeMessages() {
     if (_msgChannel) { try { db.removeChannel(_msgChannel); } catch(e){} _msgChannel = null; }
   }
-  function _buildMsgWrap(m, isSelf, studentAvatarUrl) {
+  function _buildMsgWrap(m, isSelf, avatarUrl) {
     var wrap = document.createElement('div');
-    wrap.className = 'msg-wrap' + (isSelf ? ' right' : '');
-    var typeLabel = '';
-    if (m.type && m.type !== 'message') {
-      var tc = m.type==='accepted'?'#22c55e':m.type==='shortlisted'?'#f59e0b':m.type==='invite'?'var(--navy)':'#f43f5e';
-      var tt = m.type==='accepted'?'✅ Accepted':m.type==='shortlisted'?'⭐ Shortlisted':m.type==='invite'?'✉ Invite to apply':'❌ Rejected';
-      typeLabel = '<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;display:block;color:'+tc+'">'+tt+'</span>';
-    }
     var time = new Date(m.created_at||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    var isStudent = m.sender === 'student';
-    var avHtml = '';
-    if (isStudent && studentAvatarUrl) {
-      avHtml = '<img src="' + esc(studentAvatarUrl) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">';
-    } else if (isStudent) {
-      avHtml = '<div style="width:28px;height:28px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;">' + esc((m.sender_name||'S')[0].toUpperCase()) + '</div>';
+
+    if (m.sender === 'system') {
+      wrap.className = 'msg-wrap';
+      wrap.innerHTML = '<div style="text-align:center;font-size:12px;color:var(--gray);font-style:italic;padding:6px 14px;background:var(--cream);border-radius:8px;border:1px solid var(--border);margin:0 auto;">' + esc(m.body) + '</div>'
+        + '<div class="msg-meta" style="text-align:center;">' + time + '</div>';
+      return wrap;
     }
-    var bubbleClass = isSelf ? 'from-employer' : 'from-student';
-    var bubbleHtml = '<div class="msg-bubble ' + bubbleClass + '">' + esc(m.body) + '</div>';
-    var rowHtml = isStudent
-      ? (isSelf
-          ? '<div style="display:flex;align-items:flex-end;gap:8px;">' + avHtml + bubbleHtml + '</div>'
-          : '<div style="display:flex;align-items:flex-end;gap:8px;justify-content:flex-end;">' + bubbleHtml + avHtml + '</div>')
-      : bubbleHtml;
-    wrap.innerHTML = typeLabel + rowHtml + '<div class="msg-meta' + (isSelf ? ' right' : '') + '">' + time + '</div>';
+
+    wrap.className = 'msg-wrap' + (isSelf ? ' right' : '');
+
+    // Type badge inside the bubble
+    var typeLabel = '';
+    if (m.type && m.type !== 'message' && m.type !== 'system') {
+      var tc = m.type==='accepted'?'#22c55e':m.type==='shortlisted'?'#f59e0b':m.type==='invite'?'var(--navy)':'#f43f5e';
+      var tt = m.type==='accepted'?'Accepted':m.type==='shortlisted'?'Shortlisted':m.type==='invite'?'Invite to apply':'Rejected';
+      typeLabel = '<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;display:block;color:'+tc+';">'+tt+'</span>';
+    }
+
+    // avatarUrl is always the student's avatar.
+    // Show it only when the student is the sender; use coloured initials for the other party.
+    var isStudentMsg = (m.sender === 'student');
+    var avHtml;
+    if (isStudentMsg && avatarUrl) {
+      avHtml = '<img src="' + esc(avatarUrl) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;align-self:flex-end;">';
+    } else if (isStudentMsg) {
+      avHtml = '<div style="width:28px;height:28px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;align-self:flex-end;">S</div>';
+    } else {
+      avHtml = '<div style="width:28px;height:28px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;align-self:flex-end;">C</div>';
+    }
+
+    var bubbleClass = isSelf ? 'from-self' : 'from-other';
+    var bubbleHtml = '<div class="msg-bubble ' + bubbleClass + '">' + typeLabel + esc(m.body) + '</div>';
+
+    // Sent (right): bubble on left of avatar | Received (left): avatar on left of bubble
+    var rowHtml = isSelf
+      ? '<div class="msg-row">' + bubbleHtml + avHtml + '</div>'
+      : '<div class="msg-row">' + avHtml + bubbleHtml + '</div>';
+
+    wrap.innerHTML = rowHtml + '<div class="msg-meta' + (isSelf ? ' right' : '') + '">' + time + '</div>';
     return wrap;
   }
 
   async function loadCompanyMessages() {
     var listEl = document.getElementById('company-msg-thread-list');
     if (!listEl || !currentEmployer) return;
-    listEl.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--gray);">Loading...</div>';
-    var res = await db.from('messages')
-      .select('*, jobs(title, company_name), students(name, avatar_url)')
-      .eq('employer_id', currentEmployer.id)
-      .order('created_at', {ascending:false});
-    if (res.error || !res.data || !res.data.length) {
-      listEl.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--gray);">No messages yet.</div>';
-      return;
+
+    var msgData, employerJobs;
+    if (_companyTabCache.messages) {
+      msgData = _companyTabCache.messages.data;
+      employerJobs = _companyTabCache.messages.employerJobs;
+      if (!msgData || !msgData.length) {
+        listEl.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--gray);">No messages yet.</div>';
+        return;
+      }
+    } else {
+      listEl.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--gray);">Loading...</div>';
+      var res = await db.from('messages')
+        .select('*, jobs(title, company_name, is_active), students(name, avatar_url)')
+        .eq('employer_id', currentEmployer.id)
+        .order('created_at', {ascending:false});
+      if (res.error || !res.data || !res.data.length) {
+        listEl.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--gray);">No messages yet.</div>';
+        return;
+      }
+
+      // Pre-fetch all employer jobs to resolve null job_id threads
+      var jobsRes = await db.from('jobs').select('id, title').eq('employer_id', currentEmployer.id).order('created_at', {ascending:false});
+      employerJobs = jobsRes.data || [];
+      msgData = res.data;
+      _companyTabCache.messages = { data: msgData, employerJobs: employerJobs };
     }
 
-    // Pre-fetch all employer jobs to resolve null job_id threads
-    var jobsRes = await db.from('jobs').select('id, title').eq('employer_id', currentEmployer.id).order('created_at', {ascending:false});
-    var employerJobs = jobsRes.data || [];
-
-    // Group by job_id + student_id — one thread per student per job
+    // Group by job_id + student_id — one thread per student per job.
+    // Deleted students have student_id=NULL; use the snapshot name as fallback key.
+    // Skip threads for inactive (closed) jobs — company doesn't need to see those.
     var threads = {};
-    res.data.forEach(function(m) {
-      var key = (m.job_id || 'nojob') + '_' + (m.student_id || 'nostudent');
-      if (!threads[key]) threads[key] = { msgs: [], jobTitle: m.jobs ? m.jobs.title : null, studentName: m.students ? m.students.name : '—', studentAvatarUrl: m.students ? m.students.avatar_url : null, studentId: m.student_id, jobId: m.job_id };
+    msgData.forEach(function(m) {
+      if (m.jobs && m.jobs.is_active === false) return;
+      var snap = m.student_name_snapshot || null;
+      var key = (m.job_id || 'nojob') + '_' + (m.student_id ? m.student_id : ('del_' + (snap || 'unknown')));
+      if (!threads[key]) threads[key] = {
+        msgs: [],
+        jobTitle: m.jobs ? m.jobs.title : null,
+        studentName: m.students ? m.students.name : (snap || 'Deleted Account'),
+        studentAvatarUrl: m.students ? m.students.avatar_url : null,
+        studentId: m.student_id,
+        studentNameSnapshot: snap,
+        isDeleted: !m.student_id,
+        jobId: m.job_id
+      };
       threads[key].msgs.push(m);
     });
 
@@ -3353,7 +3446,7 @@
     }
 
     // Count unread
-    var unread = res.data.filter(function(m){ return !m.read && m.sender === 'student'; }).length;
+    var unread = msgData.filter(function(m){ return !m.read && m.sender === 'student'; }).length;
     var badge = document.getElementById('company-msg-badge');
     if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? 'inline' : 'none'; }
 
@@ -3404,12 +3497,35 @@
     var jobTitleHtml = thread.jobId && jobTitle && jobTitle !== '—'
       ? ' <span style="color:var(--gray);font-weight:400;">—</span> <span data-job-id="'+thread.jobId+'" class="msg-header-link" style="cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px;color:var(--navy);">'+esc(jobTitle)+'</span>'
       : '';
-    headerEl.innerHTML = '<span data-student-id="'+thread.studentId+'" class="msg-header-link" style="cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px;color:var(--navy);">'+esc(thread.studentName)+'</span>'
-      + jobTitleHtml;
+    var nameHtml = thread.isDeleted
+      ? esc(thread.studentName) + ' <span style="font-size:12px;font-weight:400;color:var(--gray);">(account deleted)</span>'
+      : '<span data-student-id="'+thread.studentId+'" class="msg-header-link" style="cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px;color:var(--navy);">'+esc(thread.studentName)+'</span>';
+    headerEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">'
+      + '<div>' + nameHtml + jobTitleHtml + '</div>'
+      + '<button onclick="deleteCurrentCompanyThread()" style="background:none;border:1px solid #fca5a5;border-radius:6px;padding:4px 10px;font-size:12px;color:#dc2626;cursor:pointer;font-family:\'DM Sans\',sans-serif;flex-shrink:0;">Delete chat</button>'
+      + '</div>';
+
+    // Show/hide compose area based on whether the student account still exists
+    var composeEl = document.getElementById('company-msg-compose');
+    var deletedNotice = document.getElementById('company-msg-deleted-notice');
+    if (thread.isDeleted) {
+      if (composeEl) composeEl.style.display = 'none';
+      if (deletedNotice) deletedNotice.style.display = 'block';
+    } else {
+      if (composeEl) composeEl.style.display = 'flex';
+      if (deletedNotice) deletedNotice.style.display = 'none';
+    }
 
     // Fetch ALL messages for this student+job pair
     var res;
-    if (thread.jobId) {
+    if (thread.isDeleted) {
+      // student_id is NULL — match by snapshot name + job + employer
+      var q = db.from('messages').select('*').eq('employer_id', currentEmployer.id);
+      if (thread.jobId) q = q.eq('job_id', thread.jobId); else q = q.is('job_id', null);
+      q = q.is('student_id', null).eq('student_name_snapshot', thread.studentNameSnapshot || '');
+      res = await q.order('created_at', {ascending:true});
+      // no read-marking needed — deleted accounts can't send new messages
+    } else if (thread.jobId) {
       res = await db.from('messages').select('*')
         .eq('job_id', thread.jobId)
         .eq('student_id', thread.studentId)
@@ -3430,6 +3546,7 @@
         .eq('student_id', thread.studentId)
         .eq('sender','student');
     }
+    _invalidateCompanyCache(['messages']);
     if (res.error) return;
 
     msgsEl.innerHTML = '';
@@ -3458,6 +3575,7 @@
 
   async function sendCompanyMessage() {
     if (!currentCompanyThread || !currentEmployer) return;
+    if (currentCompanyThread.isDeleted) return;
     var sess = await db.auth.getSession();
     if (!sess.data.session || sess.data.session.user.id !== currentEmployer.id) {
       showToast('Session expired — please reload and log in again', 'error');
@@ -3479,7 +3597,62 @@
       type: 'message'
     });
     if (res.error) showToast('Could not send message: ' + res.error.message, 'error');
-    else loadCompanyMessages();
+    else { _invalidateCompanyCache(['messages']); loadCompanyMessages(); }
+  }
+
+  function deleteCurrentCompanyThread() {
+    if (!currentCompanyThread || !currentEmployer) return;
+    var t = currentCompanyThread;
+    showConfirmModal(
+      'Delete this conversation?',
+      'This permanently removes all messages in this chat for both parties.',
+      '',
+      'Delete', 'danger',
+      async function() {
+        var res = await db.rpc('delete_conversation', {
+          p_job_id: t.jobId || null,
+          p_student_id: t.studentId || null,
+          p_employer_id: currentEmployer.id,
+          p_student_name_snapshot: t.studentNameSnapshot || null
+        });
+        if (res.error) { showToast('Could not delete: ' + res.error.message, 'error'); return; }
+        currentCompanyThread = null;
+        var bodyEl = document.getElementById('company-msg-body');
+        var emptyEl = document.getElementById('company-msg-empty');
+        if (bodyEl) bodyEl.style.display = 'none';
+        if (emptyEl) emptyEl.style.display = 'flex';
+        _invalidateCompanyCache(['messages']);
+        loadCompanyMessages();
+        showToast('Conversation deleted.');
+      }
+    );
+  }
+
+  function deleteCurrentStudentThread() {
+    if (!currentStudentThread || !currentStudent) return;
+    var t = currentStudentThread;
+    showConfirmModal(
+      'Delete this conversation?',
+      'This permanently removes all messages in this chat for both parties.',
+      '',
+      'Delete', 'danger',
+      async function() {
+        var res = await db.rpc('delete_conversation', {
+          p_job_id: t.jobId || null,
+          p_student_id: currentStudent.id,
+          p_employer_id: t.employerId || null,
+          p_student_name_snapshot: null
+        });
+        if (res.error) { showToast('Could not delete: ' + res.error.message, 'error'); return; }
+        currentStudentThread = null;
+        var bodyEl = document.getElementById('student-msg-body');
+        var emptyEl = document.getElementById('student-msg-empty');
+        if (bodyEl) bodyEl.style.display = 'none';
+        if (emptyEl) emptyEl.style.display = 'flex';
+        loadStudentMessages();
+        showToast('Conversation deleted.');
+      }
+    );
   }
 
   // ── Student: load all threads ──
@@ -3488,11 +3661,16 @@
     if (!listEl || !currentStudent) return;
     listEl.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--gray);">Loading...</div>';
     var res = await db.from('messages')
-      .select('*, jobs(title, company_name), employers(company_name)')
+      .select('*, jobs(title, company_name, is_active), employers(company_name)')
       .eq('student_id', currentStudent.id)
       .order('created_at', {ascending:false});
     if (res.error || !res.data || !res.data.length) {
       listEl.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--gray);">No messages yet. Apply to jobs to start a conversation.</div>';
+      currentStudentThread = null;
+      var sb = document.getElementById('student-msg-body');
+      var se = document.getElementById('student-msg-empty');
+      if (sb) sb.style.display = 'none';
+      if (se) se.style.display = 'flex';
       return;
     }
 
@@ -3502,7 +3680,8 @@
       var key = (m.job_id || 'nojob') + '_' + (m.employer_id || 'noemployer');
       var companyName = (m.jobs && m.jobs.company_name) || (m.employers && m.employers.company_name) || '—';
       var jobTitle = (m.jobs && m.jobs.title) || null;
-      if (!threads[key]) threads[key] = { msgs:[], jobTitle: jobTitle, companyName: companyName, jobId: m.job_id, employerId: m.employer_id };
+      var jobClosed = m.jobs ? m.jobs.is_active === false : false;
+      if (!threads[key]) threads[key] = { msgs:[], jobTitle: jobTitle, companyName: companyName, jobId: m.job_id, employerId: m.employer_id, isJobClosed: jobClosed };
       threads[key].msgs.push(m);
     });
 
@@ -3572,7 +3751,20 @@
     var jobTitleHtml = thread.jobId && jobTitle && jobTitle !== '—'
       ? ' <span style="color:var(--gray);font-weight:400;">—</span> <span data-job-id="'+thread.jobId+'" class="msg-header-link" style="cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px;color:var(--navy);">'+esc(jobTitle)+'</span>'
       : '';
-    headerEl.innerHTML = esc(thread.companyName) + jobTitleHtml;
+    headerEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">'
+      + '<div>' + esc(thread.companyName) + jobTitleHtml + (thread.isJobClosed ? ' <span style="font-size:12px;font-weight:400;color:var(--gray);">(listing closed)</span>' : '') + '</div>'
+      + '<button onclick="deleteCurrentStudentThread()" style="background:none;border:1px solid #fca5a5;border-radius:6px;padding:4px 10px;font-size:12px;color:#dc2626;cursor:pointer;font-family:\'DM Sans\',sans-serif;flex-shrink:0;">Delete chat</button>'
+      + '</div>';
+
+    var stComposeEl = document.getElementById('student-msg-compose');
+    var stClosedNotice = document.getElementById('student-msg-closed-notice');
+    if (thread.isJobClosed) {
+      if (stComposeEl) stComposeEl.style.display = 'none';
+      if (stClosedNotice) stClosedNotice.style.display = 'block';
+    } else {
+      if (stComposeEl) stComposeEl.style.display = 'flex';
+      if (stClosedNotice) stClosedNotice.style.display = 'none';
+    }
 
     // Fetch ALL messages for this student+job pair
     var res;
@@ -3654,6 +3846,7 @@
 
   async function sendStudentMessage() {
     if (!currentStudentThread || !currentStudent) return;
+    if (currentStudentThread.isJobClosed) return;
     var sess = await db.auth.getSession();
     if (!sess.data.session || sess.data.session.user.id !== currentStudent.id) {
       showToast('Session expired — please log in again', 'error');
@@ -3763,6 +3956,8 @@
   async function confirmFilledRookie(studentId, studentName) {
     if (!_filledJobId) return;
     await db.from('jobs').update({ is_active: false, filled_status: 'rookie', filled_student_id: studentId }).eq('id', _filledJobId);
+    await db.rpc('close_listing_conversations', { p_job_id: _filledJobId });
+    _invalidateCompanyCache(['dashboard', 'applicants', 'messages']);
     closeFilledModal();
     showToast('🎓 Listing filled with ' + studentName + '!');
     loadCompanyDashboard();
@@ -3771,6 +3966,8 @@
   async function markFilledOutside() {
     if (!_filledJobId) return;
     await db.from('jobs').update({ is_active: false, filled_status: 'outside' }).eq('id', _filledJobId);
+    await db.rpc('close_listing_conversations', { p_job_id: _filledJobId });
+    _invalidateCompanyCache(['dashboard', 'messages']);
     closeFilledModal();
     showToast('✓ Listing marked as filled');
     loadCompanyDashboard();
@@ -4260,6 +4457,7 @@
       showToast('Failed to save status: ' + (upd.error.message || upd.error.code || JSON.stringify(upd.error)), 'error');
       return;
     }
+    _invalidateCompanyCache(['applicants', 'dashboard', 'messages']);
     currentCVRow.dataset.status = status;
     // Update badge on applicant row
     var statusColors = {'New':'background:#f0f4ff;color:#1a3260;','Accepted':'background:#e8f5e9;color:#2e7d32;','Shortlisted':'background:#fff8e1;color:#e65100;','Rejected':'background:#ffeaea;color:#c62828;'};
@@ -4569,6 +4767,8 @@
     if (plWrap) plWrap.style.display = 'none';
     var plTags = document.getElementById('post-location-custom-tags');
     if (plTags) plTags.innerHTML = '';
+    var publishBtn = document.querySelector('#post-panel-prefs .btn-primary');
+    if (publishBtn) { publishBtn.textContent='Publish listing →'; publishBtn.disabled=false; }
     switchListingTab('post', 'basics');
     ['post-type-chips','post-field-chips','post-duration-chips','post-app-method','post-emp-type','post-work-auth','post-docs','post-messaging','post-dutch-only','post-interview','post-school-year','post-majors'].forEach(function(id){
       var g = document.getElementById(id); if (g) g.querySelectorAll('.pref-chip').forEach(function(c){ c.classList.remove('active'); });
@@ -4618,6 +4818,7 @@
     try {
       var res = await db.from('jobs').insert([job]).select();
       if (res.error) throw res.error;
+      _invalidateCompanyCache(['dashboard']);
       var type=job.job_type; var field=job.field; var duration=job.duration; var location=job.location;
       var dMonth=job.deadline_month; var dYear=job.deadline_year;
       var deadline=(dMonth&&dMonth!=='Month')?'Closes '+dMonth+' '+dYear:'No deadline';
@@ -4643,6 +4844,7 @@
         row.innerHTML='<div class="listing-full-left"><div class="listing-full-title">'+title+'</div><div class="listing-full-meta">'+type+(field?' · '+field:'')+(location?' · '+location:'')+(duration?' · '+duration:'')+'</div></div><div class="listing-full-right"><span class="tag tag-new" style="padding:4px 10px;font-size:11px;">Active</span><span class="listing-deadline">'+deadline+'</span><span class="listing-applicants-badge">0 applicants</span><button class="listing-edit-btn" onclick="openEditListing(this)">Edit</button></div>';
         list.appendChild(row);
       }
+      if (publishBtn) { publishBtn.textContent='Publish listing →'; publishBtn.disabled=false; }
       document.getElementById('post-listing-form').style.display='none';
       document.getElementById('post-listing-success').style.display='block';
       showToast('Listing saved to Rookies!');
@@ -5056,6 +5258,7 @@
       try {
         var res = await db.from('jobs').update(updates).eq('id', jobId);
         if (res.error) throw res.error;
+        _invalidateCompanyCache(['dashboard']);
         showToast('Listing updated!');
         closeEditModal();
         loadCompanyDashboard();
