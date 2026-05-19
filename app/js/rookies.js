@@ -3727,26 +3727,35 @@
 
   async function selectFilledType(type) {
     if (type !== 'rookie') return;
-    // Load accepted students for this job
-    var res = await db.from('applications').select('*, students(id, name, color, initial, degree, university)')
-      .eq('job_id', _filledJobId).eq('status', 'Accepted');
     var picker = document.getElementById('filled-student-picker');
     var listEl = document.getElementById('filled-student-list');
     picker.style.display = 'block';
+    listEl.innerHTML = '<p style="font-size:13px;color:var(--gray);">Loading…</p>';
+
+    // Fetch accepted or shortlisted applicants — no join to avoid FK dependency
+    var res = await db.from('applications')
+      .select('id, student_id, student_name, status, job_id')
+      .eq('job_id', _filledJobId)
+      .in('status', ['Accepted', 'Shortlisted'])
+      .order('status'); // Accepted first
+
     if (res.error || !res.data || !res.data.length) {
-      listEl.innerHTML = '<p style="font-size:13px;color:var(--gray);">No accepted candidates for this listing yet.</p>';
+      listEl.innerHTML = '<p style="font-size:13px;color:var(--gray);">No accepted or shortlisted candidates for this listing yet.</p>';
       return;
     }
-    listEl.innerHTML = res.data.map(function(app) {
-      var s = app.students || {};
-      var name = s.name || app.student_name || 'Student';
-      var deg = s.degree || '';
-      var color = s.color || 'var(--navy)';
-      var initial = s.initial || name[0].toUpperCase();
+
+    var colors = ['#1a3260','#e8622a','#2e7d52','#6a1b9a','#0288d1'];
+    listEl.innerHTML = res.data.map(function(app, i) {
+      var name = app.student_name || 'Student';
+      var initial = name[0].toUpperCase();
+      var color = colors[i % colors.length];
+      var statusBadge = app.status === 'Accepted'
+        ? '<span style="font-size:11px;font-weight:600;color:#22c55e;">✅ Accepted</span>'
+        : '<span style="font-size:11px;font-weight:600;color:#f59e0b;">⭐ Shortlisted</span>';
       return '<div onclick="confirmFilledRookie(\'' + esc(app.student_id) + '\',\'' + esc(name) + '\')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:white;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor=\'var(--navy)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
         + '<div style="width:40px;height:40px;border-radius:50%;background:' + color + ';display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:700;flex-shrink:0;">' + esc(initial) + '</div>'
-        + '<div><div style="font-size:15px;font-weight:600;color:var(--navy);">' + esc(name) + '</div><div style="font-size:13px;color:var(--text-light);">' + esc(deg) + '</div></div>'
-        + '<span style="margin-left:auto;color:var(--gray);">Select →</span>'
+        + '<div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--navy);">' + esc(name) + '</div>' + statusBadge + '</div>'
+        + '<span style="color:var(--gray);">Select →</span>'
         + '</div>';
     }).join('');
   }
