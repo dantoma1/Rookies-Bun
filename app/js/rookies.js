@@ -320,8 +320,12 @@
       var a = await db.auth.signUp({ email: email, password: pw });
       if (a.error) throw a.error;
       if (!a.data.user) throw new Error('Signup succeeded but no user returned — check Supabase email confirmation settings.');
+
+      /* ── EMAIL CONFIRMATION — disabled until we enable it in Supabase ────────
+         To re-enable: turn on "Confirm email" in Supabase Auth settings, then
+         uncomment this block. Also uncomment the verify-email screen in rookies.html.
+
       if (!a.data.session) {
-        // Email confirmation required — store pending data and show verify screen
         localStorage.setItem('rookies_pending_type', 'company');
         localStorage.setItem('rookies_pending_company', company);
         localStorage.setItem('rookies_pending_email', email);
@@ -330,17 +334,20 @@
         showScreen('verify-email');
         return;
       }
-      // Email confirmation disabled (dev/testing) — create row immediately
+      ────────────────────────────────────────────────────────────────────────── */
+
       var ins = await db.from('employers').insert([{
         id: a.data.user.id,
         email: email,
         company_name: company,
-        status: 'pending'
+        status: 'approved'
       }]);
       if (ins.error) throw ins.error;
-      currentEmployer = { id: a.data.user.id, email: email, company_name: company, status: 'pending' };
+      currentEmployer = { id: a.data.user.id, email: email, company_name: company, status: 'approved' };
       updateNav();
-      showScreen('company-pending');
+      showScreen('company-dash');
+      loadCompanyDashboard();
+      showToast('Welcome to Rookies, ' + company + '!');
     } catch(err) {
       var msg = err.message || 'Something went wrong. Please try again.';
       if (msg.toLowerCase().includes('should contain at least one character of each')) msg = 'Password must include at least one uppercase letter, one lowercase letter, and one number.';
@@ -1870,7 +1877,7 @@
           +'<div class="edu-entry-header"><strong>'+(e.field||e.uni||'Education')+'</strong>'
           +'<span class="edu-period">'+(e.startMonth+' '+e.startYear).trim()+(endText?' — '+endText:'')+'</span></div>'
           +'<div class="edu-entry-sub">'+(e.uni||'')+(e.level?' · '+e.level:'')+(e.gpa?' · GPA '+e.gpa:'')+'</div>'
-          +(e.desc?'<div class="edu-entry-desc">'+_nl2br(e.desc)+'</div>':'')+'</div>';
+          +(e.desc&&(Array.isArray(e.desc)?e.desc.length:e.desc)?'<div class="edu-entry-desc">'+_renderDescBullets(e.desc)+'</div>':'')+'</div>';
       }).join('');
     }
     function renderExpEntries(entries) {
@@ -1880,7 +1887,7 @@
         return '<div class="edu-entry-display">'
           +'<div class="edu-entry-header"><strong>'+(e.role||'Role')+'</strong><span class="edu-period">'+period+'</span></div>'
           +'<div class="edu-entry-sub">'+(e.company||'')+(e.location?' · '+e.location:'')+'</div>'
-          +(e.desc?'<div class="edu-entry-desc">'+_nl2br(e.desc)+'</div>':'')+'</div>';
+          +(e.desc&&(Array.isArray(e.desc)?e.desc.length:e.desc)?'<div class="edu-entry-desc">'+_renderDescBullets(e.desc)+'</div>':'')+'</div>';
       }).join('');
     }
     function renderOrgsEntries(entries) {
@@ -1890,7 +1897,7 @@
         return '<div class="edu-entry-display">'
           +'<div class="edu-entry-header"><strong>'+(e.role||'Member')+'</strong><span class="edu-period">'+period+'</span></div>'
           +'<div class="edu-entry-sub">'+(e.org||'')+'</div>'
-          +(e.desc?'<div class="edu-entry-desc">'+_nl2br(e.desc)+'</div>':'')+'</div>';
+          +(e.desc&&(Array.isArray(e.desc)?e.desc.length:e.desc)?'<div class="edu-entry-desc">'+_renderDescBullets(e.desc)+'</div>':'')+'</div>';
       }).join('');
     }
 
@@ -1980,7 +1987,13 @@
 
     // ── Documents read view ──
     var visEl = document.getElementById('profile-visibility-status');
-    if (visEl) visEl.textContent = s.visibility || 'Not set';
+    if (visEl) {
+      var _vis = s.visibility;
+      if (_vis === 'Community' || _vis === 'Employers only') _vis = 'Public'; // migrate legacy values
+      visEl.textContent = _vis === 'Public' ? 'Public — visible to companies'
+                        : _vis === 'Private' ? 'Private — only you can see'
+                        : 'Not set';
+    }
 
     var cvStatus = document.getElementById('profile-cv-status');
     var cvLink = document.getElementById('cv-read-link');
@@ -2032,7 +2045,7 @@
     // Tip
     var tipEl = document.getElementById('prog-tip');
     if (tipEl) {
-      if (overallScore === 100) tipEl.textContent = 'Profile complete! Your profile is visible to companies.';
+      if (overallScore === 100) tipEl.textContent = 'Profile complete! Set your visibility to Public in the Documents section to appear in company searches.';
       else if (eduScore === 0) tipEl.textContent = 'Add at least one education entry to complete your profile.';
       else if (basicScore < 100) tipEl.textContent = 'Fill in required basic info: name, current status, field of study, work authorisation.';
       else if (prefsScore < 100) tipEl.textContent = 'Complete your preferences — what you\'re looking for, sectors, and preferred location.';
@@ -2830,49 +2843,339 @@
   }
 
   // ─ Download my data ────────────────────────────────────────────────────
-  // Pulls the user's records from every table that references them and
-  // saves a JSON blob the user can keep. GDPR data-portability move.
+  // Generates a self-contained HTML file the user can open in any browser.
+  // All sections are human-readable — no raw DB IDs or technical field names.
   async function downloadMyData(role) {
     try {
-      var bundle = { exported_at: new Date().toISOString(), role: role };
+      var exportDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      function fmtDate(iso) {
+        if (!iso) return '—';
+        return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+      function safeArr(val) {
+        if (!val) return [];
+        if (Array.isArray(val)) return val;
+        try { return JSON.parse(val); } catch(e) { return []; }
+      }
+      function safeStr(val) { return val ? String(val) : '—'; }
+      function escHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+
+      // ── Shared HTML shell ──────────────────────────────────────────────
+      function shell(title, body) {
+        return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+          + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+          + '<title>' + escHtml(title) + '</title>'
+          + '<style>'
+          + 'body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f7f4ef;color:#1a1a2e;}'
+          + '.wrap{max-width:860px;margin:0 auto;padding:40px 24px 80px;}'
+          + '.cover{background:#0f1f3d;border-radius:16px;padding:40px 44px;margin-bottom:36px;color:white;}'
+          + '.cover h1{margin:0 0 6px;font-size:32px;letter-spacing:-0.5px;}'
+          + '.cover h1 span{color:#e8622a;}'
+          + '.cover p{margin:0;opacity:0.6;font-size:14px;}'
+          + '.section{background:white;border:1px solid #ddd8cf;border-radius:14px;padding:32px 36px;margin-bottom:24px;}'
+          + '.section h2{margin:0 0 20px;font-size:19px;color:#0f1f3d;padding-bottom:12px;border-bottom:2px solid #f7f4ef;display:flex;align-items:center;gap:10px;}'
+          + '.section h2 .icon{font-size:20px;}'
+          + '.row{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #f0ece4;font-size:14px;}'
+          + '.row:last-child{border-bottom:none;}'
+          + '.lbl{color:#8a8f9e;font-weight:600;min-width:160px;flex-shrink:0;}'
+          + '.val{color:#1a1a2e;}'
+          + 'table{width:100%;border-collapse:collapse;font-size:14px;}'
+          + 'th{text-align:left;padding:9px 12px;background:#f7f4ef;color:#8a8f9e;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #ddd8cf;}'
+          + 'td{padding:11px 12px;border-bottom:1px solid #f0ece4;color:#1a1a2e;vertical-align:top;}'
+          + 'tr:last-child td{border-bottom:none;}'
+          + '.badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:600;}'
+          + '.badge-new{background:#e3f2fd;color:#1565c0;}'
+          + '.badge-review{background:#fff8e1;color:#e65100;}'
+          + '.badge-shortlisted{background:#e8f5e9;color:#2e7d32;}'
+          + '.badge-accepted{background:#e8f5e9;color:#2e7d32;}'
+          + '.badge-rejected{background:#ffeaea;color:#c62828;}'
+          + '.badge-open{background:rgba(15,31,61,0.07);color:#0f1f3d;}'
+          + '.badge-closed{background:#f0f0f0;color:#8a8f9e;}'
+          + '.thread{border:1px solid #ddd8cf;border-radius:10px;margin-bottom:16px;overflow:hidden;}'
+          + '.thread-head{background:#0f1f3d;color:white;padding:12px 18px;font-size:14px;font-weight:600;}'
+          + '.thread-head span{opacity:0.6;font-weight:400;font-size:13px;margin-left:8px;}'
+          + '.bubble-wrap{padding:14px 18px;display:flex;flex-direction:column;gap:8px;}'
+          + '.bubble{max-width:80%;padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.5;}'
+          + '.bubble.sent{background:#0f1f3d;color:white;align-self:flex-end;border-radius:10px 10px 2px 10px;}'
+          + '.bubble.recv{background:#f0ece4;color:#1a1a2e;align-self:flex-start;border-radius:10px 10px 10px 2px;}'
+          + '.bubble.system{background:#f7f4ef;color:#8a8f9e;align-self:center;border-radius:8px;font-style:italic;border:1px solid #ddd8cf;max-width:90%;text-align:center;}'
+          + '.bubble .meta{font-size:11px;margin-top:4px;opacity:0.55;}'
+          + '.tag{display:inline-block;padding:4px 12px;background:#f0ece4;border:1px solid #ddd8cf;border-radius:100px;font-size:13px;margin:3px 3px 3px 0;color:#0f1f3d;}'
+          + '.score-row{display:grid;grid-template-columns:120px 56px 1fr;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid #f0ece4;font-size:14px;}'
+          + '.score-row:last-child{border-bottom:none;}'
+          + '.score-num{font-size:22px;font-weight:800;text-align:right;}'
+          + '.empty{color:#8a8f9e;font-size:14px;font-style:italic;}'
+          + 'p.note{font-size:12px;color:#8a8f9e;margin:12px 0 0;}'
+          + '</style></head><body><div class="wrap">'
+          + '<div class="cover"><h1>R<span>oo</span>kies — Your Data</h1>'
+          + '<p>Exported on ' + escHtml(exportDate) + ' &nbsp;·&nbsp; ' + escHtml(title) + '</p></div>'
+          + body
+          + '</div></body></html>';
+      }
+
+      function statusBadge(s) {
+        var key = (s||'new').toLowerCase().replace(/\s+/g,'-');
+        return '<span class="badge badge-' + escHtml(key) + '">' + escHtml(s||'New') + '</span>';
+      }
+
+      // ── Thread grouping helper (shared by both roles) ──────────────────
+      function buildThreads(msgs, role) {
+        var threads = {};
+        msgs.forEach(function(m) {
+          var key = (m.job_id || 'general') + '_' + (m.student_id || 'unknown');
+          if (!threads[key]) threads[key] = {
+            jobTitle: m.job_title || 'General',
+            studentName: m.student_name || m.employer_name || '—',
+            msgs: []
+          };
+          threads[key].msgs.push(m);
+        });
+        return Object.values(threads).map(function(t) {
+          t.msgs.sort(function(a,b){ return new Date(a.created_at) - new Date(b.created_at); });
+          return t;
+        });
+      }
+
+      function renderThreads(threads, selfRole) {
+        if (!threads.length) return '<p class="empty">No conversations yet.</p>';
+        return threads.map(function(t) {
+          var otherLabel = selfRole === 'student' ? escHtml(t.studentName) : escHtml(t.studentName);
+          var bubbles = t.msgs.map(function(m) {
+            var isSystem = m.sender === 'system';
+            var isSelf = (selfRole === 'student' && m.sender === 'student') || (selfRole === 'company' && m.sender === 'employer');
+            var cls = isSystem ? 'system' : isSelf ? 'sent' : 'recv';
+            var time = m.created_at ? new Date(m.created_at).toLocaleString('en-GB', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+            var typeLabel = (m.type && m.type !== 'message' && m.type !== 'system')
+              ? '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;opacity:0.7;">'
+                + escHtml(m.type === 'accepted' ? 'Accepted' : m.type === 'shortlisted' ? 'Shortlisted' : m.type === 'rejected' ? 'Rejected' : m.type === 'invite' ? 'Invite to apply' : m.type)
+                + '</div>' : '';
+            return '<div class="bubble ' + cls + '">' + typeLabel + escHtml(m.body||'') + '<div class="meta">' + time + '</div></div>';
+          }).join('');
+          return '<div class="thread">'
+            + '<div class="thread-head">' + escHtml(t.jobTitle) + '<span>with ' + otherLabel + '</span></div>'
+            + '<div class="bubble-wrap">' + bubbles + '</div>'
+            + '</div>';
+        }).join('');
+      }
+
+      // ══════════════════════════════════════════════════════════════════
+      // STUDENT EXPORT
+      // ══════════════════════════════════════════════════════════════════
       if (role === 'student') {
         var sid = currentStudent && currentStudent.id;
         if (!sid) return;
-        var [s, apps, msgs] = await Promise.all([
+        var [sRes, appsRes, msgsRes, scoresRes] = await Promise.all([
           db.from('students').select('*').eq('id', sid).single(),
-          db.from('applications').select('*').eq('student_id', sid),
-          db.from('messages').select('*').eq('student_id', sid)
+          db.from('applications').select('*').eq('student_id', sid).order('created_at', { ascending: false }),
+          db.from('messages').select('*').eq('student_id', sid).order('created_at', { ascending: true }),
+          db.from('llm_match_scores').select('*').eq('student_id', sid)
         ]);
-        bundle.profile = s.data || null;
-        bundle.applications = apps.data || [];
-        bundle.messages = msgs.data || [];
+        var s    = sRes.data    || {};
+        var apps = appsRes.data || [];
+        var msgs = msgsRes.data || [];
+        var scores = scoresRes.data || [];
+
+        var edu  = safeArr(s.education);
+        var exp  = safeArr(s.experience);
+        var orgs = safeArr(s.organisations || s.orgs);
+        var techSkills = safeArr(s.skills_technical).map(function(sk){ return typeof sk === 'string' ? sk : sk.name; });
+        var profSkills = safeArr(s.skills_professional).map(function(sk){ return typeof sk === 'string' ? sk : sk.name; });
+        var langSkills = safeArr(s.skills_languages).map(function(sk){ return typeof sk === 'string' ? sk : sk.name; });
+        var prefRoles  = safeArr(s.role_interests);
+
+        // ── Profile ──
+        var profileHtml = '<div class="section"><h2><span class="icon">👤</span>Your Profile</h2>'
+          + ['Name', 'University', 'Degree', 'GPA', 'Work authorisation', 'Available from', 'Bio'].map(function(lbl, i) {
+              var vals = [s.name, s.university, s.degree, s.gpa ? s.gpa + ' / 10' : null,
+                          s.work_auth, [s.avail_month, s.avail_year].filter(Boolean).join(' ') || null, s.bio];
+              return '<div class="row"><span class="lbl">' + lbl + '</span><span class="val">' + escHtml(safeStr(vals[i])) + '</span></div>';
+            }).join('')
+          + (s.cv_url ? '<div class="row"><span class="lbl">CV</span><span class="val"><a href="' + escHtml(s.cv_url) + '" target="_blank">Download PDF</a></span></div>' : '')
+          + '</div>';
+
+        // ── Skills ──
+        var skillsHtml = '<div class="section"><h2><span class="icon">🛠️</span>Skills</h2>'
+          + (techSkills.length ? '<div class="row"><span class="lbl">Technical</span><span class="val">' + techSkills.map(function(sk){ return '<span class="tag">' + escHtml(sk) + '</span>'; }).join('') + '</span></div>' : '')
+          + (profSkills.length ? '<div class="row"><span class="lbl">Professional</span><span class="val">' + profSkills.map(function(sk){ return '<span class="tag">' + escHtml(sk) + '</span>'; }).join('') + '</span></div>' : '')
+          + (langSkills.length ? '<div class="row"><span class="lbl">Languages</span><span class="val">' + langSkills.map(function(sk){ return '<span class="tag">' + escHtml(sk) + '</span>'; }).join('') + '</span></div>' : '')
+          + (!techSkills.length && !profSkills.length && !langSkills.length ? '<p class="empty">No skills added yet.</p>' : '')
+          + '</div>';
+
+        // ── Education ──
+        var eduHtml = '<div class="section"><h2><span class="icon">🎓</span>Education</h2>'
+          + (edu.length ? edu.map(function(e) {
+              var period = [e.startMonth, e.startYear].filter(Boolean).join(' ')
+                + (e.stillStudying ? ' — Present' : e.endMonth ? ' — ' + e.endMonth + ' ' + (e.endYear||'') : '');
+              return '<div style="padding:12px 0;border-bottom:1px solid #f0ece4;">'
+                + '<div style="font-weight:600;color:#0f1f3d;">' + escHtml(e.field||e.degree||'Degree') + '</div>'
+                + '<div style="font-size:13px;color:#555b6e;margin-top:2px;">' + escHtml(e.uni||'') + (period ? ' &nbsp;·&nbsp; ' + escHtml(period) : '') + '</div>'
+                + (e.desc ? '<div style="font-size:13px;color:#555b6e;margin-top:6px;font-style:italic;">' + escHtml(e.desc) + '</div>' : '')
+                + '</div>';
+            }).join('') : '<p class="empty">No education added yet.</p>')
+          + '</div>';
+
+        // ── Experience ──
+        var expHtml = '<div class="section"><h2><span class="icon">💼</span>Work Experience</h2>'
+          + (exp.length ? exp.map(function(e) {
+              var period = [e.startMonth, e.startYear].filter(Boolean).join(' ')
+                + (e.stillWorking ? ' — Present' : e.endMonth ? ' — ' + e.endMonth + ' ' + (e.endYear||'') : '');
+              return '<div style="padding:12px 0;border-bottom:1px solid #f0ece4;">'
+                + '<div style="font-weight:600;color:#0f1f3d;">' + escHtml(e.role||'Role') + '</div>'
+                + '<div style="font-size:13px;color:#555b6e;margin-top:2px;">' + escHtml([e.company, e.location, period].filter(Boolean).join(' &nbsp;·&nbsp; ')) + '</div>'
+                + (e.desc ? '<div style="font-size:13px;color:#555b6e;margin-top:6px;font-style:italic;">' + escHtml(e.desc) + '</div>' : '')
+                + '</div>';
+            }).join('') : '<p class="empty">No experience added yet.</p>')
+          + '</div>';
+
+        // ── Preferences ──
+        var prefsHtml = '<div class="section"><h2><span class="icon">🎯</span>Job Preferences</h2>'
+          + ['Role type', 'Preferred sectors', 'Preferred locations', 'Preferred duration', 'Role interests'].map(function(lbl, i) {
+              var vals = [s.pref_type, safeArr(s.pref_sectors).join(', ')||null, safeArr(s.pref_locations).join(', ')||null,
+                          s.pref_duration, prefRoles.join(', ')||null];
+              return vals[i] ? '<div class="row"><span class="lbl">' + lbl + '</span><span class="val">' + escHtml(safeStr(vals[i])) + '</span></div>' : '';
+            }).join('')
+          + '</div>';
+
+        // ── Applications ──
+        var appsHtml = '<div class="section"><h2><span class="icon">📋</span>Your Applications</h2>'
+          + (apps.length
+            ? '<table><thead><tr><th>Role</th><th>Company</th><th>Applied on</th><th>Status</th></tr></thead><tbody>'
+              + apps.map(function(a) {
+                  return '<tr><td>' + escHtml(a.job_title||'—') + '</td><td>' + escHtml(a.company_name||'—') + '</td>'
+                    + '<td>' + fmtDate(a.created_at) + '</td><td>' + statusBadge(a.status) + '</td></tr>'
+                    + (a.motivation ? '<tr><td colspan="4" style="font-size:13px;color:#555b6e;font-style:italic;padding-top:0;">Motivation: ' + escHtml(a.motivation) + '</td></tr>' : '');
+                }).join('')
+              + '</tbody></table>'
+            : '<p class="empty">No applications yet.</p>')
+          + '</div>';
+
+        // ── AI Match Scores ──
+        var scoresHtml = '';
+        if (scores.length) {
+          scoresHtml = '<div class="section"><h2><span class="icon">🤖</span>AI Match Scores</h2>'
+            + '<p style="font-size:13px;color:#555b6e;margin:0 0 16px;">These scores were generated by Rookies\' AI when comparing your profile to a job listing.</p>'
+            + scores.map(function(sc) {
+                var dims = [
+                  { label: 'Education',   score: sc.education_fit,    note: sc.education_rationale },
+                  { label: 'Experience',  score: sc.experience_fit,   note: sc.experience_rationale },
+                  { label: 'Projects',    score: sc.project_relevance,note: sc.project_rationale },
+                  { label: 'Trajectory',  score: sc.trajectory_fit,   note: sc.trajectory_rationale }
+                ];
+                return '<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #f0ece4;">'
+                  + '<div style="font-weight:600;color:#0f1f3d;margin-bottom:10px;">' + escHtml(sc.job_title||'Job') + '</div>'
+                  + dims.filter(function(d){ return d.score != null; }).map(function(d) {
+                      var color = d.score >= 7 ? '#2e7d52' : d.score >= 4 ? '#e65100' : '#c62828';
+                      return '<div class="score-row">'
+                        + '<span style="font-weight:600;color:#0f1f3d;">' + escHtml(d.label) + '</span>'
+                        + '<span class="score-num" style="color:' + color + ';">' + d.score + '</span>'
+                        + '<span style="color:#555b6e;font-size:13px;">' + escHtml(d.note||'') + '</span>'
+                        + '</div>';
+                    }).join('')
+                  + '</div>';
+              }).join('')
+            + '</div>';
+        }
+
+        // ── Conversations ──
+        var threads = buildThreads(msgs, 'student');
+        var msgsHtml = '<div class="section"><h2><span class="icon">💬</span>Your Conversations</h2>' + renderThreads(threads, 'student') + '</div>';
+
+        var body = profileHtml + skillsHtml + eduHtml + expHtml + prefsHtml + appsHtml + scoresHtml + msgsHtml;
+        var html = shell((s.name || 'Student') + ' — Data Export', body);
+        _triggerHtmlDownload(html, 'rookies-my-data-student');
+
+      // ══════════════════════════════════════════════════════════════════
+      // COMPANY EXPORT
+      // ══════════════════════════════════════════════════════════════════
       } else {
         var eid = currentEmployer && currentEmployer.id;
         if (!eid) return;
-        var [e, jobs, apps2, msgs2, recs] = await Promise.all([
+        var [eRes, jobsRes, apps2Res, msgs2Res, recsRes] = await Promise.all([
           db.from('employers').select('*').eq('id', eid).single(),
-          db.from('jobs').select('*').eq('employer_id', eid),
-          db.from('applications').select('*').eq('employer_id', eid),
-          db.from('messages').select('*').eq('employer_id', eid),
+          db.from('jobs').select('*').eq('employer_id', eid).order('created_at', { ascending: false }),
+          db.from('applications').select('*').eq('employer_id', eid).order('created_at', { ascending: false }),
+          db.from('messages').select('*').eq('employer_id', eid).order('created_at', { ascending: true }),
           db.from('company_recruiters').select('*').eq('employer_id', eid)
         ]);
-        bundle.profile = e.data || null;
-        bundle.jobs = jobs.data || [];
-        bundle.applications = apps2.data || [];
-        bundle.messages = msgs2.data || [];
-        bundle.recruiters = recs.data || [];
+        var e    = eRes.data    || {};
+        var jobs = jobsRes.data || [];
+        var apps2 = apps2Res.data || [];
+        var msgs2 = msgs2Res.data || [];
+        var recs  = recsRes.data || [];
+
+        // ── Profile ──
+        var profileHtml2 = '<div class="section"><h2><span class="icon">🏢</span>Company Profile</h2>'
+          + [['Company name', e.company_name], ['Email', e.email], ['Description', e.description], ['Account created', fmtDate(e.created_at)]]
+              .map(function(pair) {
+                return pair[1] ? '<div class="row"><span class="lbl">' + escHtml(pair[0]) + '</span><span class="val">' + escHtml(safeStr(pair[1])) + '</span></div>' : '';
+              }).join('')
+          + '</div>';
+
+        // ── Team ──
+        var teamHtml = '<div class="section"><h2><span class="icon">👥</span>Your Team</h2>'
+          + (recs.length
+            ? '<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Added on</th></tr></thead><tbody>'
+              + recs.map(function(r) {
+                  return '<tr><td>' + escHtml(r.name||'—') + '</td><td>' + escHtml(r.email||'—') + '</td>'
+                    + '<td>' + escHtml(r.role||'Recruiter') + '</td><td>' + fmtDate(r.created_at) + '</td></tr>';
+                }).join('')
+              + '</tbody></table>'
+            : '<p class="empty">No team members added yet.</p>')
+          + '</div>';
+
+        // ── Job listings ──
+        var jobsHtml = '<div class="section"><h2><span class="icon">📌</span>Your Job Listings</h2>'
+          + (jobs.length
+            ? '<table><thead><tr><th>Title</th><th>Type</th><th>Location</th><th>Posted on</th><th>Status</th></tr></thead><tbody>'
+              + jobs.map(function(j) {
+                  var st = j.is_active === false ? 'Closed' : 'Open';
+                  return '<tr><td>' + escHtml(j.title||'—') + '</td><td>' + escHtml(j.type||'—') + '</td>'
+                    + '<td>' + escHtml(j.location||'—') + '</td><td>' + fmtDate(j.created_at) + '</td>'
+                    + '<td>' + statusBadge(st) + '</td></tr>';
+                }).join('')
+              + '</tbody></table>'
+            : '<p class="empty">No listings posted yet.</p>')
+          + '</div>';
+
+        // ── Applications received ──
+        var apps2Html = '<div class="section"><h2><span class="icon">📋</span>Applications Received</h2>'
+          + (apps2.length
+            ? '<table><thead><tr><th>Candidate</th><th>Role applied for</th><th>Applied on</th><th>Status</th></tr></thead><tbody>'
+              + apps2.map(function(a) {
+                  return '<tr><td>' + escHtml(a.student_name||'—') + '</td><td>' + escHtml(a.job_title||'—') + '</td>'
+                    + '<td>' + fmtDate(a.created_at) + '</td><td>' + statusBadge(a.status) + '</td></tr>';
+                }).join('')
+              + '</tbody></table>'
+            : '<p class="empty">No applications received yet.</p>')
+          + '</div>';
+
+        // ── Conversations ──
+        var threads2 = buildThreads(msgs2, 'company');
+        var msgs2Html = '<div class="section"><h2><span class="icon">💬</span>Conversations</h2>' + renderThreads(threads2, 'company') + '</div>';
+
+        var body2 = profileHtml2 + teamHtml + jobsHtml + apps2Html + msgs2Html;
+        var html2 = shell((e.company_name || 'Company') + ' — Data Export', body2);
+        _triggerHtmlDownload(html2, 'rookies-my-data-company');
       }
-      var blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'rookies-data-' + (role || 'export') + '-' + Date.now() + '.json';
-      document.body.appendChild(a); a.click();
-      setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 100);
+
       showToast('Your data has been downloaded');
     } catch (err) {
       showToast('Export failed: ' + (err.message || 'unknown error'));
     }
+  }
+
+  function _triggerHtmlDownload(html, filename) {
+    var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url;
+    a.download = filename + '-' + Date.now() + '.html';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 100);
   }
 
   // ─ Delete account ─────────────────────────────────────────────────────
@@ -3303,6 +3606,40 @@
   var currentCompanyThread = null;
   var currentStudentThread = null;
   var _companyTabCache = {};
+  var _msgFiles = { company: null, student: null };
+  var _MSG_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+
+  function previewMsgAttachment(side, input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    if (file.size > _MSG_MAX_BYTES) {
+      showToast('File too large — maximum 5 MB', 'error');
+      input.value = '';
+      return;
+    }
+    _msgFiles[side] = file;
+    var prev = document.getElementById(side + '-msg-attach-preview');
+    var lbl  = document.getElementById(side + '-msg-attach-label');
+    if (lbl) lbl.textContent = '📎 ' + file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+    if (prev) prev.style.display = 'flex';
+  }
+  function clearMsgAttachment(side) {
+    _msgFiles[side] = null;
+    var prev = document.getElementById(side + '-msg-attach-preview');
+    var fi   = document.getElementById(side + '-msg-file');
+    if (prev) prev.style.display = 'none';
+    if (fi)   fi.value = '';
+  }
+  async function _uploadMsgAttachment(file) {
+    var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    var uid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+    var path = uid + '/' + safeName;
+    var { error } = await db.storage.from('message-attachments').upload(path, file, { contentType: file.type, upsert: false });
+    if (error) throw error;
+    var { data } = db.storage.from('message-attachments').getPublicUrl(path);
+    return { url: data.publicUrl, name: file.name };
+  }
+
   function _invalidateCompanyCache(keys) {
     (keys || ['dashboard','applicants','messages','settings']).forEach(function(k){ delete _companyTabCache[k]; });
   }
@@ -3368,7 +3705,22 @@
     }
 
     var bubbleClass = isSelf ? 'from-self' : 'from-other';
-    var bubbleHtml = '<div class="msg-bubble ' + bubbleClass + '">' + typeLabel + esc(m.body) + '</div>';
+    var bodyHtml = m.body ? '<div style="white-space:pre-wrap;">' + esc(m.body) + '</div>' : '';
+    var attachHtml = '';
+    if (m.attachment_url && m.attachment_name) {
+      var imgExts = ['jpg','jpeg','png','gif','webp','svg'];
+      var fileExt = (m.attachment_name.split('.').pop() || '').toLowerCase();
+      var mt = bodyHtml ? 'margin-top:8px;' : '';
+      if (imgExts.indexOf(fileExt) > -1) {
+        attachHtml = '<a href="' + esc(m.attachment_url) + '" target="_blank" style="display:block;' + mt + '">'
+          + '<img src="' + esc(m.attachment_url) + '" style="max-width:220px;max-height:180px;border-radius:6px;display:block;"></a>';
+      } else {
+        var lc = isSelf ? 'rgba(255,255,255,0.88)' : 'var(--navy)';
+        var lb = isSelf ? 'rgba(255,255,255,0.13)' : 'var(--cream)';
+        attachHtml = '<div style="' + mt + '"><a href="' + esc(m.attachment_url) + '" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:' + lc + ';text-decoration:none;padding:5px 9px;background:' + lb + ';border-radius:6px;border:1px solid rgba(0,0,0,0.09);">📎 ' + esc(m.attachment_name) + '</a></div>';
+      }
+    }
+    var bubbleHtml = '<div class="msg-bubble ' + bubbleClass + '">' + typeLabel + bodyHtml + attachHtml + '</div>';
 
     // Sent (right): bubble on left of avatar | Received (left): avatar on left of bubble
     var rowHtml = isSelf
@@ -3583,10 +3935,17 @@
     }
     var input = document.getElementById('company-msg-input');
     var body = (input.value || '').trim();
-    if (!body) return;
+    var file = _msgFiles.company;
+    if (!body && !file) return;
     input.value = '';
+    var attachmentUrl = null, attachmentName = null;
+    if (file) {
+      clearMsgAttachment('company');
+      try { var att = await _uploadMsgAttachment(file); attachmentUrl = att.url; attachmentName = att.name; }
+      catch (e) { showToast('Upload failed: ' + e.message, 'error'); return; }
+    }
     var msgsEl = document.getElementById('company-msg-messages');
-    if (msgsEl) { msgsEl.appendChild(_buildMsgWrap({sender:'employer',body:body,created_at:new Date().toISOString(),type:'message'}, true, null)); msgsEl.scrollTop = msgsEl.scrollHeight; }
+    if (msgsEl) { msgsEl.appendChild(_buildMsgWrap({sender:'employer',body:body,attachment_url:attachmentUrl,attachment_name:attachmentName,created_at:new Date().toISOString(),type:'message'}, true, null)); msgsEl.scrollTop = msgsEl.scrollHeight; }
     var res = await db.from('messages').insert({
       job_id: currentCompanyThread.jobId,
       application_id: null,
@@ -3594,7 +3953,9 @@
       employer_id: currentEmployer.id,
       sender: 'employer',
       body: body,
-      type: 'message'
+      type: 'message',
+      attachment_url: attachmentUrl,
+      attachment_name: attachmentName
     });
     if (res.error) showToast('Could not send message: ' + res.error.message, 'error');
     else { _invalidateCompanyCache(['messages']); loadCompanyMessages(); }
@@ -3854,10 +4215,17 @@
     }
     var input = document.getElementById('student-msg-input');
     var body = (input.value || '').trim();
-    if (!body) return;
+    var file = _msgFiles.student;
+    if (!body && !file) return;
     input.value = '';
+    var attachmentUrl = null, attachmentName = null;
+    if (file) {
+      clearMsgAttachment('student');
+      try { var att = await _uploadMsgAttachment(file); attachmentUrl = att.url; attachmentName = att.name; }
+      catch (e) { showToast('Upload failed: ' + e.message, 'error'); return; }
+    }
     var msgsEl = document.getElementById('student-msg-messages');
-    if (msgsEl) { msgsEl.appendChild(_buildMsgWrap({sender:'student',body:body,created_at:new Date().toISOString(),type:'message'}, true, (currentStudent && currentStudent.avatar_url)||null)); msgsEl.scrollTop = msgsEl.scrollHeight; }
+    if (msgsEl) { msgsEl.appendChild(_buildMsgWrap({sender:'student',body:body,attachment_url:attachmentUrl,attachment_name:attachmentName,created_at:new Date().toISOString(),type:'message'}, true, (currentStudent && currentStudent.avatar_url)||null)); msgsEl.scrollTop = msgsEl.scrollHeight; }
     var res = await db.from('messages').insert({
       job_id: currentStudentThread.jobId,
       application_id: null,
@@ -3865,7 +4233,9 @@
       employer_id: currentStudentThread.employerId || null,
       sender: 'student',
       body: body,
-      type: 'message'
+      type: 'message',
+      attachment_url: attachmentUrl,
+      attachment_name: attachmentName
     });
     if (res.error) { showToast('Could not send message: ' + res.error.message, 'error'); return; }
     loadStudentMessages();
@@ -4014,6 +4384,32 @@
       }
     }
 
+    // Profile completeness warning
+    var warningEl = document.getElementById('apply-incomplete-warning');
+    var listEl    = document.getElementById('apply-incomplete-list');
+    if (warningEl && listEl && currentStudent) {
+      var s = currentStudent;
+      var totalSkills = ((s.skills_technical||[]).length + (s.skills_professional||[]).length + (s.skills_languages||[]).length);
+      var edu = (typeof s.education === 'string') ? (function(){ try{ return JSON.parse(s.education); }catch(e){ return []; } })() : (s.education||[]);
+      var missing = [];
+      if (!s.name)           missing.push('Your full name');
+      if (!s.current_status) missing.push('Current status (e.g. Bachelor student, Recent graduate)');
+      if (!s.field_of_study) missing.push('Field of study');
+      if (!s.work_auth)      missing.push('Work authorisation');
+      if (!s.pref_type)      missing.push('Preferred role type (internship, working student, graduate)');
+      if (!s.pref_locations) missing.push('Preferred locations');
+      if (!s.pref_sectors)   missing.push('Preferred sectors');
+      if (!edu.length)       missing.push('At least one education entry');
+      if (totalSkills < 3)   missing.push('At least 3 skills (' + totalSkills + ' added so far)');
+
+      if (missing.length) {
+        listEl.innerHTML = missing.map(function(m){ return '<li>' + esc(m) + '</li>'; }).join('');
+        warningEl.style.display = 'block';
+      } else {
+        warningEl.style.display = 'none';
+      }
+    }
+
     document.getElementById('apply-modal').classList.add('open');
     var motivEl = document.getElementById('apply-motivation');
     if (motivEl) motivEl.value = '';
@@ -4134,9 +4530,8 @@
     function entries(arr) {
       if (!arr||!arr.length) return '<p style="font-size:13px;color:var(--gray);">None listed.</p>';
       return arr.map(function(e){
-        var raw = e.desc || '';
-        var desc = raw.replace(/\r\n|\r|\n/g,'<br>');
-        return '<div class="cv-entry"><div class="cv-entry-title">'+e.title+'</div><div class="cv-entry-sub">'+e.sub+'</div>'+(desc?'<div class="cv-entry-desc">'+desc+'</div>':'')+'</div>';
+        var descHtml = _renderDescBullets(e.desc);
+        return '<div class="cv-entry"><div class="cv-entry-title">'+e.title+'</div><div class="cv-entry-sub">'+e.sub+'</div>'+(descHtml?'<div class="cv-entry-desc">'+descHtml+'</div>':'')+'</div>';
       }).join('');
     }
 
@@ -4337,9 +4732,8 @@
     function entries(arr) {
       if (!arr || !arr.length) return '<p style="font-size:13px;color:var(--gray);">None listed.</p>';
       return arr.map(function(e){
-        var raw = e.desc || '';
-        var desc = raw.replace(/\r\n|\r|\n/g,'<br>');
-        return '<div class="cv-entry"><div class="cv-entry-title">'+e.title+'</div><div class="cv-entry-sub">'+e.sub+'</div>'+(desc?'<div class="cv-entry-desc">'+desc+'</div>':'')+'</div>';
+        var descHtml = _renderDescBullets(e.desc);
+        return '<div class="cv-entry"><div class="cv-entry-title">'+e.title+'</div><div class="cv-entry-sub">'+e.sub+'</div>'+(descHtml?'<div class="cv-entry-desc">'+descHtml+'</div>':'')+'</div>';
       }).join('');
     }
 
@@ -4457,7 +4851,7 @@
       showToast('Failed to save status: ' + (upd.error.message || upd.error.code || JSON.stringify(upd.error)), 'error');
       return;
     }
-    _invalidateCompanyCache(['applicants', 'dashboard', 'messages']);
+    _invalidateCompanyCache(['applicants', 'dashboard']);
     currentCVRow.dataset.status = status;
     // Update badge on applicant row
     var statusColors = {'New':'background:#f0f4ff;color:#1a3260;','Accepted':'background:#e8f5e9;color:#2e7d32;','Shortlisted':'background:#fff8e1;color:#e65100;','Rejected':'background:#ffeaea;color:#c62828;'};
@@ -4485,6 +4879,9 @@
         }
       } catch(e) { console.error('Message send error:', e.message); }
     }
+    // Invalidate messages cache AFTER insert so the thread is ready when the user switches tab
+    _invalidateCompanyCache(['messages']);
+    loadCompanyMessages();
     showToast(
       status === 'Accepted'    ? ('✅ Accepted' + (messageSent ? ' — message sent' : ''))
       : status === 'Shortlisted' ? ('⭐ Shortlisted' + (messageSent ? ' — message sent' : ''))
@@ -4518,18 +4915,23 @@
         btn.style.opacity = '0.5';
       }
     });
-    // Pre-fill message template
+    // Pre-fill message — use the job's custom preset if one was saved, else fall back to the default template
     var name = window._cvStudentName || 'there';
     var role = window._cvJobTitle || 'the role';
-    var templates = {
+    var defaults = {
       'Accepted':    'Hi ' + name + ', we\'re delighted to let you know that you\'ve been selected for the ' + role + ' position. We\'ll be in touch shortly with the next steps. Looking forward to working with you!',
       'Shortlisted': 'Hi ' + name + ', thank you for applying to ' + role + '. We\'ve reviewed your application and are happy to let you know that you\'ve been shortlisted. We\'ll be in touch soon with further details.',
       'Rejected':    'Hi ' + name + ', thank you for your interest in ' + role + '. After careful consideration, we\'ve decided to move forward with other candidates. We wish you all the best in your search.'
     };
+    var presets = {
+      'Accepted':    window._cvMsgAccepted    || null,
+      'Shortlisted': window._cvMsgShortlisted || null,
+      'Rejected':    window._cvMsgRejected    || null
+    };
     var compose = document.getElementById('cv-message-compose');
     var textarea = document.getElementById('cv-message-text');
     if (compose) compose.style.display = 'block';
-    if (textarea) textarea.value = templates[status] || '';
+    if (textarea) textarea.value = presets[status] || defaults[status] || '';
     // Enable Send button
     var sendBtn = document.getElementById('cv-send-btn');
     if (sendBtn) {
@@ -4630,6 +5032,17 @@
       var s = stuRes.data;
       window._cvStudentName = s.name || '';
       window._cvJobTitle = app.job_title || '';
+      window._cvMsgAccepted    = null;
+      window._cvMsgShortlisted = null;
+      window._cvMsgRejected    = null;
+      if (app.job_id) {
+        var jobRes = await db.from('jobs').select('msg_accepted,msg_shortlisted,msg_rejected').eq('id', app.job_id).single();
+        if (jobRes.data) {
+          window._cvMsgAccepted    = jobRes.data.msg_accepted    || null;
+          window._cvMsgShortlisted = jobRes.data.msg_shortlisted || null;
+          window._cvMsgRejected    = jobRes.data.msg_rejected    || null;
+        }
+      }
 
       // Build profile object compatible with openApplicantCV
       var normSkills = function(arr) {
@@ -4757,6 +5170,7 @@
     var postAtsWrap = document.getElementById('post-ats-wrap');
     if (postAtsWrap) postAtsWrap.style.display = 'none';
     fillRecruiterSelect('post-recruiter', null);
+    _populateDeadlineDropdowns('post-deadline-month', 'post-deadline-year');
     setJobSkills('post', {});
     var mWrap = document.getElementById('post-majors-other-wrap');
     if (mWrap) mWrap.style.display = 'none';
@@ -4781,9 +5195,88 @@
     document.getElementById('post-listing-modal').classList.add('open');
   }
   function closePostModal() { document.getElementById('post-listing-modal').classList.remove('open'); }
+  var _MONTHS_SHORT = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
+  var _MONTHS_LIST  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Rebuilds the deadline month + year selects so only future dates are available.
+  // Earliest option is always next calendar month from today.
+  // preMonth / preYear: optional values to pre-select (used when editing an existing listing).
+  function _populateDeadlineDropdowns(monthId, yearId, preMonth, preYear) {
+    var monthEl = document.getElementById(monthId);
+    var yearEl  = document.getElementById(yearId);
+    if (!monthEl || !yearEl) return;
+
+    var now     = new Date();
+    var minDate = new Date(now.getFullYear(), now.getMonth() + 1, 1); // first day of next month
+    var minMonth = minDate.getMonth();   // 0-indexed
+    var minYear  = minDate.getFullYear();
+    var maxYear  = minYear + 2;
+
+    // ── Year dropdown ──
+    yearEl.innerHTML = '<option value="">Year</option>';
+    for (var y = minYear; y <= maxYear; y++) {
+      var yOpt = document.createElement('option');
+      yOpt.value = String(y);
+      yOpt.textContent = String(y);
+      if (preYear && parseInt(preYear, 10) === y) yOpt.selected = true;
+      yearEl.appendChild(yOpt);
+    }
+
+    // ── Month dropdown — re-filled whenever the year changes ──
+    function fillMonths() {
+      var selYear = parseInt(yearEl.value, 10);
+      var startIdx = (selYear === minYear) ? minMonth : 0;
+      monthEl.innerHTML = '<option value="">Month</option>';
+      for (var m = startIdx; m < 12; m++) {
+        var mOpt = document.createElement('option');
+        mOpt.value = _MONTHS_LIST[m];
+        mOpt.textContent = _MONTHS_LIST[m];
+        if (preMonth === _MONTHS_LIST[m]) mOpt.selected = true;
+        monthEl.appendChild(mOpt);
+      }
+    }
+
+    var initYear = (preYear && parseInt(preYear, 10) >= minYear) ? parseInt(preYear, 10) : minYear;
+    if (!yearEl.value) yearEl.value = String(initYear);
+    fillMonths();
+    yearEl.onchange = fillMonths;
+  }
+  function _deadlineIsPast(month, year) {
+    if (!month || !year || month === 'Month') return false;
+    var now = new Date();
+    var nowYear  = now.getFullYear();
+    var nowMonth = now.getMonth() + 1;
+    var dYear  = parseInt(year, 10);
+    var dMonth = _MONTHS_SHORT[month] || 0;
+    if (dYear < nowYear) return true;
+    if (dYear === nowYear && dMonth < nowMonth) return true;
+    return false;
+  }
+  function _highlightDeadline(prefix) {
+    var mEl = document.getElementById(prefix + '-deadline-month');
+    var yEl = document.getElementById(prefix + '-deadline-year');
+    if (mEl) mEl.style.borderColor = 'var(--orange)';
+    if (yEl) yEl.style.borderColor = 'var(--orange)';
+    if (mEl) mEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function _clearDeadlineHighlight(prefix) {
+    var mEl = document.getElementById(prefix + '-deadline-month');
+    var yEl = document.getElementById(prefix + '-deadline-year');
+    if (mEl) mEl.style.borderColor = '';
+    if (yEl) yEl.style.borderColor = '';
+  }
+
   async function submitListing() {
     var title = document.getElementById('post-title').value.trim();
     if (!title) { document.getElementById('post-title').focus(); document.getElementById('post-title').style.borderColor='var(--orange)'; return; }
+    var _postDeadlineMonth = (document.getElementById('post-deadline-month')||{}).value || '';
+    var _postDeadlineYear  = (document.getElementById('post-deadline-year')||{}).value  || '';
+    if (_deadlineIsPast(_postDeadlineMonth, _postDeadlineYear)) {
+      _highlightDeadline('post');
+      showToast('The application deadline has already passed. Please pick a future month.', 'error');
+      return;
+    }
+    _clearDeadlineHighlight('post');
     function getChip(id) { var el=document.querySelector('#'+id+' .pref-chip.active'); return el?el.dataset.val:''; }
     function getChips(id) { var els=document.querySelectorAll('#'+id+' .pref-chip.active'); return Array.from(els).map(function(e){return e.dataset.val;}).join(', '); }
     function getVal(id) { var el=document.getElementById(id); return el?el.value.trim():''; }
@@ -4938,8 +5431,7 @@
     setChip('edit-work-auth',    job.work_auth);
     setSelect('edit-start-month',    job.start_month);
     setSelect('edit-start-year',     String(job.start_year || ''));
-    setSelect('edit-deadline-month', job.deadline_month);
-    setSelect('edit-deadline-year',  String(job.deadline_year || ''));
+    _populateDeadlineDropdowns('edit-deadline-month', 'edit-deadline-year', job.deadline_month, String(job.deadline_year || ''));
     setInput('edit-ats',         job.ats_url);
     setInput('edit-division',    job.division);
     setTA('edit-description',    job.description);
@@ -5212,6 +5704,12 @@
     var location=getJobLocation('edit');
     var dMonth=getVal('edit-deadline-month');
     var dYear=getVal('edit-deadline-year');
+    if (_deadlineIsPast(dMonth, dYear)) {
+      _highlightDeadline('edit');
+      showToast('The application deadline has already passed. Please pick a future month.', 'error');
+      return;
+    }
+    _clearDeadlineHighlight('edit');
     var deadline=(dMonth&&dMonth!=='Month')?'Closes '+dMonth+' '+dYear:'No deadline';
 
     var updates = {
@@ -5298,6 +5796,9 @@
     } else {
       var cb=document.getElementById('still-studying-0');if(cb)toggleEndDate(cb,'edu-end-group-0');
     }
+    document.querySelectorAll('#edu-entries-container .desc-bullets-list').forEach(function(list) {
+      if (!list.querySelector('.desc-bullet-row')) _addDescBulletRow(list, '');
+    });
   }
   function _populateEduEntry(el, d, idx) {
     _setSelect(el.querySelector('.edu-university'), d.uni);
@@ -5356,7 +5857,7 @@
     if (gpaInput) gpaInput.value = d.gpa || '';
     var cb = el.querySelector('input[type="checkbox"]');
     if (cb) { cb.checked = !!d.stillStudying; toggleEndDate(cb, 'edu-end-group-'+idx); }
-    var ta = el.querySelector('textarea'); if (ta) ta.value = d.desc || '';
+    _populateDescBullets(el, d.desc);
   }
   function toggleEndDate(checkbox, groupId) {
     var group = document.getElementById(groupId); if (!group) return;
@@ -5377,6 +5878,48 @@
       lbl.textContent = 'Entry ' + (i + 1);
     });
   }
+
+  // ─── BULLET DESCRIPTION HELPERS ───
+  function _addDescBulletRow(listEl, value) {
+    var row = document.createElement('div');
+    row.className = 'desc-bullet-row';
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:6px;';
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.className = 'form-input desc-bullet-input';
+    inp.placeholder = 'Add a point...'; inp.maxLength = 200; inp.style.flex = '1';
+    if (value) inp.value = value;
+    var rem = document.createElement('button');
+    rem.type = 'button'; rem.className = 'remove-edu-btn'; rem.textContent = '✕';
+    rem.style.cssText = 'padding:4px 10px;flex-shrink:0;';
+    rem.onclick = function() { if (listEl.querySelectorAll('.desc-bullet-row').length > 1) row.remove(); };
+    row.appendChild(inp); row.appendChild(rem); listEl.appendChild(row);
+  }
+  function _addDescBulletToEntry(btn) {
+    var list = btn.closest('.desc-bullets-wrap').querySelector('.desc-bullets-list');
+    if (list.querySelectorAll('.desc-bullet-row').length >= 8) { showToast('Maximum 8 points per entry', 'error'); return; }
+    _addDescBulletRow(list, '');
+  }
+  function _getDescBullets(entryEl) {
+    var bullets = [];
+    entryEl.querySelectorAll('.desc-bullet-input').forEach(function(inp) { var v = inp.value.trim(); if (v) bullets.push(v); });
+    return bullets;
+  }
+  function _populateDescBullets(entryEl, desc) {
+    var list = entryEl.querySelector('.desc-bullets-list'); if (!list) return;
+    list.innerHTML = '';
+    var bullets = Array.isArray(desc) ? desc.filter(Boolean) : (desc && desc.trim() ? [desc.trim()] : []);
+    if (!bullets.length) { _addDescBulletRow(list, ''); return; }
+    bullets.forEach(function(b) { _addDescBulletRow(list, b); });
+  }
+  function _renderDescBullets(desc) {
+    var bullets;
+    if (Array.isArray(desc)) { bullets = desc.filter(function(b) { return b && b.trim(); }); }
+    else if (desc && desc.trim()) { bullets = [desc.trim()]; }
+    else { return ''; }
+    if (!bullets.length) return '';
+    return '<ul style="margin:5px 0 0 16px;padding:0;font-size:13px;line-height:1.7;">' + bullets.map(function(b) { return '<li>' + esc(b) + '</li>'; }).join('') + '</ul>';
+  }
+
   function addEduEntry() {
     var container=document.getElementById('edu-entries-container');var idx=eduEntryCount++;
     var labelNum=container.querySelectorAll('.edu-entry-form').length+1;
@@ -5401,7 +5944,7 @@
       +'<div class="form-group" style="grid-column:1/-1;"><label class="edu-checkbox-label"><input type="checkbox" id="'+stillStudyingId+'" onchange="toggleEndDate(this,\''+endGroupId+'\')"><span>I am currently enrolled</span></label></div>'
       +'<div class="form-group"><label class="form-label">GPA <span class="field-badge private">Private</span></label><input class="form-input edu-gpa" type="text" placeholder="e.g. 7.8 / 10" maxlength="20"></div>'
       +'<div class="form-group" id="edu-grad-group-'+idx+'" style="display:none;"><label class="form-label">Graduation date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;"><option value="">Month</option>'+mo+'</select><select class="form-input" style="flex:1;"><option value="">Year</option>'+yr+'</select></div></div>'
-      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Description </label><textarea class="form-textarea" style="min-height:70px;" placeholder="Specialisation, thesis topic, relevant coursework..." maxlength="500"></textarea></div>'
+      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Description </label><div class="desc-bullets-wrap"><div class="desc-bullets-list"></div><button type="button" style="margin-top:4px;font-size:12px;color:var(--navy);background:none;border:none;cursor:pointer;padding:2px 0;font-weight:600;" onclick="_addDescBulletToEntry(this)">+ Add point</button></div></div>'
       +'</div></div>';
     var w=document.createElement('div');w.innerHTML=html;
     var entry=w.firstChild;
@@ -5425,8 +5968,8 @@
       minorOtherWrap.style.display=btn.dataset.val==='Other'?'block':'none';
       if(btn.dataset.val!=='Other')entry.querySelector('.edu-minor').value='';
     });
-    var eduTA = entry.querySelector('textarea');
-    if (eduTA) attachCounterToTextarea(eduTA, 500);
+    var eduBulletList = entry.querySelector('.desc-bullets-list');
+    if (eduBulletList) _addDescBulletRow(eduBulletList, '');
     container.appendChild(entry);
   }
   function removeEduEntry(btn){var e=btn.closest('.edu-entry-form');if(e){e.remove();_renumberEduEntries();}}
@@ -5455,11 +5998,11 @@
       var endMonth=allSelects[2]?allSelects[2].value:'';   var endYear=allSelects[3]?allSelects[3].value:'';
       var gradMonth=allSelects[4]?allSelects[4].value:'';  var gradYear=allSelects[5]?allSelects[5].value:'';
       var cb=entry.querySelector('input[type="checkbox"]'); var stillStudying=cb?cb.checked:false;
-      var desc=entry.querySelector('textarea')?entry.querySelector('textarea').value:'';
+      var desc=_getDescBullets(entry);
       if (!uni && !field) return;
       var endText=stillStudying?'Present':((endMonth||'')+(endYear?' '+endYear:''));
       structured.push({uni,level,field,fieldOfStudy:fosVal,minor,gpa,startMonth,startYear,endMonth,endYear,gradMonth,gradYear,stillStudying,desc});
-      html+='<div class="edu-entry-display"><div class="edu-entry-header"><strong>'+(field||uni)+'</strong><span class="edu-period">'+(startMonth+' '+startYear).trim()+' — '+endText+'</span></div><div class="edu-entry-sub">'+uni+(level?' · '+level:'')+(fosVal?' · '+fosVal:'')+(gpa?' · GPA '+gpa:'')+'</div>'+(desc?'<div class="edu-entry-desc">'+desc.replace(/\n/g,'<br>')+'</div>':'')+'</div>';
+      html+='<div class="edu-entry-display"><div class="edu-entry-header"><strong>'+(field||uni)+'</strong><span class="edu-period">'+(startMonth+' '+startYear).trim()+' — '+endText+'</span></div><div class="edu-entry-sub">'+uni+(level?' · '+level:'')+(fosVal?' · '+fosVal:'')+(gpa?' · GPA '+gpa:'')+'</div>'+(desc&&desc.length?'<div class="edu-entry-desc">'+_renderDescBullets(desc)+'</div>':'')+'</div>';
     });
     if (currentStudent) currentStudent._eduEntries = structured;
     console.log('saveEducation — student id:', currentStudent && currentStudent.id, '| entries:', structured.length);
@@ -5510,6 +6053,9 @@
       var all = c.querySelectorAll('.edu-entry-form');
       for (var j = 1; j < saved.length; j++) _populateExpEntry(all[j], saved[j]);
     }
+    document.querySelectorAll('#exp-entries-container .desc-bullets-list').forEach(function(list) {
+      if (!list.querySelector('.desc-bullet-row')) _addDescBulletRow(list, '');
+    });
   }
   function _populateExpEntry(el, d) {
     var roleInput = el.querySelector('.exp-role'); if (roleInput) roleInput.value = d.role || '';
@@ -5540,7 +6086,7 @@
     _setSelect(sels[0], d.startMonth); _setSelect(sels[1], d.startYear);
     _setSelect(sels[2], d.endMonth);   _setSelect(sels[3], d.endYear);
     var cb = el.querySelector('input[type="checkbox"]'); if (cb) { cb.checked = !!d.stillWorking; }
-    var ta = el.querySelector('textarea'); if (ta) ta.value = d.desc || '';
+    _populateDescBullets(el, d.desc);
   }
   function addExpEntry(){
     var c=document.getElementById('exp-entries-container');var idx=expEntryCount++;var endGroupId='exp-end-group-'+idx;var stillId='still-working-'+idx;
@@ -5558,7 +6104,7 @@
       +'<div class="form-group"><label class="form-label">Start date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;"><option value="">Month</option>'+mo+'</select><select class="form-input" style="flex:1;"><option value="">Year</option>'+yr+'</select></div></div>'
       +'<div class="form-group" id="'+endGroupId+'"><label class="form-label">End date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;"><option value="">Month</option>'+mo+'</select><select class="form-input" style="flex:1;"><option value="">Year</option>'+yr+'</select></div></div>'
       +'<div class="form-group" style="grid-column:1/-1;"><label class="edu-checkbox-label"><input type="checkbox" id="'+stillId+'" onchange="toggleEndDate(this,\''+endGroupId+'\')"><span>I currently work here</span></label></div>'
-      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Description</label><textarea class="form-textarea" style="min-height:70px;" placeholder="Responsibilities, achievements..." maxlength="500"></textarea></div>'
+      +'<div class="form-group" style="grid-column:1/-1;"><label class="form-label">Description</label><div class="desc-bullets-wrap"><div class="desc-bullets-list"></div><button type="button" style="margin-top:4px;font-size:12px;color:var(--navy);background:none;border:none;cursor:pointer;padding:2px 0;font-weight:600;" onclick="_addDescBulletToEntry(this)">+ Add point</button></div></div>'
       +'</div>';
     // Wire Other toggle for field of work
     var chipsEl=d.querySelector('.exp-field-chips');
@@ -5570,7 +6116,7 @@
       otherWrap.style.display=btn.dataset.val==='Other'?'block':'none';
       if(btn.dataset.val!=='Other')d.querySelector('.exp-field-other').value='';
     });
-    var expTA = d.querySelector('textarea'); if (expTA) attachCounterToTextarea(expTA, 500);
+    var expBulletList = d.querySelector('.desc-bullets-list'); if (expBulletList) _addDescBulletRow(expBulletList, '');
     c.appendChild(d);
   }
   function removeExpEntry(btn){var e=btn.closest('.edu-entry-form');if(e)e.remove();}
@@ -5589,10 +6135,10 @@
       var startMonth=sels[0]?sels[0].value:''; var startYear=sels[1]?sels[1].value:'';
       var endMonth=sels[2]?sels[2].value:'';   var endYear=sels[3]?sels[3].value:'';
       var cb=entry.querySelector('input[type="checkbox"]'); var stillWorking=cb?cb.checked:false;
-      var desc=entry.querySelector('textarea')?entry.querySelector('textarea').value:'';
+      var desc=_getDescBullets(entry);
       var period=(startMonth+' '+startYear).trim()+(stillWorking?' — Present':((endMonth||endYear)?' — '+(endMonth+' '+endYear).trim():''));
       structured.push({role,company,location,fieldOfWork,startMonth,startYear,endMonth,endYear,stillWorking,desc});
-      html+='<div class="edu-entry-display"><div class="edu-entry-header"><strong>'+(role||'Untitled')+'</strong><span class="edu-period">'+period+'</span></div><div class="edu-entry-sub">'+(company||'')+(fieldOfWork?' · '+fieldOfWork:'')+(location?' · '+location:'')+'</div>'+(desc?'<div class="edu-entry-desc">'+desc.replace(/\n/g,'<br>')+'</div>':'')+'</div>';
+      html+='<div class="edu-entry-display"><div class="edu-entry-header"><strong>'+(role||'Untitled')+'</strong><span class="edu-period">'+period+'</span></div><div class="edu-entry-sub">'+(company||'')+(fieldOfWork?' · '+fieldOfWork:'')+(location?' · '+location:'')+'</div>'+(desc&&desc.length?'<div class="edu-entry-desc">'+_renderDescBullets(desc)+'</div>':'')+'</div>';
     });
     if (currentStudent) currentStudent._expEntries = structured;
     try {
@@ -5623,6 +6169,9 @@
       var all = c.querySelectorAll('.edu-entry-form');
       for (var j = 1; j < saved.length; j++) _populateOrgsEntry(all[j], saved[j]);
     }
+    document.querySelectorAll('#orgs-entries-container .desc-bullets-list').forEach(function(list) {
+      if (!list.querySelector('.desc-bullet-row')) _addDescBulletRow(list, '');
+    });
   }
   function _populateOrgsEntry(el, d) {
     var inputs = el.querySelectorAll('input[type="text"]');
@@ -5631,7 +6180,7 @@
     _setSelect(sels[0], d.startMonth); _setSelect(sels[1], d.startYear);
     _setSelect(sels[2], d.endMonth);   _setSelect(sels[3], d.endYear);
     var cb = el.querySelector('input[type="checkbox"]'); if (cb) cb.checked = !!d.stillMember;
-    var ta = el.querySelector('textarea'); if (ta) ta.value = d.desc || '';
+    _populateDescBullets(el, d.desc);
   }
   function addOrgsEntry(){
     var c=document.getElementById('orgs-entries-container');var idx=orgsEntryCount++;var endGroupId='orgs-end-group-'+idx;
@@ -5645,9 +6194,9 @@
     var f3=document.createElement('div');f3.className='form-group';f3.innerHTML='<label class="form-label">Start date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;">'+mo+'</select><select class="form-input" style="flex:1;">'+yr+'</select></div>';
     var f4=document.createElement('div');f4.className='form-group';f4.id=endGroupId;f4.innerHTML='<label class="form-label">End date</label><div style="display:flex;gap:8px;"><select class="form-input" style="flex:1;">'+mo+'</select><select class="form-input" style="flex:1;">'+yr+'</select></div>';
     var f5=document.createElement('div');f5.className='form-group';f5.style.gridColumn='1/-1';var cbLabel=document.createElement('label');cbLabel.className='edu-checkbox-label';var cb=document.createElement('input');cb.type='checkbox';cb.addEventListener('change',function(){toggleEndDate(cb,endGroupId);});var cbSpan=document.createElement('span');cbSpan.textContent='I am currently a member';cbLabel.appendChild(cb);cbLabel.appendChild(cbSpan);f5.appendChild(cbLabel);
-    var f6=document.createElement('div');f6.className='form-group';f6.style.gridColumn='1/-1';f6.innerHTML='<label class="form-label">Description </label><textarea class="form-textarea" style="min-height:60px;" placeholder="Responsibilities and transferable skills." maxlength="500"></textarea>';
+    var f6=document.createElement('div');f6.className='form-group';f6.style.gridColumn='1/-1';f6.innerHTML='<label class="form-label">Description </label><div class="desc-bullets-wrap"><div class="desc-bullets-list"></div><button type="button" style="margin-top:4px;font-size:12px;color:var(--navy);background:none;border:none;cursor:pointer;padding:2px 0;font-weight:600;" onclick="_addDescBulletToEntry(this)">+ Add point</button></div>';
     grid.appendChild(f1);grid.appendChild(f2);grid.appendChild(f3);grid.appendChild(f4);grid.appendChild(f5);grid.appendChild(f6);d.appendChild(grid);
-    var orgsTA = f6.querySelector('textarea'); if (orgsTA) attachCounterToTextarea(orgsTA, 500);
+    var orgsBulletList = f6.querySelector('.desc-bullets-list'); if (orgsBulletList) _addDescBulletRow(orgsBulletList, '');
     c.appendChild(d);
   }
   function removeOrgsEntry(btn){var e=btn.closest('.edu-entry-form');if(e)e.remove();}
@@ -5661,10 +6210,10 @@
       var startMonth=sels[0]?sels[0].value:''; var startYear=sels[1]?sels[1].value:'';
       var endMonth=sels[2]?sels[2].value:'';   var endYear=sels[3]?sels[3].value:'';
       var cb=entry.querySelector('input[type="checkbox"]'); var stillMember=cb?cb.checked:false;
-      var desc=entry.querySelector('textarea')?entry.querySelector('textarea').value:'';
+      var desc=_getDescBullets(entry);
       structured.push({org,role,startMonth,startYear,endMonth,endYear,stillMember,desc});
       var period=(startMonth+' '+startYear).trim()+(stillMember?' — Present':((endMonth||endYear)?' — '+(endMonth+' '+endYear).trim():''));
-      html+='<div class="edu-entry-display"><div class="edu-entry-header"><strong>'+(role||'Member')+'</strong><span class="edu-period">'+period+'</span></div><div class="edu-entry-sub">'+org+'</div>'+(desc?'<div class="edu-entry-desc">'+desc.replace(/\n/g,'<br>')+'</div>':'')+'</div>';
+      html+='<div class="edu-entry-display"><div class="edu-entry-header"><strong>'+(role||'Member')+'</strong><span class="edu-period">'+period+'</span></div><div class="edu-entry-sub">'+org+'</div>'+(desc&&desc.length?'<div class="edu-entry-desc">'+_renderDescBullets(desc)+'</div>':'')+'</div>';
     });
     if (currentStudent) currentStudent._orgsEntries = structured;
     try {
@@ -6261,8 +6810,9 @@
     var r=document.getElementById('docs-read-view'),e=document.getElementById('docs-edit-view'),b=document.getElementById('docs-edit-btn');
     if(e.style.display!=='none'){cancelDocsEdit();return;}
     r.style.display='none';e.style.display='block';b.textContent='Cancel';
-    // Pre-populate visibility chip from saved data
+    // Pre-populate visibility chip — map legacy values to new Public/Private
     var savedVis = currentStudent && currentStudent.visibility;
+    if (savedVis === 'Community' || savedVis === 'Employers only') savedVis = 'Public';
     document.querySelectorAll('#visibility-chips .pref-chip').forEach(function(c){
       c.classList.toggle('active', c.dataset.val === savedVis);
     });
@@ -6284,7 +6834,7 @@
       if (currentStudent) currentStudent.visibility = visibility;
       // Update read view text
       var visReadEl = document.querySelector('#docs-read-view .info-row:last-child .info-value');
-      if (visReadEl && visibility) visReadEl.textContent = visibility + (visibility==='Community'?' (visible to peers + employers)':visibility==='Employers only'?' (hidden from other students)':' (only you can see)');
+      if (visReadEl && visibility) visReadEl.textContent = visibility === 'Public' ? 'Public — visible to companies' : 'Private — only you can see';
     } catch(err) { showToast('Failed to save: ' + err.message, 'error'); }
     r.style.display='block';e.style.display='none';
     b.innerHTML='Edit <span class="edu-saved-toast">&#10003; Saved</span>';setTimeout(function(){b.textContent='Edit';},2500);

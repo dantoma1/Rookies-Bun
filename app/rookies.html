@@ -852,8 +852,10 @@
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                   <label class="form-label">Description </label>
-                  <textarea class="form-textarea" placeholder="Briefly describe your specialisation, thesis topic, relevant coursework, or achievements..." style="min-height:80px;" maxlength="500"></textarea>
-                  <div class="form-hint">This helps companies understand your academic focus. 2–3 sentences is ideal.</div>
+                  <div class="desc-bullets-wrap">
+                    <div class="desc-bullets-list"></div>
+                    <button type="button" style="margin-top:4px;font-size:12px;color:var(--navy);background:none;border:none;cursor:pointer;padding:2px 0;font-weight:600;" onclick="_addDescBulletToEntry(this)">+ Add point</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -962,8 +964,10 @@
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                   <label class="form-label">Description <span style="color:var(--gray);font-weight:400;">(optional)</span></label>
-                  <textarea class="form-textarea" placeholder="Briefly describe your responsibilities, achievements, or what you learned..." style="min-height:80px;" maxlength="500"></textarea>
-                  <div class="form-hint">Keep it concise — 2 to 3 sentences is enough.</div>
+                  <div class="desc-bullets-wrap">
+                    <div class="desc-bullets-list"></div>
+                    <button type="button" style="margin-top:4px;font-size:12px;color:var(--navy);background:none;border:none;cursor:pointer;padding:2px 0;font-weight:600;" onclick="_addDescBulletToEntry(this)">+ Add point</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -985,14 +989,7 @@
           <button class="edit-btn" id="orgs-edit-btn" onclick="toggleOrgsEdit()">Edit</button>
         </div>
         <div id="orgs-read-view">
-          <div class="edu-entry-display">
-            <div class="edu-entry-header">
-              <strong>Board Member — Finance</strong>
-              <span class="edu-period">Sep 2022 — Jun 2023</span>
-            </div>
-            <div class="edu-entry-sub">TiU Investment Society</div>
-            <div class="edu-entry-desc">Managed portfolio simulations and organised guest lectures with industry professionals.</div>
-          </div>
+          <p style="font-size:13px;color:var(--gray);">Loading…</p>
         </div>
         <div id="orgs-edit-view" style="display:none;">
           <div id="orgs-entries-container">
@@ -1033,7 +1030,10 @@
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                   <label class="form-label">Description </label>
-                  <textarea class="form-textarea" style="min-height:70px;" placeholder="Responsibilities, transferable skills — leadership, teamwork, communication. Use action verbs." maxlength="500"></textarea>
+                  <div class="desc-bullets-wrap">
+                    <div class="desc-bullets-list"></div>
+                    <button type="button" style="margin-top:4px;font-size:12px;color:var(--navy);background:none;border:none;cursor:pointer;padding:2px 0;font-weight:600;" onclick="_addDescBulletToEntry(this)">+ Add point</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1367,11 +1367,10 @@
             <div class="form-group">
               <label class="form-label">Profile visibility </label>
               <div class="pref-chips" id="visibility-chips">
-                <button class="pref-chip" data-val="Community">Community<br><span style="font-size:10px;font-weight:400;">Visible to peers + employers</span></button>
-                <button class="pref-chip" data-val="Employers only">Employers only<br><span style="font-size:10px;font-weight:400;">Hidden from other students</span></button>
+                <button class="pref-chip" data-val="Public">Public<br><span style="font-size:10px;font-weight:400;">Visible to companies</span></button>
                 <button class="pref-chip" data-val="Private">Private<br><span style="font-size:10px;font-weight:400;">Only you can see</span></button>
               </div>
-              <div class="form-hint" style="margin-top:8px;">Community profiles are 1.5x more likely to be messaged by a recruiter.</div>
+              <div class="form-hint" style="margin-top:8px;">Setting your profile to Public makes you discoverable — but you also need to complete your profile before companies can find you.</div>
             </div>
           </div>
           <div style="display:flex;gap:10px;margin-top:20px;">
@@ -1633,9 +1632,19 @@
             <div id="company-msg-header" style="padding:16px 20px;background:white;border-bottom:1px solid var(--border);font-weight:600;font-size:15px;color:var(--navy);flex-shrink:0;"></div>
             <div id="company-msg-messages" style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;"></div>
             <div id="company-msg-deleted-notice" style="display:none;padding:12px 16px;background:var(--cream);border-top:1px solid var(--border);font-size:13px;color:var(--gray);text-align:center;">This account has been deleted — you can no longer send messages.</div>
-            <div id="company-msg-compose" style="padding:12px 16px;background:white;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
-              <textarea id="company-msg-input" class="form-textarea" placeholder="Write a reply..." style="flex:1;min-height:60px;resize:none;font-size:14px;" maxlength="1000"></textarea>
-              <button class="btn btn-primary" style="align-self:flex-end;padding:10px 18px;" onclick="sendCompanyMessage()">Send</button>
+            <div id="company-msg-compose" style="padding:12px 16px 10px;background:white;border-top:1px solid var(--border);flex-shrink:0;display:grid;grid-template-columns:1fr auto;column-gap:8px;row-gap:8px;">
+              <div id="company-msg-attach-preview" style="display:none;grid-column:1/-1;align-items:center;gap:8px;background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--navy);">
+                <span id="company-msg-attach-label" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+                <button type="button" onclick="clearMsgAttachment('company')" style="background:none;border:none;cursor:pointer;color:var(--gray);font-size:16px;line-height:1;padding:0 2px;">✕</button>
+              </div>
+              <textarea id="company-msg-input" class="form-textarea" placeholder="Write a reply..." style="min-height:60px;resize:none;font-size:14px;width:100%;" maxlength="1000"></textarea>
+              <button class="btn btn-primary" style="align-self:end;padding:10px 18px;white-space:nowrap;" onclick="sendCompanyMessage()">Send</button>
+              <div style="grid-column:1/-1;">
+                <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--navy);border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:white;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background='white'">
+                  📎 Attach file <span style="font-size:11px;color:var(--gray);font-weight:400;">max 5 MB</span>
+                  <input type="file" id="company-msg-file" style="display:none;" onchange="previewMsgAttachment('company',this)">
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -2357,6 +2366,11 @@
         <strong>&#10003; Your profile will be sent automatically</strong>
         Your education, skills and availability are pulled from your profile automatically &mdash; no re-entering anything.
       </div>
+      <div id="apply-incomplete-warning" style="display:none;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-weight:700;color:#92400e;font-size:14px;margin-bottom:8px;">&#9888;&#xFE0F; Your profile is incomplete</div>
+        <ul id="apply-incomplete-list" style="margin:0 0 10px 18px;padding:0;font-size:13px;color:#78350f;line-height:1.8;"></ul>
+        <div style="font-size:13px;color:#92400e;">Companies review your profile alongside your application — a complete profile is significantly more likely to get a response. <a href="#" onclick="closeModal();showScreen('student-profile');loadStudentProfile();return false;" style="color:#b45309;font-weight:600;">Complete it now &rarr;</a></div>
+      </div>
       <div class="form-group">
         <label class="form-label">Why are you interested in this role? <span style="color:var(--gray);font-weight:400;">(optional)</span></label>
         <textarea id="apply-motivation" class="form-textarea" placeholder="In a few sentences &mdash; what draws you to this company or role?" maxlength="600"></textarea>
@@ -2804,9 +2818,19 @@
           </div>
           <div id="student-msg-messages" style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;"></div>
           <div id="student-msg-closed-notice" style="display:none;padding:12px 16px;background:var(--cream);border-top:1px solid var(--border);font-size:13px;color:var(--gray);text-align:center;">This listing has been closed — you can no longer send messages.</div>
-          <div id="student-msg-compose" style="padding:12px 16px;background:white;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
-            <textarea id="student-msg-input" class="form-textarea" placeholder="Write a reply..." style="flex:1;min-height:60px;resize:none;font-size:14px;" maxlength="1000"></textarea>
-            <button class="btn btn-primary" style="align-self:flex-end;padding:10px 18px;" onclick="sendStudentMessage()">Send</button>
+          <div id="student-msg-compose" style="padding:12px 16px 10px;background:white;border-top:1px solid var(--border);flex-shrink:0;display:grid;grid-template-columns:1fr auto;column-gap:8px;row-gap:8px;">
+            <div id="student-msg-attach-preview" style="display:none;grid-column:1/-1;align-items:center;gap:8px;background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--navy);">
+              <span id="student-msg-attach-label" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+              <button type="button" onclick="clearMsgAttachment('student')" style="background:none;border:none;cursor:pointer;color:var(--gray);font-size:16px;line-height:1;padding:0 2px;">✕</button>
+            </div>
+            <textarea id="student-msg-input" class="form-textarea" placeholder="Write a reply..." style="min-height:60px;resize:none;font-size:14px;width:100%;" maxlength="1000"></textarea>
+            <button class="btn btn-primary" style="align-self:end;padding:10px 18px;white-space:nowrap;" onclick="sendStudentMessage()">Send</button>
+            <div style="grid-column:1/-1;">
+              <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--navy);border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:white;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background='white'">
+                📎 Attach file <span style="font-size:11px;color:var(--gray);font-weight:400;">max 5 MB</span>
+                <input type="file" id="student-msg-file" style="display:none;" onchange="previewMsgAttachment('student',this)">
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -2963,7 +2987,11 @@
   </div>
 </div>
 
-<!-- VERIFY EMAIL SCREEN -->
+<!-- VERIFY EMAIL SCREEN — disabled until email confirmation is enabled in Supabase.
+     To re-enable: turn on "Confirm email" in Supabase Auth settings, then uncomment
+     this block. Also uncomment the matching block in companySignupSubmit() in rookies.js.
+     Note: the "Resend email" button uses class="btn btn-outline-navy" (not btn-outline).
+
 <div id="screen-verify-email" class="screen">
   <div style="min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;background:var(--cream);padding:40px 20px;">
     <div style="width:100%;max-width:520px;text-align:center;">
@@ -2974,11 +3002,12 @@
         <strong style="color:var(--navy);">Didn't get it?</strong><br>
         Check your spam folder first. If it's not there, click below to resend.
       </div>
-      <button onclick="resendVerificationEmail()" class="btn btn-outline" style="margin-right:12px;">Resend email</button>
+      <button onclick="resendVerificationEmail()" class="btn btn-outline-navy" style="margin-right:12px;">Resend email</button>
       <button onclick="showScreen('signup-pick')" class="btn btn-ghost" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;font-family:'DM Sans',sans-serif;">Use a different email</button>
     </div>
   </div>
 </div>
+-->
 
 <!-- CONFIRM MODAL -->
 <div id="confirm-modal" class="modal-overlay">
