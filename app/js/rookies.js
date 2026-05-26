@@ -2825,21 +2825,59 @@
   function openChangePasswordModal() {
     showConfirmModal(
       'Change your password',
-      'Enter a new password (minimum 8 characters).',
+      '',
       '<input id="settings-new-pw" class="form-input" type="password" placeholder="New password" style="width:100%;font-size:14px;margin-bottom:8px;" maxlength="128">'
-        + '<input id="settings-new-pw2" class="form-input" type="password" placeholder="Confirm new password" style="width:100%;font-size:14px;" maxlength="128">',
+        + '<input id="settings-new-pw2" class="form-input" type="password" placeholder="Confirm new password" style="width:100%;font-size:14px;margin-bottom:12px;" maxlength="128">'
+        + '<div style="font-size:12px;color:var(--gray);line-height:1.6;padding:8px 10px;background:#f7f4ef;border-radius:6px;margin-bottom:8px;">'
+        +   '<strong style="color:var(--text);display:block;margin-bottom:2px;">Password requirements</strong>'
+        +   '<span id="pw-req-length"  style="display:block;">&#9679; At least 8 characters</span>'
+        +   '<span id="pw-req-lower"   style="display:block;">&#9679; At least one lowercase letter (a–z)</span>'
+        +   '<span id="pw-req-upper"   style="display:block;">&#9679; At least one uppercase letter (A–Z)</span>'
+        +   '<span id="pw-req-number"  style="display:block;">&#9679; At least one number (0–9)</span>'
+        + '</div>'
+        + '<div id="pw-inline-error" style="display:none;color:#c0392b;font-size:13px;padding:6px 10px;background:#fdf0ee;border-radius:6px;"></div>',
       'Update password',
       'primary',
-      async function() {
-        var pw1 = (document.getElementById('settings-new-pw') || {}).value || '';
-        var pw2 = (document.getElementById('settings-new-pw2') || {}).value || '';
-        if (pw1.length < 8) { showToast('Password must be at least 8 characters', 'error'); closeConfirmModal(); openChangePasswordModal(); return; }
-        if (pw1 !== pw2)    { showToast('Passwords do not match', 'error'); closeConfirmModal(); openChangePasswordModal(); return; }
-        var res = await db.auth.updateUser({ password: pw1 });
-        if (res.error) showToast('Could not update: ' + res.error.message, 'error');
-        else { closeConfirmModal(); showToast('Password updated'); }
-      }
+      null
     );
+    // Live requirement highlights as user types
+    var pwInput = document.getElementById('settings-new-pw');
+    if (pwInput) pwInput.addEventListener('input', function() {
+      var v = this.value;
+      var ok = 'display:block;color:#2e7d52;font-weight:600;';
+      var no = 'display:block;';
+      document.getElementById('pw-req-length').style.cssText = v.length >= 8    ? ok : no;
+      document.getElementById('pw-req-lower') .style.cssText = /[a-z]/.test(v)  ? ok : no;
+      document.getElementById('pw-req-upper') .style.cssText = /[A-Z]/.test(v)  ? ok : no;
+      document.getElementById('pw-req-number').style.cssText = /[0-9]/.test(v)  ? ok : no;
+    });
+
+    // Override onclick so the modal stays open on validation failure
+    document.getElementById('confirm-modal-action-btn').onclick = async function() {
+      var pw1 = (document.getElementById('settings-new-pw') || {}).value || '';
+      var pw2 = (document.getElementById('settings-new-pw2') || {}).value || '';
+      var errEl = document.getElementById('pw-inline-error');
+      var errors = [];
+      if (pw1.length < 8)      errors.push('Password must be at least 8 characters.');
+      if (!/[a-z]/.test(pw1))  errors.push('Add at least one lowercase letter (a–z).');
+      if (!/[A-Z]/.test(pw1))  errors.push('Add at least one uppercase letter (A–Z).');
+      if (!/[0-9]/.test(pw1))  errors.push('Add at least one number (0–9).');
+      if (pw1 !== pw2)         errors.push('Passwords do not match.');
+      if (errors.length) {
+        errEl.innerHTML = errors.join('<br>');
+        errEl.style.display = 'block';
+        return;
+      }
+      errEl.style.display = 'none';
+      var res = await db.auth.updateUser({ password: pw1 });
+      if (res.error) {
+        errEl.textContent = 'Could not update: ' + res.error.message;
+        errEl.style.display = 'block';
+      } else {
+        closeConfirmModal();
+        showToast('Password updated');
+      }
+    };
   }
 
   // ─ Download my data ────────────────────────────────────────────────────
@@ -4413,6 +4451,12 @@
     document.getElementById('apply-modal').classList.add('open');
     var motivEl = document.getElementById('apply-motivation');
     if (motivEl) motivEl.value = '';
+    var startEl = document.getElementById('apply-start-date');
+    if (startEl) {
+      var m = currentStudent && currentStudent.avail_month;
+      var y = currentStudent && currentStudent.avail_year;
+      startEl.value = (m && y) ? m + ' ' + y : (m || y || '');
+    }
     refreshCharCounters();
   }
 
@@ -4427,7 +4471,7 @@
   async function submitApplication() {
     if (!currentStudent) { showToast('Please log in to apply.', 'error'); return; }
     var motivation = document.getElementById('apply-motivation') || document.querySelector('#modal-apply-form textarea');
-    var startDate  = document.querySelector('#modal-apply-form input[type="text"]');
+    var startDate  = document.getElementById('apply-start-date');
     var job = currentApplyJob || {};
 
     // Handle CV requirement
@@ -5819,13 +5863,13 @@
       if (otherWrap) otherWrap.style.display = isOther ? 'block' : 'none';
       if (otherInput) otherInput.value = isOther ? fos : '';
       // Wire Other toggle
-      chipsEl.addEventListener('click', function(e) {
+      chipsEl.onclick = function(e) {
         var btn = e.target.closest('.pref-chip'); if (!btn) return;
         chipsEl.querySelectorAll('.pref-chip').forEach(function(c){ c.classList.remove('active'); });
         btn.classList.add('active');
         if (otherWrap) otherWrap.style.display = btn.dataset.val === 'Other' ? 'block' : 'none';
         if (otherInput && btn.dataset.val !== 'Other') otherInput.value = '';
-      });
+      };
     }
     var minorInput = el.querySelector('.edu-minor');
     var minorChipsEl = el.querySelector('.edu-minor-chips');
@@ -5839,13 +5883,13 @@
       });
       if (minorOtherWrap) minorOtherWrap.style.display = isMinorOther ? 'block' : 'none';
       if (minorInput) minorInput.value = isMinorOther ? mn : '';
-      minorChipsEl.addEventListener('click', function(e) {
+      minorChipsEl.onclick = function(e) {
         var btn = e.target.closest('.pref-chip'); if (!btn) return;
         minorChipsEl.querySelectorAll('.pref-chip').forEach(function(c){ c.classList.remove('active'); });
         btn.classList.add('active');
         if (minorOtherWrap) minorOtherWrap.style.display = btn.dataset.val === 'Other' ? 'block' : 'none';
         if (minorInput && btn.dataset.val !== 'Other') minorInput.value = '';
-      });
+      };
     } else if (minorInput) {
       minorInput.value = d.minor || '';
     }
@@ -6074,13 +6118,13 @@
       });
       if (otherWrap) otherWrap.style.display = isOther ? 'block' : 'none';
       if (otherInput) otherInput.value = isOther ? fow : '';
-      chipsEl.addEventListener('click', function(e) {
+      chipsEl.onclick = function(e) {
         var btn = e.target.closest('.pref-chip'); if (!btn) return;
         chipsEl.querySelectorAll('.pref-chip').forEach(function(c){ c.classList.remove('active'); });
         btn.classList.add('active');
         if (otherWrap) otherWrap.style.display = btn.dataset.val === 'Other' ? 'block' : 'none';
         if (otherInput && btn.dataset.val !== 'Other') otherInput.value = '';
-      });
+      };
     }
     var sels = el.querySelectorAll('select');
     _setSelect(sels[0], d.startMonth); _setSelect(sels[1], d.startYear);
@@ -6684,10 +6728,10 @@
     container.querySelectorAll('.field-badge.required').forEach(function(badge) {
       var group = badge.closest('.form-group') || badge.closest('.pref-group') || (badge.closest('label') && badge.closest('label').parentElement);
       if (!group) return;
-      var input = group.querySelector('input[type="text"], input[type="email"], textarea');
       var chips = group.querySelector('.pref-chips');
+      var input = !chips && group.querySelector('input[type="text"], input[type="email"], textarea');
       function check() {
-        var filled = input ? input.value.trim().length > 0 : (chips ? !!chips.querySelector('.pref-chip.active') : false);
+        var filled = chips ? !!chips.querySelector('.pref-chip.active') : (input ? input.value.trim().length > 0 : false);
         badge.style.display = filled ? 'none' : '';
       }
       if (input) input.addEventListener('input', check);
@@ -6723,12 +6767,12 @@
     var csYear = s.current_status_year || '';
     _restoreCurrentStatus(cs, csYear);
     // Wire current status chip clicks
-    document.getElementById('current-status-chips').addEventListener('click', function(e){
+    document.getElementById('current-status-chips').onclick = function(e){
       var btn = e.target.closest('.pref-chip'); if (!btn) return;
       document.querySelectorAll('#current-status-chips .pref-chip').forEach(function(c){ c.classList.remove('active'); });
       btn.classList.add('active');
       _renderStatusYearChips(btn.dataset.val, '');
-    });
+    };
     // Field of study
     var fos = s.field_of_study || '';
     var knownFields = Array.from(document.querySelectorAll('#field-of-study-chips .pref-chip')).map(function(c){ return c.dataset.val; });
@@ -6739,12 +6783,12 @@
     document.getElementById('field-of-study-other-wrap').style.display = isOther ? 'block' : 'none';
     document.getElementById('field-of-study-other').value = isOther ? fos : '';
     // Wire Other chip toggle — show/hide the custom text input
-    document.getElementById('field-of-study-chips').addEventListener('click', function(e) {
+    document.getElementById('field-of-study-chips').onclick = function(e) {
       var btn = e.target.closest('.pref-chip'); if (!btn) return;
       var isOtherBtn = btn.dataset.val === 'Other';
       document.getElementById('field-of-study-other-wrap').style.display = isOtherBtn ? 'block' : 'none';
       if (!isOtherBtn) document.getElementById('field-of-study-other').value = '';
-    });
+    };
     // Email from auth (read-only)
     try {
       var authRes = await db.auth.getUser();

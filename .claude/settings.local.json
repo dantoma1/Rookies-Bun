@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "mcp__claude_ai_Supabase__execute_sql"
+      "mcp__claude_ai_Supabase__execute_sql",
+      "Bash(cd \"d:\\\\Facultate\\\\Rookies-Bun\\\\app\" && grep -oE \"onclick=['\\\\\"]\\([^'\\\\\"]+\\)['\\\\\"]\" rookies.html | sort | uniq > /tmp/onclick_list.txt && cat /tmp/onclick_list.txt)",
+      "Read(//tmp/**)"
     ]
   }
 }
