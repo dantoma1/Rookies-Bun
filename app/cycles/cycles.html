@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rookies Cycles — The first hiring market in the Netherlands that actually clears</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/cycles.css">
+</head>
+<body>
+
+<!-- ════════════════════ NAVIGATION ════════════════════ -->
+<nav>
+  <div class="logo" onclick="showScreen('landing')">
+    <span class="logo-name">R<span class="logo-oo">oo</span>kies</span>
+    <span class="logo-suffix">Cycles</span>
+  </div>
+  <div class="nav-links">
+    <div class="nav-cycle-pill" onclick="showScreen('status')">
+      <span class="pulse"></span>
+      Cycle 01 · registration open · <strong id="nav-countdown">23d 04h</strong>
+    </div>
+    <button class="nav-btn ghost" onclick="showScreen('landing')">How it works</button>
+    <button class="nav-btn ghost" onclick="showScreen('status')">Live cycle</button>
+    <button class="nav-btn primary" onclick="scrollToId('closing')">Join the next cycle →</button>
+  </div>
+</nav>
+
+<!-- ════════════════════ SCREEN: LANDING ════════════════════ -->
+<div id="screen-landing" class="screen active">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <span class="pulse"></span>
+        <span>Next cycle clears <strong id="hero-cycle-date">14 June 2026</strong></span>
+      </div>
+
+      <h1>
+        Match day.<br>
+        <span class="strike">Not job board.</span>
+      </h1>
+
+      <p class="hero-sub">
+        One side spray-applies to everything, hoping something sticks. The other scans hundreds of CVs, hoping to spot the one. Both waste weeks. Both miss the fit. Rookies replaces the guesswork with a cycle: register once, and on match day the Rookie Algorithm pairs the five that truly fit.
+      </p>
+
+      <div class="hero-diagram">
+        <div class="diagram-stage">
+          <div class="diagram-col diagram-rookies">
+            <div class="diagram-row">
+              <div class="diagram-name">Ana</div>
+              <div class="diagram-avatar c1">A</div>
+            </div>
+            <div class="diagram-row">
+              <div class="diagram-name">Mees</div>
+              <div class="diagram-avatar c2">M</div>
+            </div>
+            <div class="diagram-row">
+              <div class="diagram-name">Liora</div>
+              <div class="diagram-avatar c3">L</div>
+            </div>
+            <div class="diagram-row">
+              <div class="diagram-name">Daan</div>
+              <div class="diagram-avatar c4">D</div>
+            </div>
+            <div class="diagram-row">
+              <div class="diagram-name">Noor</div>
+              <div class="diagram-avatar c5">N</div>
+            </div>
+          </div>
+
+          <svg viewBox="0 0 400 280" preserveAspectRatio="none" class="diagram-connections" aria-hidden="true">
+            <g class="lines-chaos">
+              <line x1="0" y1="28" x2="400" y2="196"/>
+              <line x1="0" y1="28" x2="400" y2="252"/>
+              <line x1="0" y1="84" x2="400" y2="28"/>
+              <line x1="0" y1="84" x2="400" y2="196"/>
+              <line x1="0" y1="84" x2="400" y2="252"/>
+              <line x1="0" y1="140" x2="400" y2="84"/>
+              <line x1="0" y1="140" x2="400" y2="252"/>
+              <line x1="0" y1="196" x2="400" y2="28"/>
+              <line x1="0" y1="196" x2="400" y2="140"/>
+              <line x1="0" y1="252" x2="400" y2="84"/>
+              <line x1="0" y1="252" x2="400" y2="196"/>
+            </g>
+            <g class="lines-clean">
+              <line x1="0" y1="28" x2="400" y2="28"/>
+              <line x1="0" y1="84" x2="400" y2="84"/>
+              <line x1="0" y1="140" x2="400" y2="140"/>
+              <line x1="0" y1="196" x2="400" y2="196"/>
+              <line x1="0" y1="252" x2="400" y2="252"/>
+            </g>
+          </svg>
+
+          <div class="diagram-col diagram-companies">
+            <div class="diagram-row">
+              <div class="diagram-role"><span class="dot"></span><span class="lbl">Business Analyst</span></div>
+            </div>
+            <div class="diagram-row">
+              <div class="diagram-role"><span class="dot"></span><span class="lbl">Marketing</span></div>
+            </div>
+            <div class="diagram-row">
+              <div class="diagram-role"><span class="dot"></span><span class="lbl">Finance</span></div>
+            </div>
+            <div class="diagram-row">
+              <div class="diagram-role"><span class="dot"></span><span class="lbl">Engineering</span></div>
+            </div>
+            <div class="diagram-row">
+              <div class="diagram-role"><span class="dot"></span><span class="lbl">Product Design</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="diagram-tagline">
+          <span class="diagram-tag bad">Spray. Scan. Miss.</span>
+          <span class="diagram-arrow">→</span>
+          <span class="diagram-tag good">Five real matches.</span>
+        </div>
+      </div>
+
+      <div class="hero-ctas">
+        <button class="btn btn-primary" onclick="scrollToId('closing')">Join Cycle 01 →</button>
+        <button class="btn btn-outline-white" onclick="showScreen('status')">See live cycle</button>
+      </div>
+
+      <div class="hero-countdown">
+        <div class="hero-countdown-label">
+          Cycle 01<br>
+          clears in
+        </div>
+        <div class="hero-countdown-cells">
+          <div class="hero-countdown-cell">
+            <div class="num" id="cd-days">23</div>
+            <div class="lbl">Days</div>
+          </div>
+          <div class="colon">:</div>
+          <div class="hero-countdown-cell">
+            <div class="num" id="cd-hours">04</div>
+            <div class="lbl">Hours</div>
+          </div>
+          <div class="colon">:</div>
+          <div class="hero-countdown-cell">
+            <div class="num" id="cd-mins">17</div>
+            <div class="lbl">Minutes</div>
+          </div>
+          <div class="colon">:</div>
+          <div class="hero-countdown-cell">
+            <div class="num" id="cd-secs">52</div>
+            <div class="lbl">Seconds</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stats-bar-inner">
+      <div class="stat-item">
+        <div class="stat-num orange">Cycle 01</div>
+        <div class="stat-label">Now open</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="stat-students">412</div>
+        <div class="stat-label">Students registered</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="stat-employers">38</div>
+        <div class="stat-label">Employers in pool</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="stat-roles">96</div>
+        <div class="stat-label">Open roles</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num orange">NL</div>
+        <div class="stat-label">Launch market</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ ROLE TOGGLE ════════════════════ -->
+  <div class="role-toggle-section">
+    <div class="role-toggle-inner">
+      <div class="section-eyebrow" style="text-align:center;">Pick your side</div>
+      <h2 class="section-title" style="text-align:center;">What are you here for?</h2>
+      <p class="section-sub" style="margin-left:auto;margin-right:auto;text-align:center;">
+        The cycle has two faces — one for the rookies in the pool, one for the companies hiring them. Toggle to see the cycle from your side.
+      </p>
+      <div class="role-toggle" id="role-toggle">
+        <div class="role-toggle-pill" id="role-toggle-pill"></div>
+        <button id="role-btn-rookie" class="role-toggle-btn active" onclick="setCycleRole('rookie')">🎓 Rookie</button>
+        <button id="role-btn-company" class="role-toggle-btn" onclick="setCycleRole('company')">🏢 Company</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ ROOKIE VIEW ════════════════════ -->
+  <div id="view-rookie" class="role-view active">
+
+  <!-- HOW A CYCLE WORKS — Rookie -->
+  <section class="section">
+    <div class="section-eyebrow">How a cycle works</div>
+    <h2 class="section-title">Three phases. <em>One match day.</em></h2>
+    <p class="section-sub">
+      A cycle isn't a feed you scroll on Tuesday. It opens, it locks, it matches — on a date everyone knows. Students and employers all show up in the same window. No more missing the moment because the post went up while you were sleeping.
+    </p>
+
+    <div class="cycle-steps">
+      <div class="cycle-step active">
+        <div class="cycle-step-num">01</div>
+        <h4>Register</h4>
+        <p>Build your profile once. Employers post the roles they're actually hiring for this cycle. No subscription. No keyword stuffing. No CV gymnastics.</p>
+        <div class="cycle-step-tag">Open · 21 days</div>
+      </div>
+      <div class="cycle-step">
+        <div class="cycle-step-num">02</div>
+        <h4>Pool locks · the Algorithm does the magic</h4>
+        <p>Registration closes. The Rookie Algorithm does its thing — part math, part AI, part matching research, part witchcraft we're not licensed to explain. One pass. Market cleared.</p>
+        <div class="cycle-step-tag">Algorithm · behind the scenes</div>
+      </div>
+      <div class="cycle-step">
+        <div class="cycle-step-num">03</div>
+        <h4>Matches</h4>
+        <p>Five ranked matches drop at the same time, for everyone. Each one comes with a one-line reason you matched. Schedule intros, accept, or wait for the next cycle.</p>
+        <div class="cycle-step-tag">The moment</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE CYCLE TIMELINE PREVIEW -->
+  <section class="section tight">
+    <div class="cycle-timeline">
+      <div class="cycle-timeline-header">
+        <div>
+          <div class="section-eyebrow" style="margin-bottom:6px;">Live cycle status</div>
+          <div class="cycle-timeline-title">Cycle 01 · Spring 2026</div>
+        </div>
+        <div class="cycle-timeline-meta">Clearing 14 June · <strong id="timeline-countdown" style="color:var(--orange);">23 days remaining</strong></div>
+      </div>
+      <div class="cycle-track">
+        <div class="cycle-track-cell done"></div>
+        <div class="cycle-track-cell live"></div>
+        <div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell"></div>
+      </div>
+      <div class="cycle-track-labels">
+        <div class="cycle-track-label done">Scheduled</div>
+        <div class="cycle-track-label live">Registration</div>
+        <div class="cycle-track-label">Lock</div>
+        <div class="cycle-track-label">Clearing</div>
+        <div class="cycle-track-label">Reveal</div>
+        <div class="cycle-track-label">Closed</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MECHANISM (What we model) -->
+  <div class="mechanism">
+    <section class="section">
+      <div class="section-eyebrow" style="color:var(--orange-light);">The Rookie Algorithm</div>
+      <h2 class="section-title">Four things we read. <em>Most platforms read one.</em></h2>
+      <p class="section-sub">
+        You're more than a CV. A role is more than a job description. The Rookie Algorithm looks at four things every other platform misses — and weighs them against everyone else in the cycle, not against an empty queue.
+      </p>
+
+      <div class="mechanism-grid">
+        <div class="mechanism-card">
+          <div class="layer-tag">Layer 01</div>
+          <h4>What you can do</h4>
+          <p>Your education, projects, experience, skills, languages and work authorisation. Read fast, read fair, read the same for everyone. Big brand or family business — same score.</p>
+        </div>
+        <div class="mechanism-card">
+          <div class="layer-tag">Layer 02</div>
+          <h4>Who you are</h4>
+          <p>The things that don't fit a checkbox. Drive, ownership, the depth of the project you actually built, the voice in your story. Read by the algorithm and surfaced with a one-line reason.</p>
+        </div>
+        <div class="mechanism-card">
+          <div class="layer-tag">Layer 03</div>
+          <h4>The cycle around you</h4>
+          <p>Fit isn't an absolute number. It depends on who else showed up. The Rookie Algorithm clears the whole market at once — not your application against a void.</p>
+        </div>
+        <div class="mechanism-card">
+          <div class="layer-tag">Layer 04</div>
+          <h4>The Rookies cohort</h4>
+          <p>Every cycle teaches the next. Students stay on as alumni, employers refine their pool, universities see what actually happens after graduation. Match once and you're a Rookie for good.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- BOARD vs CYCLE -->
+  <section class="section">
+    <div class="section-eyebrow">Why a cycle, not a board</div>
+    <h2 class="section-title">A board is a feed. <em>A cycle is a moment.</em></h2>
+    <p class="section-sub">
+      Job boards sell ads and reward scrolling. They show you the loudest companies, not the right ones. A cycle inverts the architecture: everyone in the same room, the Rookie Algorithm running once, five matches each — done.
+    </p>
+
+    <div class="compare">
+      <div class="compare-col bad">
+        <div class="compare-tag old">Today · Job boards</div>
+        <h3>Spray, pray, repeat.</h3>
+        <ul>
+          <li>100 applications. 1 interview. If you're lucky.</li>
+          <li>The same five big brands collect 2,000 CVs each; the right-fit SMEs sit empty</li>
+          <li>Ranked by ad spend, not by you</li>
+          <li>Two sides drift in and out on different clocks — never quite meeting</li>
+          <li>"Why did I match?" → no answer. Just a no-reply email.</li>
+        </ul>
+      </div>
+      <div class="compare-col good">
+        <div class="compare-tag new">Rookies cycles</div>
+        <h3>Five matches. Real interviews.</h3>
+        <ul>
+          <li>Five matches per student, ranked by actual fit</li>
+          <li>SMEs and scale-ups compete with big brands on signal, not ad budget</li>
+          <li>Every match comes with a one-line reason — no black boxes</li>
+          <li>Both sides show up at the same time. That's why the market clears.</li>
+          <li>The Rookie Algorithm — built on your profile, not your network</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- CYCLE CALENDAR -->
+  <section class="section">
+    <div class="section-eyebrow">Cycle calendar</div>
+    <h2 class="section-title">How often? <em>As often as it makes sense.</em></h2>
+    <p class="section-sub">
+      No fixed quarterly schedule, no fiscal-calendar theatre. Cycles drop when there's a pool worth clearing. More rookies show up, more cycles. Hot summer, big cohort, ten companies asking? We spin one up. We're optimising for matches, not for a roadmap slide.
+    </p>
+
+    <div class="calendar-grid">
+      <div class="calendar-card live">
+        <div class="badge">Live</div>
+        <div class="month">Right now</div>
+        <div class="date">01</div>
+        <div class="name">The first one</div>
+        <div class="sub">Cycle 01 is open · jump in</div>
+      </div>
+      <div class="calendar-card">
+        <div class="month">Soon-ish</div>
+        <div class="date">02</div>
+        <div class="name">When the pool says so</div>
+        <div class="sub">Enough rookies + enough roles = go</div>
+      </div>
+      <div class="calendar-card">
+        <div class="month">Probably</div>
+        <div class="date">03</div>
+        <div class="name">Whenever it makes sense</div>
+        <div class="sub">More demand, more cycles · we listen</div>
+      </div>
+      <div class="calendar-card">
+        <div class="month">Forever</div>
+        <div class="date">∞</div>
+        <div class="name">Until everyone's matched</div>
+        <div class="sub">Sign up once · you're a Rookie for good</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREFERENCE DEMO -->
+  <section class="section">
+    <div class="section-eyebrow">A glimpse inside</div>
+    <h2 class="section-title">Your match list. <em>Ranked by fit.</em></h2>
+    <p class="section-sub">
+      You won't drag rows around. You won't submit anything. The Rookie Algorithm reads your profile and the live pool, then ranks — and that's the ranking. No buttons to press. Want it to change? Update your profile and the algorithm reruns automatically.
+    </p>
+
+    <div class="demo-shell">
+      <div class="demo-shell-header">
+        <div class="demo-shell-title">Your matches · Cycle 01 · Liora · Tilburg</div>
+        <div class="demo-shell-tag">Reveal in 3 days</div>
+      </div>
+      <div class="demo-shell-body">
+        <div class="pref-list" id="pref-list">
+          <div class="pref-item top">
+            <div class="rank">1</div>
+            <div>
+              <div class="name">Healthtech Studio · Junior Data Analyst</div>
+              <div class="meta">Utrecht · 6-month working-student · Hybrid</div>
+            </div>
+            <div>
+              <div class="score">94</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">2</div>
+            <div>
+              <div class="name">Bynder · Product Marketing Trainee</div>
+              <div class="meta">Amsterdam · Graduate · On-site</div>
+            </div>
+            <div>
+              <div class="score">88</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">3</div>
+            <div>
+              <div class="name">ASR Innovation · Strategy Intern</div>
+              <div class="meta">Utrecht · 4-month internship · Hybrid</div>
+            </div>
+            <div>
+              <div class="score">85</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">4</div>
+            <div>
+              <div class="name">Channable · Junior Business Analyst</div>
+              <div class="meta">Utrecht · Graduate · Hybrid</div>
+            </div>
+            <div>
+              <div class="score">81</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">5</div>
+            <div>
+              <div class="name">Backbase · Working Student, Ops</div>
+              <div class="meta">Amsterdam · Working-student · Hybrid</div>
+            </div>
+            <div>
+              <div class="score">79</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
+          <div style="font-size:14px;color:var(--text-light);">No action needed · the Rookie Algorithm locks in your match list when the pool closes</div>
+          <button class="btn btn-navy" style="padding:10px 20px;font-size:14px;" onclick="showScreen('results')">See reveal day →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS REVEAL -->
+  <section class="section" id="reveal-section">
+    <div class="section-eyebrow">The moment</div>
+    <h2 class="section-title">Match day. <em>Reveal time.</em></h2>
+    <p class="section-sub">
+      Five matches. One time. Every student and every employer sees their match list at the same second — 18:00 CET on cycle day. Each one comes with the reason it happened. No leaks, no waitlist, no "we'll get back to you."
+    </p>
+
+    <div class="reveal-shell">
+      <div class="reveal-tag">14 June 2026 · 18:00 CET</div>
+      <div class="reveal-title">You matched.</div>
+      <div class="reveal-sub">412 students. 38 employers. The Rookie Algorithm produced 64 match sets in one pass. Here are your five — ranked by fit. Talk to any. Talk to all.</div>
+
+      <div class="match-card">
+        <div class="logo-block">Health<br>tech</div>
+        <div class="info">
+          <h4>Healthtech Studio · Junior Data Analyst</h4>
+          <p>Utrecht · 6-month working-student · €18/hr</p>
+        </div>
+        <div class="badge">94 fit</div>
+      </div>
+
+      <div class="reveal-rationale">
+        <div class="label">Why your #1 match · The Rookie Algorithm</div>
+        <p>"Strong applied-statistics coursework at Tilburg, a healthtech-related thesis on patient adherence modelling, Python from your bachelor project. Healthtech Studio is small enough that the role is exposure-rich, and your availability matches their start window. Ranked top by both sides."</p>
+      </div>
+
+      <div class="match-list">
+        <div class="match-list-header">Your other four matches · ranked by fit</div>
+        <div class="match-list-items">
+          <div class="match-list-item">
+            <div class="rank-pill">2</div>
+            <div class="role-info">
+              <h5>Bynder · Product Marketing Trainee</h5>
+              <p>Amsterdam · Graduate · €2,800/mo · On-site</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">88</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">Schedule intro</button>
+          </div>
+          <div class="match-list-item">
+            <div class="rank-pill">3</div>
+            <div class="role-info">
+              <h5>ASR Innovation · Strategy Intern</h5>
+              <p>Utrecht · 4-month · €15/hr · Hybrid</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">85</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">Schedule intro</button>
+          </div>
+          <div class="match-list-item">
+            <div class="rank-pill">4</div>
+            <div class="role-info">
+              <h5>Channable · Junior Business Analyst</h5>
+              <p>Utrecht · Graduate · €2,650/mo · Hybrid</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">81</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">Schedule intro</button>
+          </div>
+          <div class="match-list-item">
+            <div class="rank-pill">5</div>
+            <div class="role-info">
+              <h5>Backbase · Working Student, Ops</h5>
+              <p>Amsterdam · Working-student · €17/hr · Hybrid</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">79</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">Schedule intro</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:36px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary">Accept #1 match</button>
+        <button class="btn btn-outline-white">Schedule all five intros</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <div class="closing" id="closing">
+    <div class="closing-inner">
+      <h2>
+        Apply once.<br>
+        Match with five.<br>
+        <em>Done.</em>
+      </h2>
+      <p class="closing-sub">
+        Cycle 01 is open. Reveal day is 14 June. Be in the pool.
+      </p>
+      <div class="closing-ctas">
+        <button class="btn btn-primary">I'm a student →</button>
+        <button class="btn btn-outline-white">I'm an employer →</button>
+        <button class="btn btn-outline-white">I'm a university →</button>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /#view-rookie -->
+
+  <!-- ════════════════════ COMPANY VIEW ════════════════════ -->
+  <div id="view-company" class="role-view">
+
+  <!-- HOW A CYCLE WORKS — Company -->
+  <section class="section">
+    <div class="section-eyebrow">How a cycle works</div>
+    <h2 class="section-title">Three phases. <em>One shortlist drop.</em></h2>
+    <p class="section-sub">
+      A cycle isn't an inbox of 300 CVs over six weeks. It opens, it locks, it matches — on a date the whole market knows. You post the role, the pool builds, the Rookie Algorithm runs once, and your shortlist lands. No boosting fees, no re-posting, no drift.
+    </p>
+
+    <div class="cycle-steps">
+      <div class="cycle-step active">
+        <div class="cycle-step-num">01</div>
+        <h4>Post the role</h4>
+        <p>Post the role you're really hiring for and set your criteria once. No subscription, no boosting fees, no LinkedIn dance. The cycle does the broadcast for you.</p>
+        <div class="cycle-step-tag">Open · 21 days</div>
+      </div>
+      <div class="cycle-step">
+        <div class="cycle-step-num">02</div>
+        <h4>Pool locks · the Algorithm does the magic</h4>
+        <p>Registration closes and the Rookie Algorithm gets to work — a combination of math, AI, decades of matching research, and the secret ingredient we don't tell you about. Every profile in the pool, ranked against your role in one pass.</p>
+        <div class="cycle-step-tag">Algorithm · behind the scenes</div>
+      </div>
+      <div class="cycle-step">
+        <div class="cycle-step-num">03</div>
+        <h4>Matches</h4>
+        <p>Five ranked candidates drop at the same time, each with the reason they fit. Send invites, schedule intros, or hold the pipeline for the next cycle.</p>
+        <div class="cycle-step-tag">The moment</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE CYCLE TIMELINE — Company -->
+  <section class="section tight">
+    <div class="cycle-timeline">
+      <div class="cycle-timeline-header">
+        <div>
+          <div class="section-eyebrow" style="margin-bottom:6px;">Live cycle status</div>
+          <div class="cycle-timeline-title">Cycle 01 · Spring 2026</div>
+        </div>
+        <div class="cycle-timeline-meta">Shortlist drops 14 June · <strong id="timeline-countdown-company" style="color:var(--orange);">23 days remaining</strong></div>
+      </div>
+      <div class="cycle-track">
+        <div class="cycle-track-cell done"></div>
+        <div class="cycle-track-cell live"></div>
+        <div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell"></div>
+      </div>
+      <div class="cycle-track-labels">
+        <div class="cycle-track-label done">Scheduled</div>
+        <div class="cycle-track-label live">Roles open</div>
+        <div class="cycle-track-label">Lock</div>
+        <div class="cycle-track-label">Clearing</div>
+        <div class="cycle-track-label">Reveal</div>
+        <div class="cycle-track-label">Closed</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MECHANISM — Company -->
+  <div class="mechanism">
+    <section class="section">
+      <div class="section-eyebrow" style="color:var(--orange-light);">The Rookie Algorithm</div>
+      <h2 class="section-title">Four signals we rank on. <em>Job boards rank on none.</em></h2>
+      <p class="section-sub">
+        Job boards sort candidates by who clicked first and who paid for the boost. The Rookie Algorithm reads four signals from every candidate in the pool and ranks them against your role — so your top five aren't the five who happened to apply, they're the five who actually fit.
+      </p>
+
+      <div class="mechanism-grid">
+        <div class="mechanism-card">
+          <div class="layer-tag">Signal 01</div>
+          <h4>Technical fit</h4>
+          <p>Coursework, projects, internships, skills stack, languages and work authorisation — scored against the specific job you posted. No keyword bias, no university-prestige weighting, no inflated CV claims.</p>
+        </div>
+        <div class="mechanism-card">
+          <div class="layer-tag">Signal 02</div>
+          <h4>Culture fit</h4>
+          <p>The things a CV can't carry. Ownership, depth of the project they actually built, how they describe their work. Surfaced as a one-line reason — so you know why this candidate fits before the first call.</p>
+        </div>
+        <div class="mechanism-card">
+          <div class="layer-tag">Signal 03</div>
+          <h4>Market-clearing context</h4>
+          <p>A "great candidate" depends on the pool. The Rookie Algorithm clears the whole cycle at once, so your shortlist reflects the strongest five available in this market — not five who happened to click on Tuesday.</p>
+        </div>
+        <div class="mechanism-card">
+          <div class="layer-tag">Signal 04</div>
+          <h4>Mutual intent</h4>
+          <p>Every candidate on your shortlist already ranked your company in their top ten. No more chasing dream candidates who'll ghost the offer — the interest is mutual before reveal day.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- BOARD vs CYCLE — Company -->
+  <section class="section">
+    <div class="section-eyebrow">Why a cycle, not a CV pile</div>
+    <h2 class="section-title">A CV pile is noise. <em>A cycle is signal.</em></h2>
+    <p class="section-sub">
+      Job boards bury you under 300 CVs that mostly don't fit. You spend a week reading the same template motivation copy-pasted by people who'd never heard of you. A cycle inverts the architecture: the whole pool is read for you, and you get a pre-ranked shortlist of five — done.
+    </p>
+
+    <div class="compare">
+      <div class="compare-col bad">
+        <div class="compare-tag old">Today · Job boards</div>
+        <h3>300 CVs. Five worth reading.</h3>
+        <ul>
+          <li>One listing pulls 300 applications. 295 are noise. The 5 good ones get buried.</li>
+          <li>Same big-brand candidates everyone chases — and same ghosting back from them</li>
+          <li>Motivation letters copy-pasted from a template. No signal.</li>
+          <li>Listings ranked by post recency, not by fit to your role</li>
+          <li>You compete with big brands on ad spend. Never on signal.</li>
+        </ul>
+      </div>
+      <div class="compare-col good">
+        <div class="compare-tag new">Rookies cycles</div>
+        <h3>Five candidates. Ranked by fit.</h3>
+        <ul>
+          <li>Pre-ranked shortlist per role — top 5 candidates only, ranked by actual fit</li>
+          <li>Compete on culture and growth, not on ad budget — small companies welcome</li>
+          <li>Every shortlist candidate comes with a one-line reason for the fit</li>
+          <li>Both sides show up at the same time. That's why the market clears.</li>
+          <li>The Rookie Algorithm reads full profiles, not keywords</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- CYCLE CALENDAR — Company -->
+  <section class="section">
+    <div class="section-eyebrow">Cycle calendar</div>
+    <h2 class="section-title">How often? <em>As often as you need us.</em></h2>
+    <p class="section-sub">
+      No quarterly schedule, no annual hiring window theatre. Cycles drop when there's a pool worth clearing — more roles in the queue, more cycles. Need one sooner for a sector or a season? Tell us. We're optimising for hires, not for a roadmap slide.
+    </p>
+
+    <div class="calendar-grid">
+      <div class="calendar-card live">
+        <div class="badge">Live</div>
+        <div class="month">Right now</div>
+        <div class="date">01</div>
+        <div class="name">The first one</div>
+        <div class="sub">Cycle 01 is open · post a role</div>
+      </div>
+      <div class="calendar-card">
+        <div class="month">Soon-ish</div>
+        <div class="date">02</div>
+        <div class="name">When the pool's ready</div>
+        <div class="sub">Enough roles + enough rookies = go</div>
+      </div>
+      <div class="calendar-card">
+        <div class="month">On request</div>
+        <div class="date">03</div>
+        <div class="name">Ask, we'll add one</div>
+        <div class="sub">Sector-specific? Seasonal? Pull the lever</div>
+      </div>
+      <div class="calendar-card">
+        <div class="month">Forever</div>
+        <div class="date">∞</div>
+        <div class="name">Until the market clears</div>
+        <div class="sub">More hiring, more cycles · simple as that</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CANDIDATE SHORTLIST DEMO — Company -->
+  <section class="section">
+    <div class="section-eyebrow">A glimpse inside</div>
+    <h2 class="section-title">Your top candidates. <em>Ranked by fit.</em></h2>
+    <p class="section-sub">
+      Three days before reveal, the Rookie Algorithm has already ranked the strongest five for your role. You see the names, universities, start windows and the one-line reason each rose to the top. No spreadsheet, no 300-CV inbox, no juggling.
+    </p>
+
+    <div class="demo-shell">
+      <div class="demo-shell-header">
+        <div class="demo-shell-title">Your shortlist · Cycle 01 · Junior Data Analyst · Healthtech Studio</div>
+        <div class="demo-shell-tag">Reveal in 3 days</div>
+      </div>
+      <div class="demo-shell-body">
+        <div class="pref-list">
+          <div class="pref-item top">
+            <div class="rank">1</div>
+            <div>
+              <div class="name">Liora B. · Tilburg University</div>
+              <div class="meta">BSc Statistics · Healthtech thesis · Python, SQL, R · Available Sep</div>
+            </div>
+            <div>
+              <div class="score">94</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">2</div>
+            <div>
+              <div class="name">Mees v. d. K. · TU Eindhoven</div>
+              <div class="meta">BSc Applied Mathematics · ML elective · Python, PyTorch · Available Aug</div>
+            </div>
+            <div>
+              <div class="score">89</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">3</div>
+            <div>
+              <div class="name">Sofia P. · University of Amsterdam</div>
+              <div class="meta">MSc Data Science · Healthcare capstone · SQL, Tableau · Available Sep</div>
+            </div>
+            <div>
+              <div class="score">86</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">4</div>
+            <div>
+              <div class="name">Noor el A. · TU Delft</div>
+              <div class="meta">MSc Computer Science · Stats minor · Python, scikit-learn · Available Sep</div>
+            </div>
+            <div>
+              <div class="score">83</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">5</div>
+            <div>
+              <div class="name">Daan H. · Erasmus Rotterdam</div>
+              <div class="meta">BSc Econometrics · Health-econ thesis · R, Stata, SQL · Available Aug</div>
+            </div>
+            <div>
+              <div class="score">78</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:28px;padding:18px 20px;background:var(--cream);border-radius:12px;border-left:3px solid var(--orange);">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--orange);margin-bottom:6px;">How the Rookie Algorithm picked these</div>
+          <p style="font-size:15px;color:var(--text);line-height:1.6;">
+            "We read 412 profiles against your Junior Data Analyst role. These five came out on top for technical fit, healthtech exposure and start-date alignment — and all five ranked your company in their top 10. Want to adjust the criteria? Edit the role and the algorithm reruns automatically before clearing."
+          </p>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
+          <div style="font-size:14px;color:var(--text-light);">Shortlist locked by the Rookie Algorithm · reveal day 14 June</div>
+          <button class="btn btn-navy" style="padding:10px 20px;font-size:14px;" onclick="showScreen('results')">See reveal day →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVEAL — Company -->
+  <section class="section">
+    <div class="section-eyebrow">The moment</div>
+    <h2 class="section-title">Match day. <em>Meet your candidates.</em></h2>
+    <p class="section-sub">
+      Five candidates. One time. Every employer sees their shortlist at the same second — 18:00 CET on cycle day. Each candidate comes with their full profile and the reason they matched. No leaks, no spray applications, no "we'll get back to you."
+    </p>
+
+    <div class="reveal-shell">
+      <div class="reveal-tag">14 June 2026 · 18:00 CET</div>
+      <div class="reveal-title">Your candidates.</div>
+      <div class="reveal-sub">412 students in the pool this cycle. Here are the top five matched to your Junior Data Analyst role — ranked by fit. Talk to any. Talk to all.</div>
+
+      <div class="match-card">
+        <div class="logo-block">LB</div>
+        <div class="info">
+          <h4>Liora B. · Tilburg University</h4>
+          <p>BSc Statistics · 3rd year · Available from September · Utrecht-friendly</p>
+        </div>
+        <div class="badge">94 fit</div>
+      </div>
+
+      <div class="reveal-rationale">
+        <div class="label">Why Liora is your #1 candidate · The Rookie Algorithm</div>
+        <p>"Strong applied-statistics coursework at Tilburg, a healthtech-related thesis on patient adherence modelling, Python from her bachelor project. Your role is exposure-rich at the size she's looking for, and her September start aligns with your window. She ranked Healthtech Studio top of her cycle too — mutual #1."</p>
+      </div>
+
+      <div class="match-list">
+        <div class="match-list-header">Your other four candidates · ranked by fit</div>
+        <div class="match-list-items">
+          <div class="match-list-item">
+            <div class="rank-pill">2</div>
+            <div class="role-info">
+              <h5>Mees v. d. K. · TU Eindhoven</h5>
+              <p>BSc Applied Mathematics · ML elective · Python, PyTorch · Avail Aug</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">89</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">View profile</button>
+          </div>
+          <div class="match-list-item">
+            <div class="rank-pill">3</div>
+            <div class="role-info">
+              <h5>Sofia P. · University of Amsterdam</h5>
+              <p>MSc Data Science · Healthcare capstone · SQL, Tableau · Avail Sep</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">86</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">View profile</button>
+          </div>
+          <div class="match-list-item">
+            <div class="rank-pill">4</div>
+            <div class="role-info">
+              <h5>Noor el A. · TU Delft</h5>
+              <p>MSc Computer Science · Stats minor · Python, scikit-learn · Avail Sep</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">83</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">View profile</button>
+          </div>
+          <div class="match-list-item">
+            <div class="rank-pill">5</div>
+            <div class="role-info">
+              <h5>Daan H. · Erasmus Rotterdam</h5>
+              <p>BSc Econometrics · Health-econ thesis · R, Stata, SQL · Avail Aug</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">78</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">View profile</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:36px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary">Invite Liora to interview</button>
+        <button class="btn btn-outline-white">Schedule all five intros</button>
+      </div>
+
+      <div style="margin-top:48px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.08);">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.5);margin-bottom:16px;">Cycle outcome · employer summary</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:680px;margin:0 auto;">
+          <div><div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:white;">5</div><div style="font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Candidates</div></div>
+          <div><div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:white;">0</div><div style="font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">CVs to sift</div></div>
+          <div><div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:white;">3</div><div style="font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Mutual top-5</div></div>
+          <div><div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--orange-light);">A</div><div style="font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Cycle grade</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING — Company -->
+  <div class="closing" id="closing-company">
+    <div class="closing-inner">
+      <h2>
+        Post your roles.<br>
+        Get five candidates each.<br>
+        <em>Done.</em>
+      </h2>
+      <p class="closing-sub">
+        Cycle 01 is open. Reveal day is 14 June. Get your roles in the pool.
+      </p>
+      <div class="closing-ctas">
+        <button class="btn btn-primary">Register a role →</button>
+        <button class="btn btn-outline-white">Talk to founding team →</button>
+        <button class="btn btn-outline-white">University partnerships →</button>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /#view-company -->
+
+</div>
+
+<!-- ════════════════════ SCREEN: LIVE CYCLE STATUS ════════════════════ -->
+<div id="screen-status" class="screen">
+  <div class="subscreen">
+    <div class="section-eyebrow">Live now</div>
+    <h1 class="subscreen-title">Cycle 01 · <em style="font-style:italic;color:var(--orange);">Spring 2026.</em></h1>
+    <p class="subscreen-sub">
+      Where the cycle is right now. Refreshing every minute — registration counters, top sectors, top universities, and how the pool is shaping up.
+    </p>
+
+    <div class="cycle-timeline">
+      <div class="cycle-timeline-header">
+        <div>
+          <div class="cycle-timeline-title">Phase 02 of 06 · Registration open</div>
+        </div>
+        <div class="cycle-timeline-meta">Clearing 14 June 2026 · <strong style="color:var(--orange);" id="status-countdown">23d 04h 17m</strong></div>
+      </div>
+      <div class="cycle-track">
+        <div class="cycle-track-cell done"></div>
+        <div class="cycle-track-cell live"></div>
+        <div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell"></div>
+      </div>
+      <div class="cycle-track-labels">
+        <div class="cycle-track-label done">Scheduled</div>
+        <div class="cycle-track-label live">Registration</div>
+        <div class="cycle-track-label">Lock</div>
+        <div class="cycle-track-label">Clearing</div>
+        <div class="cycle-track-label">Reveal</div>
+        <div class="cycle-track-label">Closed</div>
+      </div>
+    </div>
+
+    <div class="stats-bar" style="margin-top:24px;border-radius:18px;border:1px solid var(--border);">
+      <div class="stats-bar-inner">
+        <div class="stat-item">
+          <div class="stat-num orange">412</div>
+          <div class="stat-label">Students registered</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">38</div>
+          <div class="stat-label">Employers in pool</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">96</div>
+          <div class="stat-label">Open roles</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">64</div>
+          <div class="stat-label">Projected matches</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num orange">21</div>
+          <div class="stat-label">Sectors represented</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+      <div class="mechanism-card" style="background:white;border:1px solid var(--border);">
+        <div class="layer-tag" style="color:var(--orange);">Sector signal</div>
+        <h4 style="color:var(--navy);font-family:'Syne',sans-serif;font-size:17px;margin-bottom:18px;">Top sectors this cycle</h4>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Tech & SaaS</span><strong style="color:var(--navy);">42%</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Finance & Insurance</span><strong style="color:var(--navy);">18%</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Health & Biotech</span><strong style="color:var(--navy);">14%</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Consulting & Strategy</span><strong style="color:var(--navy);">12%</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--text-light);"><span>Other</span><strong style="color:var(--navy);">14%</strong></div>
+        </div>
+      </div>
+      <div class="mechanism-card" style="background:white;border:1px solid var(--border);">
+        <div class="layer-tag" style="color:var(--orange);">University signal</div>
+        <h4 style="color:var(--navy);font-family:'Syne',sans-serif;font-size:17px;margin-bottom:18px;">Top institutions</h4>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Tilburg University</span><strong style="color:var(--navy);">126</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Erasmus Rotterdam</span><strong style="color:var(--navy);">94</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>UvA Amsterdam</span><strong style="color:var(--navy);">71</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Utrecht University</span><strong style="color:var(--navy);">54</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--text-light);"><span>Other NL universities</span><strong style="color:var(--navy);">67</strong></div>
+        </div>
+      </div>
+      <div class="mechanism-card" style="background:white;border:1px solid var(--border);">
+        <div class="layer-tag" style="color:var(--orange);">Cycle pulse</div>
+        <h4 style="color:var(--navy);font-family:'Syne',sans-serif;font-size:17px;margin-bottom:18px;">How this cycle is going</h4>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px;">
+          <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:700;color:var(--success);line-height:1;">A−</div>
+          <div style="font-size:13px;color:var(--text-light);">cycle health</div>
+        </div>
+        <p style="font-size:14px;color:var(--text-light);line-height:1.6;">Plenty of students for the roles posted. Sector mix looks healthy. The cycle is on track to match cleanly on 14 June.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;text-align:center;">
+      <button class="btn btn-primary" onclick="showScreen('preferences')">See what students see →</button>
+      <button class="btn btn-outline-navy" onclick="showScreen('landing')" style="margin-left:8px;">← Back to landing</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ SCREEN: PREFERENCE DEMO ════════════════════ -->
+<div id="screen-preferences" class="screen">
+  <div class="subscreen">
+    <div class="section-eyebrow">Day 22 of the cycle</div>
+    <h1 class="subscreen-title">Your top five. <em style="font-style:italic;color:var(--orange);">Picked for you.</em></h1>
+    <p class="subscreen-sub">
+      This is what you see three days before match day. The Rookie Algorithm has already ranked your five — you don't move them around and you don't submit anything. Nothing to click. Just a preview of what's coming on reveal day.
+    </p>
+
+    <div class="demo-shell">
+      <div class="demo-shell-header">
+        <div class="demo-shell-title">Your matches · Cycle 01 · Liora · Tilburg</div>
+        <div class="demo-shell-tag">Reveal in 3 days</div>
+      </div>
+      <div class="demo-shell-body">
+        <div class="pref-list">
+          <div class="pref-item top">
+            <div class="rank">1</div>
+            <div>
+              <div class="name">Healthtech Studio · Junior Data Analyst</div>
+              <div class="meta">Utrecht · 6-month · €18/hr · Hybrid</div>
+            </div>
+            <div>
+              <div class="score">94</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">2</div>
+            <div>
+              <div class="name">Bynder · Product Marketing Trainee</div>
+              <div class="meta">Amsterdam · Graduate · €2,800/mo · On-site</div>
+            </div>
+            <div>
+              <div class="score">88</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">3</div>
+            <div>
+              <div class="name">ASR Innovation · Strategy Intern</div>
+              <div class="meta">Utrecht · 4-month · €15/hr · Hybrid</div>
+            </div>
+            <div>
+              <div class="score">85</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">4</div>
+            <div>
+              <div class="name">Channable · Junior Business Analyst</div>
+              <div class="meta">Utrecht · Graduate · €2,650/mo · Hybrid</div>
+            </div>
+            <div>
+              <div class="score">81</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+          <div class="pref-item">
+            <div class="rank">5</div>
+            <div>
+              <div class="name">Backbase · Working Student, Ops</div>
+              <div class="meta">Amsterdam · Working-student · €17/hr · Hybrid</div>
+            </div>
+            <div>
+              <div class="score">79</div>
+              <div class="score-label">Fit</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:28px;padding:18px 20px;background:var(--cream);border-radius:12px;border-left:3px solid var(--orange);">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--orange);margin-bottom:6px;">How the Rookie Algorithm picked these</div>
+          <p style="font-size:15px;color:var(--text);line-height:1.6;">
+            "Applied statistics from Tilburg, a healthtech thesis, Python fluency — strong fit for analyst-style roles at growth-stage NL companies. We've weighted what you can do, who you are, and who else is in this cycle. Want this to change? Update your profile and the algorithm reruns automatically before clearing."
+          </p>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
+          <div style="font-size:14px;color:var(--text-light);">Locked by the Rookie Algorithm · reveal day 14 June</div>
+          <button class="btn btn-navy" style="padding:10px 20px;font-size:14px;" onclick="showScreen('results')">See reveal day →</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;text-align:center;">
+      <button class="btn btn-outline-navy" onclick="showScreen('landing')">← Back to landing</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ SCREEN: RESULTS REVEAL ════════════════════ -->
+<div id="screen-results" class="screen">
+  <div class="subscreen">
+    <div class="section-eyebrow">Cycle 01 · Reveal day · 14 June 2026 · 18:00 CET</div>
+    <h1 class="subscreen-title">The reveal.</h1>
+    <p class="subscreen-sub">
+      Every match is published simultaneously at 18:00 CET on reveal day. Coordinated drop, no leaks. Below is a sample reveal page from the student side.
+    </p>
+
+    <div class="reveal-shell">
+      <div class="reveal-tag">Match published · 18:00:00 CET</div>
+      <div class="reveal-title">Your five matches.</div>
+      <div class="reveal-sub">412 students. 38 employers. The Rookie Algorithm produced 64 match sets in one pass. Here are yours, Liora — ranked by fit. Talk to any. Talk to all. The offer process happens after.</div>
+
+      <div class="match-card">
+        <div class="logo-block">Health<br>tech</div>
+        <div class="info">
+          <h4>Healthtech Studio · Junior Data Analyst</h4>
+          <p>Utrecht · 6-month working-student · €18/hr</p>
+        </div>
+        <div class="badge">94 fit</div>
+      </div>
+
+      <div class="reveal-rationale">
+        <div class="label">Why your #1 match · The Rookie Algorithm</div>
+        <p>"Strong applied-statistics coursework at Tilburg, a healthtech-related thesis on patient adherence modelling, Python fluency from your bachelor project. Healthtech Studio is small enough that the role is exposure-rich, and your availability matches their start window. Ranked top by both sides — both of you wanted each other."</p>
+      </div>
+
+      <div class="match-list">
+        <div class="match-list-header">Your other four matches · ranked by fit</div>
+        <div class="match-list-items">
+          <div class="match-list-item">
+            <div class="rank-pill">2</div>
+            <div class="role-info">
+              <h5>Bynder · Product Marketing Trainee</h5>
+              <p>Amsterdam · Graduate · €2,800/mo · On-site</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">88</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">Schedule intro</button>
+          </div>
+          <div class="match-list-item">
+            <div class="rank-pill">3</div>
+            <div class="role-info">
+              <h5>ASR Innovation · Strategy Intern</h5>
+              <p>Utrecht · 4-month · €15/hr · Hybrid</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">85</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">Schedule intro</button>
+          </div>
+          <div class="match-list-item">
+            <div class="rank-pill">4</div>
+            <div class="role-info">
+              <h5>Channable · Junior Business Analyst</h5>
+              <p>Utrecht · Graduate · €2,650/mo · Hybrid</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">81</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">Schedule intro</button>
+          </div>
+          <div class="match-list-item">
+            <div class="rank-pill">5</div>
+            <div class="role-info">
+              <h5>Backbase · Working Student, Ops</h5>
+              <p>Amsterdam · Working-student · €17/hr · Hybrid</p>
+            </div>
+            <div class="fit-score">
+              <div class="num">79</div>
+              <div class="lbl">Fit</div>
+            </div>
+            <button class="mini-btn">Schedule intro</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:36px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary">Accept #1 match</button>
+        <button class="btn btn-outline-white">Schedule all five intros</button>
+        <button class="btn btn-outline-white">Decline all (next cycle)</button>
+      </div>
+
+      <div style="margin-top:48px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.08);">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.5);margin-bottom:16px;">Cycle outcome · public summary</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:680px;margin:0 auto;">
+          <div><div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:white;">64</div><div style="font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Match sets</div></div>
+          <div><div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:white;">87%</div><div style="font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Mutual top-3</div></div>
+          <div><div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:white;">0</div><div style="font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">CVs sprayed</div></div>
+          <div><div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--orange-light);">A</div><div style="font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Cycle grade</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;text-align:center;">
+      <button class="btn btn-outline-navy" onclick="showScreen('landing')">← Back to landing</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ FOOTER ════════════════════ -->
+<footer>
+  <div>
+    Rookies · The first hiring cycle in the Netherlands · Built in Tilburg
+  </div>
+  <div style="margin-top:8px;">
+    <a href="javascript:showScreen('landing')">How it works</a>
+    <a href="javascript:showScreen('status')">Live cycle</a>
+    <a href="javascript:showScreen('preferences')">Inside a cycle</a>
+    <a href="../privacy.html">Privacy</a>
+  </div>
+  <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,0.3);">
+    © 2026 Rookies · The Rookie Algorithm is a Rookies trademark
+  </div>
+</footer>
+
+<script src="js/cycles.js"></script>
+</body>
+</html>

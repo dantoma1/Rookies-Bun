@@ -1,0 +1,357 @@
+% =====================================================================
+% Revealed-Preference Matching: Stable Allocation in Markets with
+% Information Asymmetry
+%
+% Working paper outline. Proposed authors:
+%   Dan Toma Poenaru (Rookies; Tilburg University)
+%   Tudor Octavian Poenaru (Rookies; TU/e)
+%   Cristian Dobre (Tilburg University, TiSEM — Econometrics & OR)
+%
+% Compile with pdflatex (or via Overleaf).
+% =====================================================================
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[round,authoryear]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!60!black]{hyperref}
+
+% Theorem-like environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{assumption}{Assumption}
+\newtheorem{definition}{Definition}
+
+% Convenience
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\TT}{\mathcal{T}}
+\newcommand{\bone}{\mathbf{1}}
+
+% Title block
+\title{\textbf{Revealed-Preference Matching:}\\[0.4em]
+       \large Stable Allocation in Markets with Information Asymmetry}
+
+\author{
+    Dan Toma Poenaru\thanks{Tilburg University \& Rookies. Corresponding author.}
+    \and Tudor Octavian Poenaru\thanks{Eindhoven University of Technology \& Rookies.}
+    \and Cristian Dobre\thanks{Tilburg University, TiSEM, Department of Econometrics \& Operations Research.}
+}
+
+\date{Working paper outline --- \today}
+
+% =====================================================================
+\begin{document}
+\maketitle
+
+% ---------------------------------------------------------------------
+\begin{abstract}
+We study two-sided matching markets in which one side's stated preferences are systematically distorted by information asymmetry --- specifically, the disproportionate visibility of a small subset of receivers. In the canonical example, students in early-career job markets state preferences over a small set of well-known employers while ignoring the long tail of potentially better-fit firms they have not researched. We show that running the Gale--Shapley algorithm over visibility-distorted stated preferences produces stable matches that are Pareto-dominated by matches over true (informed) preferences. We propose an alternative mechanism in which preferences on the proposing side are not stated but \emph{revealed} --- inferred from observable, verifiable type information through a learned scoring function --- and analyze its strategic robustness under partial verifiability. We additionally show that the proposed mechanism naturally accommodates the human-oversight and transparency requirements of EU Regulation 2024/1689 (the Artificial Intelligence Act) for high-risk recruitment systems. We propose an empirical validation using data from \textsc{Rookies}, a Dutch early-career matching platform built on this mechanism.
+
+\medskip
+\noindent\textbf{Keywords:} matching theory; mechanism design; stable allocation; information asymmetry; AI Act; early-career hiring.
+\end{abstract}
+
+% ---------------------------------------------------------------------
+\section{Motivation and Contribution}
+\label{sec:intro}
+
+Stable matching theory \citep{galeShapley1962,rothSotomayor1990} is the foundation of several large-scale allocation mechanisms --- most notably the National Resident Matching Program (NRMP), the New York and Boston public school choice systems, and various organ-exchange networks. Each of these markets shares a structural property that the early-career hiring market does \emph{not} share: \textbf{participants on the proposing side have informed preferences over a bounded, well-understood set of receivers.} Medical residents, by the time they participate in the match, have rotated through hospitals, attended specialty conferences, and acquired substantial first-hand information about candidate programs. Parents in school-choice markets have toured schools.
+
+In early-career hiring this informational structure breaks down. A typical graduate has direct knowledge of, at most, the ten to twenty most-marketed employers in their geography (and, in some sectors, of a small set of brand-name firms globally). Their stated preferences over the universe of approximately 50{,}000 Dutch small-to-medium enterprises (SMEs) are not preferences in the economic sense --- they are functions of \emph{visibility}, not \emph{compatibility}. Running Gale--Shapley over such preferences produces stable matches, but those matches are stable with respect to the distorted preference relation, not with respect to underlying compatibility. The market clears, but it does not clear well.
+
+Our contributions are threefold.
+
+\begin{itemize}[leftmargin=2em,itemsep=2pt,topsep=4pt]
+    \item[\textbf{(C1)}] We formalize a model of matching markets with visibility-distorted stated preferences and show that Gale--Shapley over such preferences is Pareto-dominated, with respect to the true compatibility relation, by Gale--Shapley over informed preferences (Theorem~\ref{thm:pareto}).
+    \item[\textbf{(C2)}] We propose a \emph{revealed-preference} mechanism in which the proposing side's ranking over receivers is inferred from a verifiable type vector via a learned scoring function. We characterize the conditions under which this mechanism is incentive-compatible under a partial-verifiability regime (Theorem~\ref{thm:ic}). The manipulability of the mechanism becomes bounded by the \emph{cost of misrepresenting one's type}, rather than by the (zero) cost of misrepresenting one's preferences.
+    \item[\textbf{(C3)}] We show that the mechanism naturally accommodates the explainability and human-oversight requirements of the EU AI Act's high-risk-system regime (Articles 13--14 of Regulation 2024/1689) through a layered scoring architecture in which deterministic and stochastic components are separately auditable (Theorem~\ref{thm:eu}).
+\end{itemize}
+
+% ---------------------------------------------------------------------
+\section{Related Literature}
+\label{sec:related}
+
+Stable matching with stated preferences originates with \citet{galeShapley1962}; the strategy-proofness of the proposer-optimal stable mechanism for proposers was established by \citet{dubinsFreedman1981} and \citet{roth1982}. The applied literature is voluminous: \citet{rothPeranson1999} on NRMP redesign; \citet{abdulkadirogluSonmez2003} and \citet{abdulkadirogluPathakRoth2005,abdulkadirogluPathakRoth2009} on school choice; \citet{hatfieldMilgrom2005} on matching with contracts; \citet{echeniqueYenmez2007} on controlled school choice; \citet{pathakSonmez2008} on strategic versus non-strategic players; \citet{azevedoHatfield2018} on large-market analysis.
+
+Several papers explore preference manipulation. \citet{roth1985} and \citet{sonmez1997} study program-side manipulation in NRMP-like markets. \citet{ashlagiKlijn2012} study truncation strategies.
+
+Notably absent from this literature is a formal treatment of \emph{systematically biased stated preferences} in markets where the proposing side lacks sufficient information to rank the universe of receivers. We are aware of work on partial preference lists \citep{manlove2013} and on matching with incomplete information \citep{liu2020}, but to our knowledge no paper analyzes the welfare loss from visibility-biased preferences nor proposes a type-based mechanism as an alternative.
+
+In the algorithmic and machine-learning literature, recommendation systems use observable type information to infer preferences \citep{koren2009,bobadilla2013}, but these systems do not implement stable matching --- they produce one-sided ranked lists. Our work sits at the intersection: type-based preference inference (from machine learning) combined with stable matching (from mechanism design).
+
+The regulatory dimension --- explainability and human-oversight requirements under the EU AI Act --- has not, to our knowledge, been formally integrated into mechanism design analysis. We aim to make this connection precise.
+
+% ---------------------------------------------------------------------
+\section{The Model}
+\label{sec:model}
+
+\subsection{Setting}
+
+Let $S = \{s_1, \dots, s_n\}$ denote the set of proposers (students) and $F = \{f_1, \dots, f_m\}$ the set of receivers (firms). Each $s \in S$ has type $\tau(s) \in \TT_S$ and each $f \in F$ has type $\tau(f) \in \TT_F$, where $\TT_S, \TT_F$ are multi-dimensional characteristic spaces (e.g.\ degree, skills, location, ambition for students; required skills, hiring needs, location, sector for firms).
+
+\begin{definition}[Compatibility function]
+\label{def:pi}
+The compatibility function $\pi: \TT_S \times \TT_F \to \R_+$ is a primitive of the model. We take $\pi(\tau(s),\tau(f))$ to be the true measure of fit between $s$ and $f$ --- the object both sides would prefer to rank by if fully informed.
+\end{definition}
+
+\subsection{Stated versus true preferences}
+
+A student $s$ has a \emph{true preference relation} $P(s)$ over $F$ induced by $\pi$:
+\[
+    f \succ_{P(s)} f' \iff \pi(\tau(s),\tau(f)) > \pi(\tau(s),\tau(f')).
+\]
+
+The student's \emph{stated preference relation} $\widehat{P}(s)$ is the ranking the student reports to the mechanism. In standard NRMP-style markets we assume $\widehat{P}(s) = P(s)$. We relax this:
+
+\begin{assumption}[Visibility distortion]
+\label{ass:distortion}
+$\widehat{P}(s)$ is a visibility-biased version of $P(s)$. Define a visibility function $V: F \to \R_+$ capturing the firm's marketing reach, brand recognition, recruitment spend, and other determinants of how widely a student has heard of it. Then
+\[
+    \widehat{P}(s) \;=\; \arg\max_{P} \sum_{f \in F}
+    \Big[ \alpha \cdot \pi(\tau(s),\tau(f)) + (1-\alpha) \cdot V(f) \Big] \cdot \bone\{f \text{ ranked } | P\}
+\]
+where $\alpha \in [0,1]$ is the \emph{informedness parameter}. In NRMP-style markets, $\alpha \approx 1$. In early-career hiring, empirical observation suggests $\alpha \ll 1$.
+\end{assumption}
+
+\subsection{The two mechanisms}
+
+\paragraph{Mechanism A (Stated Gale--Shapley).} Run the proposer-optimal Gale--Shapley algorithm over $(\widehat{P}(s),\widehat{P}(f))$. Output the stable match $\widehat{\mu}$.
+
+\paragraph{Mechanism B (Revealed-Preference Gale--Shapley).} Compute $\widetilde{P}(s)$ from $\tau(s)$ via a learned scoring function $\widehat{\pi}: \TT_S \times \TT_F \to \R_+$ (in the \textsc{Rookies} implementation: a deterministic linear-optimization layer combined with a large-language-model reasoning layer). Run Gale--Shapley over $(\widetilde{P}(s),\widetilde{P}(f))$. Output the stable match $\widetilde{\mu}$.
+
+% ---------------------------------------------------------------------
+\section{Main Theoretical Results}
+\label{sec:results}
+
+\begin{theorem}[Pareto-domination of revealed-preference matching]
+\label{thm:pareto}
+Suppose the informedness parameter satisfies $\alpha < 1$ and that $\widehat{\pi}$ approximates $\pi$ to within bounded error, i.e.\ $\|\widehat{\pi} - \pi\|_\infty \leq \epsilon$ for $\epsilon$ small relative to the variation of $V$. Then there exists a set of student--firm pairs $\mathcal{P}^* \subseteq S \times F$ of positive measure such that for every $(s,f) \in \mathcal{P}^*$:
+\[
+    \pi(\tau(s),\tau(\widetilde{\mu}(s))) > \pi(\tau(s),\tau(\widehat{\mu}(s))),
+\]
+and the analogous inequality holds on the firm side. Thus $\widetilde{\mu}$ Pareto-dominates $\widehat{\mu}$ with respect to $\pi$.
+\end{theorem}
+
+\paragraph{Proof sketch.} The visibility-distorted Gale--Shapley over-allocates high-$V$ firms to students whose true compatibility is elsewhere. Specifically, for any $f$ with high $V(f)$ but only moderate $\pi(\tau(s),\tau(f))$, there exist students $s'$ with higher true compatibility for $f$ who are misranked due to their own visibility-biased preferences. This displacement creates Pareto-improvements available to the revealed-preference mechanism. A formal proof requires showing that the stable match correspondence is monotone in the preference profile and that the visibility wedge produces a measurable displacement. We defer the full argument to a companion technical note.\hfill$\square$
+
+\begin{theorem}[Strategic robustness under partial verifiability]
+\label{thm:ic}
+Let $\mathcal{V}: \TT_S \to \{0,1\}$ be a verification regime that detects type-misreporting with probability $p \in (0,1]$ and imposes cost $c$ on detected misreporting. Let $u(s,f)$ denote the utility student $s$ obtains from being matched with firm $f$. Then the revealed-preference mechanism is incentive-compatible whenever, for every achievable misreport $\widetilde{\tau}(s) \neq \tau(s)$ inducing match $\widetilde{\mu}'(s)$:
+\[
+    u(s, \widetilde{\mu}'(s)) - u(s, \widetilde{\mu}(s)) \;<\; p \cdot c.
+\]
+\end{theorem}
+
+\paragraph{Proof sketch.} Compare expected utility from honest type-reporting, $u(s,\widetilde{\mu}(s))$, with expected utility from misreporting:
+\[
+    \E[u(s,\widetilde{\mu}'(s))] - p \cdot c.
+\]
+The mechanism is incentive-compatible whenever the inequality in the statement holds for all achievable misreports. The result follows. We emphasize that the strategy-proofness concern in the revealed-preference mechanism shifts from \emph{preference misreporting} (the standard \citet{roth1982} setting) to \emph{type misreporting} (closer in spirit to the implementation theory of \citet{maskin1999}), where the cost structure is governed by exogenous verification rather than internal incentive compatibility.\hfill$\square$
+
+\begin{theorem}[EU AI Act compliance]
+\label{thm:eu}
+Suppose the scoring function decomposes as
+\[
+    \widehat{\pi}(\tau(s),\tau(f)) \;=\; \widehat{\pi}_{\mathrm{det}}(\tau(s),\tau(f)) + \widehat{\pi}_{\mathrm{ML}}(\tau(s),\tau(f))
+\]
+where $\widehat{\pi}_{\mathrm{det}}$ is a deterministic auditable function (e.g.\ a linear scoring rule over structured features) and $\widehat{\pi}_{\mathrm{ML}}$ is a learned component with per-pair output rationales. Then the revealed-preference mechanism satisfies the transparency requirements of Article 13 and the human-oversight requirements of Article 14 of Regulation (EU) 2024/1689.
+\end{theorem}
+
+\paragraph{Proof sketch.} Per-pair scoring under $\widehat{\pi}_{\mathrm{det}}$ is closed-form and therefore auditable; per-pair rationales from $\widehat{\pi}_{\mathrm{ML}}$ furnish explainability to deployers and affected natural persons in the sense required by Article 13. Human oversight (Article 14) is satisfied through an algorithm-proposes--human-disposes user experience: proposers may re-order, augment, or remove items from $\widetilde{P}(s)$ before submission to the matching algorithm. The mechanism therefore meets both technical and procedural requirements of the high-risk-system regime.\hfill$\square$
+
+% ---------------------------------------------------------------------
+\section{The Mechanism (Implementation)}
+\label{sec:mech}
+
+We sketch the operational mechanism. The notation is heavier than necessary in production but is included here to make the connection to the formal model explicit.
+
+\begin{enumerate}[leftmargin=2em,itemsep=2pt,topsep=4pt]
+    \item \textbf{Type elicitation.} Each $s \in S$ submits a profile, yielding a candidate type vector $\widetilde{\tau}(s)$. Verification regime $\mathcal{V}$ checks the profile against external sources (university registrar, employer references) and against an LLM-based consistency check that flags incoherent skill claims.
+    \item \textbf{Preference computation.} Compute $\widetilde{P}(s)$ by ranking firms in decreasing order of $\widehat{\pi}(\widetilde{\tau}(s),\tau(f))$. Compute $\widetilde{P}(f)$ symmetrically.
+    \item \textbf{Human-oversight step.} Present $\widetilde{P}(s)$ to student $s$ alongside the per-pair rationale from $\widehat{\pi}_{\mathrm{ML}}$. Permit the student to amend (pin, demote, remove). Permit the firm to do the same on $\widetilde{P}(f)$.
+    \item \textbf{Matching.} Run the student-proposing Gale--Shapley algorithm over the amended $(\widetilde{P}(S),\widetilde{P}(F))$.
+    \item \textbf{Audit trail.} Persist every scoring rationale, profile-verification outcome, and amendment in an immutable log. This produces the documentation required under Article 12 of the AI Act.
+\end{enumerate}
+
+% ---------------------------------------------------------------------
+\section{Empirical Strategy}
+\label{sec:empirical}
+
+We propose to validate the theoretical predictions using data from \textsc{Rookies}' pilot deployment at the University of Tilburg (anticipated academic year 2026--2027) and at two additional Dutch research universities in 2027--2028.
+
+\subsection{Design}
+
+A within-cohort A/B comparison. Group A receives stated-preference recommendations (control); Group B receives revealed-preference recommendations (treatment). Both groups face the same employer base. Randomization is at the student level, stratified by programme of study and year of enrolment to balance the visibility-distortion factor across treatment arms.
+
+\subsection{Hypotheses}
+
+\begin{itemize}[leftmargin=2em,itemsep=2pt,topsep=4pt]
+    \item[\textbf{H1}] \textit{Match quality is higher under revealed-preference matching.} Measured via six-month two-sided satisfaction surveys.
+    \item[\textbf{H2}] \textit{The distribution of matches across firm sizes is more uniform under treatment.} Specifically, the share of matches placed at firms below the median visibility quantile increases by a measurable factor.
+    \item[\textbf{H3}] \textit{Twelve-month retention rate is higher under treatment.}
+    \item[\textbf{H4}] \textit{Application-to-interview conversion is higher under treatment.}
+\end{itemize}
+
+\subsection{Identification}
+
+The visibility-distortion effect should vary systematically with student informedness --- itself a function of programme of study, prior internships, and network depth. This heterogeneity enables identification strategies not available in NRMP-only settings, including instrumental-variable approaches using cohort-level shocks to visibility (e.g.\ employer marketing campaigns) and difference-in-differences using variation in adoption timing across universities.
+
+\subsection{Sample size and power}
+
+Anticipated pilot enrollment (cohort 2026--2027): $n \approx 300$ students. Anticipated effect sizes (under Theorem~\ref{thm:pareto}): Cohen's $d \in [0.25, 0.40]$ for match-quality outcomes. With two-arm randomization, a sample of 300 yields approximately 80\% power to detect $d = 0.32$ at the conventional 5\% significance level. We pre-register hypothesis tests prior to deployment.
+
+% ---------------------------------------------------------------------
+\section{Open Questions}
+\label{sec:open}
+
+\begin{itemize}[leftmargin=2em,itemsep=2pt,topsep=4pt]
+    \item[\textbf{Q1}] Under what conditions on the visibility function $V$ does the welfare loss from stated-preference matching exceed a meaningful threshold? Is there a sharp phase transition in $\alpha$?
+    \item[\textbf{Q2}] Can $\alpha$ be estimated empirically from observed student behaviour, and how does it vary across populations (programme, gender, socio-economic background)?
+    \item[\textbf{Q3}] How does the mechanism extend to many-to-one matching with capacity constraints (the \citet{hatfieldMilgrom2005} setting)?
+    \item[\textbf{Q4}] Under what auditing intensities (the $p$ in Theorem~\ref{thm:ic}) does the mechanism remain strategy-proof? Can we characterize the cost-of-verification trade-off as a function of market size and stake?
+    \item[\textbf{Q5}] Does the explicit ``algorithm proposes, human disposes'' interaction satisfy the spirit of Article 14 (human oversight), or merely its letter? Is there an empirical methodology for evaluating compliance \emph{quality}, beyond compliance form?
+\end{itemize}
+
+% ---------------------------------------------------------------------
+\section*{Appendix --- Mapping to Rookies Implementation}
+\label{sec:appendix}
+
+The \textsc{Rookies} platform implements the proposed mechanism with the following correspondence:
+
+\begin{center}
+\begin{tabular}{p{0.40\linewidth}p{0.55\linewidth}}
+\toprule
+\textbf{Theoretical object} & \textbf{Rookies implementation} \\
+\midrule
+Type vector $\tau(s)$ & Student profile: degree, skills, projects, ambitions \\
+Type vector $\tau(f)$ & Job posting: required skills, level, sector, fit signals \\
+Compatibility function $\pi$ & Latent ``true'' fit (unobserved primitive) \\
+Scoring function $\widehat{\pi}_{\mathrm{det}}$ & Linear optimization over structured features (degree fit, skills overlap, location, work authorization) \\
+Scoring function $\widehat{\pi}_{\mathrm{ML}}$ & Large-language-model reasoning over unstructured signal (Claude Sonnet 4.6) with per-pair rationale \\
+Verification regime $\mathcal{V}$ & University registry integration (DUO, NL) + LLM consistency-checking + employer reference network \\
+Mechanism output & Stable match per cohort with student- and firm-side amendment opportunity \\
+Audit trail (Art.\ 12) & Immutable log of all scoring rationales, verification outcomes, and amendments \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ---------------------------------------------------------------------
+% Bibliography (manual, to keep the file self-contained)
+% ---------------------------------------------------------------------
+\begin{thebibliography}{99}
+
+\bibitem[Abdulkadiroğlu and Sönmez(2003)]{abdulkadirogluSonmez2003}
+Abdulkadiroğlu, A.\ and T.\ Sönmez (2003).
+\newblock School choice: A mechanism design approach.
+\newblock \emph{American Economic Review} 93(3): 729--747.
+
+\bibitem[Abdulkadiroğlu, Pathak, and Roth(2005)]{abdulkadirogluPathakRoth2005}
+Abdulkadiroğlu, A., P.\ A.\ Pathak, and A.\ E.\ Roth (2005).
+\newblock The New York City high school match.
+\newblock \emph{American Economic Review} 95(2): 364--367.
+
+\bibitem[Abdulkadiroğlu, Pathak, and Roth(2009)]{abdulkadirogluPathakRoth2009}
+Abdulkadiroğlu, A., P.\ A.\ Pathak, and A.\ E.\ Roth (2009).
+\newblock Strategy-proofness versus efficiency in matching with indifferences: Redesigning the NYC high school match.
+\newblock \emph{American Economic Review} 99(5): 1954--1978.
+
+\bibitem[Ashlagi and Klijn(2012)]{ashlagiKlijn2012}
+Ashlagi, I.\ and F.\ Klijn (2012).
+\newblock Manipulability in matching markets: Conflict and coincidence of interests.
+\newblock \emph{Social Choice and Welfare} 39(1): 23--33.
+
+\bibitem[Azevedo and Hatfield(2018)]{azevedoHatfield2018}
+Azevedo, E.\ M.\ and J.\ W.\ Hatfield (2018).
+\newblock Existence of equilibrium in large matching markets with complementarities.
+\newblock \emph{Operations Research} 66(5): 1273--1285.
+
+\bibitem[Bobadilla et al.(2013)]{bobadilla2013}
+Bobadilla, J., F.\ Ortega, A.\ Hernando, and A.\ Gutiérrez (2013).
+\newblock Recommender systems survey.
+\newblock \emph{Knowledge-Based Systems} 46: 109--132.
+
+\bibitem[Dubins and Freedman(1981)]{dubinsFreedman1981}
+Dubins, L.\ E.\ and D.\ A.\ Freedman (1981).
+\newblock Machiavelli and the Gale--Shapley algorithm.
+\newblock \emph{American Mathematical Monthly} 88(7): 485--494.
+
+\bibitem[Echenique and Yenmez(2007)]{echeniqueYenmez2007}
+Echenique, F.\ and M.\ B.\ Yenmez (2007).
+\newblock A solution to matching with preferences over colleagues.
+\newblock \emph{Games and Economic Behavior} 59(1): 46--71.
+
+\bibitem[European Union(2024)]{euAIAct}
+European Parliament and Council of the European Union (2024).
+\newblock Regulation (EU) 2024/1689 of 13 June 2024 (Artificial Intelligence Act).
+\newblock \emph{Official Journal of the European Union}, L 1689/2024.
+
+\bibitem[Gale and Shapley(1962)]{galeShapley1962}
+Gale, D.\ and L.\ S.\ Shapley (1962).
+\newblock College admissions and the stability of marriage.
+\newblock \emph{American Mathematical Monthly} 69(1): 9--15.
+
+\bibitem[Hatfield and Milgrom(2005)]{hatfieldMilgrom2005}
+Hatfield, J.\ W.\ and P.\ R.\ Milgrom (2005).
+\newblock Matching with contracts.
+\newblock \emph{American Economic Review} 95(4): 913--935.
+
+\bibitem[Koren et al.(2009)]{koren2009}
+Koren, Y., R.\ Bell, and C.\ Volinsky (2009).
+\newblock Matrix factorization techniques for recommender systems.
+\newblock \emph{Computer} 42(8): 30--37.
+
+\bibitem[Liu(2020)]{liu2020}
+Liu, Q. (2020).
+\newblock Stability and Bayesian consistency in two-sided markets.
+\newblock \emph{American Economic Review} 110(8): 2625--2666.
+
+\bibitem[Manlove(2013)]{manlove2013}
+Manlove, D.\ F. (2013).
+\newblock \emph{Algorithmics of Matching Under Preferences.}
+\newblock World Scientific.
+
+\bibitem[Maskin(1999)]{maskin1999}
+Maskin, E. (1999).
+\newblock Nash equilibrium and welfare optimality.
+\newblock \emph{Review of Economic Studies} 66(1): 23--38.
+
+\bibitem[Pathak and Sönmez(2008)]{pathakSonmez2008}
+Pathak, P.\ A.\ and T.\ Sönmez (2008).
+\newblock Leveling the playing field: Sincere and sophisticated players in the Boston mechanism.
+\newblock \emph{American Economic Review} 98(4): 1636--1652.
+
+\bibitem[Roth(1982)]{roth1982}
+Roth, A.\ E. (1982).
+\newblock The economics of matching: Stability and incentives.
+\newblock \emph{Mathematics of Operations Research} 7(4): 617--628.
+
+\bibitem[Roth(1985)]{roth1985}
+Roth, A.\ E. (1985).
+\newblock The college admissions problem is not equivalent to the marriage problem.
+\newblock \emph{Journal of Economic Theory} 36(2): 277--288.
+
+\bibitem[Roth and Peranson(1999)]{rothPeranson1999}
+Roth, A.\ E.\ and E.\ Peranson (1999).
+\newblock The redesign of the matching market for American physicians: Some engineering aspects of economic design.
+\newblock \emph{American Economic Review} 89(4): 748--780.
+
+\bibitem[Roth and Sotomayor(1990)]{rothSotomayor1990}
+Roth, A.\ E.\ and M.\ A.\ O.\ Sotomayor (1990).
+\newblock \emph{Two-Sided Matching: A Study in Game-Theoretic Modeling and Analysis.}
+\newblock Cambridge University Press.
+
+\bibitem[Sönmez(1997)]{sonmez1997}
+Sönmez, T. (1997).
+\newblock Manipulation via capacities in two-sided matching markets.
+\newblock \emph{Journal of Economic Theory} 77(1): 197--204.
+
+\end{thebibliography}
+
+\end{document}
