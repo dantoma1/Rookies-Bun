@@ -4,6 +4,176 @@
    drag-rank preference list, modest counter animations.
 ===================================================== */
 
+// ─── Supabase ────────────────────────────────────────
+const SUPABASE_URL     = 'https://ymkysqejyfsgyoauhjvp.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlta3lzcWVqeWZzZ3lvYXVoanZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjMyMjksImV4cCI6MjA4OTU5OTIyOX0.dAYXobPTOv3YW_PqxSF654In29qwdkfyVwNo2opW7so';
+let db = null;
+let currentCyclesUserData = null;
+let currentCyclesUserType = null; // 'student' | 'company'
+
+document.addEventListener('DOMContentLoaded', () => {
+  const _sb = window.supabase;
+  if (_sb) {
+    db = _sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: window.sessionStorage } });
+    checkCyclesSession();
+  }
+  document.getElementById('auth-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeAuthModal();
+  });
+});
+
+// ─── Session restore ─────────────────────────────────
+async function checkCyclesSession() {
+  if (!db) return;
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) return;
+  const userId = session.user.id;
+  const stu = await db.from('students').select('*').eq('id', userId).single();
+  if (stu.data) { _setCyclesUser(stu.data.name, stu.data, 'student'); return; }
+  const emp = await db.from('employers').select('*').eq('id', userId).single();
+  if (emp.data) { _setCyclesUser(emp.data.company_name, emp.data, 'company'); return; }
+}
+
+function _setCyclesUser(name, data, type) {
+  currentCyclesUserData = data || null;
+  currentCyclesUserType = type || null;
+  document.getElementById('nav-guest').style.display = 'none';
+  const userNav = document.getElementById('nav-user');
+  userNav.style.display = 'flex';
+  document.getElementById('nav-user-name').textContent = name || 'there';
+  const avatarEl = document.getElementById('nav-avatar');
+  if (avatarEl) {
+    avatarEl.textContent = (name || '?').charAt(0).toUpperCase();
+    avatarEl.style.background = (data && data.color) ? data.color : 'var(--orange)';
+  }
+}
+
+function _clearCyclesUser() {
+  currentCyclesUserData = null;
+  currentCyclesUserType = null;
+  document.getElementById('nav-guest').style.display = 'flex';
+  document.getElementById('nav-user').style.display = 'none';
+  document.getElementById('nav-user-name').textContent = '';
+}
+
+// ─── Auth modal ──────────────────────────────────────
+let _authMode = 'login'; // 'login' | 'signup'
+let _authRole = 'student'; // 'student' | 'company'
+
+function openAuthModal(mode = 'login') {
+  _authMode = mode;
+  _syncAuthModal();
+  document.getElementById('auth-modal').classList.add('open');
+  setTimeout(() => document.getElementById('auth-email').focus(), 80);
+}
+
+function closeAuthModal() {
+  document.getElementById('auth-modal').classList.remove('open');
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-name').value = '';
+}
+
+function switchAuthMode() {
+  _authMode = _authMode === 'login' ? 'signup' : 'login';
+  _syncAuthModal();
+}
+
+function _syncAuthModal() {
+  const isSignup = _authMode === 'signup';
+  document.getElementById('auth-title').textContent     = isSignup ? 'Sign up' : 'Log in';
+  document.getElementById('auth-sub').textContent       = isSignup ? 'Create your Rookies Cycles account.' : 'Welcome back to Rookies Cycles.';
+  document.getElementById('auth-submit-btn').textContent = isSignup ? 'Create account' : 'Log in';
+  document.getElementById('auth-role-wrap').style.display = 'block';
+  document.getElementById('auth-name-wrap').style.display = isSignup ? 'block' : 'none';
+  document.getElementById('auth-switch').innerHTML = isSignup
+    ? 'Already have an account? <a href="#" onclick="switchAuthMode();return false;" style="color:var(--orange);font-weight:600;text-decoration:none;">Log in</a>'
+    : "Don't have an account? <a href=\"#\" onclick=\"switchAuthMode();return false;\" style=\"color:var(--orange);font-weight:600;text-decoration:none;\">Sign up</a>";
+  document.getElementById('auth-error').style.display = 'none';
+}
+
+function selectAuthRole(btn) {
+  document.querySelectorAll('.auth-role-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  _authRole = btn.dataset.val;
+}
+
+async function submitAuth() {
+  if (!db) return;
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const name     = document.getElementById('auth-name').value.trim();
+  const errEl    = document.getElementById('auth-error');
+  const btn      = document.getElementById('auth-submit-btn');
+
+  errEl.style.display = 'none';
+  if (!email || !password) { _showAuthError('Please enter your email and password.'); return; }
+  if (_authMode === 'signup' && !name) { _showAuthError('Please enter your full name.'); return; }
+
+  btn.textContent = _authMode === 'signup' ? 'Creating account…' : 'Signing in…';
+  btn.disabled = true;
+
+  try {
+    if (_authMode === 'login') {
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      const userId = data.user.id;
+      if (_authRole === 'student') {
+        const stu = await db.from('students').select('*').eq('id', userId).single();
+        if (stu.data) { _setCyclesUser(stu.data.name, stu.data, 'student'); closeAuthModal(); return; }
+        throw new Error('No student account found for this email. Are you trying to log in as a company?');
+      } else {
+        const emp = await db.from('employers').select('*').eq('id', userId).single();
+        if (emp.data) { _setCyclesUser(emp.data.company_name, emp.data, 'company'); closeAuthModal(); return; }
+        throw new Error('No company account found for this email. Are you trying to log in as a student?');
+      }
+
+    } else {
+      const { data, error } = await db.auth.signUpWithPassword
+        ? await db.auth.signUpWithPassword({ email, password })
+        : await db.auth.signUp({ email, password });
+      if (error) throw error;
+      const userId = data.user.id;
+
+      if (_authRole === 'student') {
+        const colors = ['#e8622a','#1565c0','#2e7d52','#6a1b9a','#c0392b'];
+        const color  = colors[Math.floor(Math.random() * colors.length)];
+        const stuData = {
+          id: userId, name, color,
+          initial: name.charAt(0).toUpperCase(),
+          pref_roles: [], skills_technical: [], skills_professional: [],
+          skills_languages: [], education: [], experience: [], organisations: [],
+          is_active: true, is_admin: false
+        };
+        await db.from('students').insert([stuData]);
+        _setCyclesUser(name, stuData, 'student');
+      } else {
+        const empData = { id: userId, email, company_name: name, status: 'pending' };
+        await db.from('employers').insert([empData]);
+        _setCyclesUser(name, empData, 'company');
+      }
+      closeAuthModal();
+    }
+  } catch (err) {
+    _showAuthError(err.message || 'Something went wrong. Please try again.');
+  } finally {
+    btn.textContent = _authMode === 'signup' ? 'Create account' : 'Log in';
+    btn.disabled = false;
+  }
+}
+
+function _showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function cyclesSignOut() {
+  if (db) await db.auth.signOut();
+  _clearCyclesUser();
+}
+
 // ─── Screen switching ────────────────────────────────
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -167,3 +337,62 @@ function setupShellTilt() {
   });
 }
 setupShellTilt();
+
+// ─── Profile screen ───────────────────────────────────
+function openProfileScreen() {
+  var stuEl = document.getElementById('real-profile-layout');
+  var coEl  = document.getElementById('company-profile-content');
+  if (currentCyclesUserType === 'student') {
+    currentStudent = currentCyclesUserData;
+    if (stuEl) stuEl.style.display = '';
+    if (coEl)  coEl.style.display  = 'none';
+    loadStudentProfile();
+  } else {
+    currentCompany = currentCyclesUserData;
+    currentStudent = null;
+    if (stuEl) stuEl.style.display = 'none';
+    if (coEl) {
+      coEl.style.display = '';
+      loadCompanyProfile();
+    }
+  }
+  showScreen('profile');
+}
+
+function _buildCompanyProfile(d) {
+  const name    = d.company_name || 'Company';
+  const initial = name.charAt(0).toUpperCase();
+  const isActive = d.status === 'active' || d.status === 'approved';
+
+  return '<div class="pcycle-hero">' +
+    '<div class="pcycle-avatar pcycle-avatar-co">' + initial + '</div>' +
+    '<div class="pcycle-hero-info">' +
+      '<h1 class="pcycle-name">' + name + '</h1>' +
+      (d.sector ? '<div class="pcycle-meta">' + d.sector + '</div>' : '') +
+      '<div class="pcycle-status-badge ' + (isActive ? 'active' : 'pending') + '">' +
+        (isActive ? 'Active' : 'Pending approval') +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+
+  (d.description ?
+    '<div class="pcycle-section">' +
+      '<div class="pcycle-section-title">About</div>' +
+      '<p class="pcycle-desc">' + d.description + '</p>' +
+    '</div>' : '') +
+
+  '<div class="pcycle-section">' +
+    '<div class="pcycle-section-title">Contact</div>' +
+    (d.email   ? '<div class="pcycle-meta">' + d.email + '</div>'   : '') +
+    (d.website ? '<div class="pcycle-meta"><a href="' + d.website + '" target="_blank" rel="noopener" style="color:var(--orange);">' + d.website + '</a></div>' : '') +
+  '</div>' +
+
+  '<div class="pcycle-cycle-card">' +
+    '<div class="pcycle-cycle-label">Cycle 01 · Spring 2026</div>' +
+    '<div class="pcycle-cycle-status">Post a role to join the pool · shortlist drops 14 June 2026</div>' +
+    '<button class="btn btn-primary" style="margin-top:16px;" onclick="setCycleRole(\'company\');showScreen(\'landing\');setTimeout(()=>scrollToId(\'closing-company\'),120)">Post a role →</button>' +
+  '</div>' +
+  '<div style="margin-top:28px;text-align:center;">' +
+    '<button class="btn btn-outline-navy" onclick="showScreen(\'landing\')">← Back</button>' +
+  '</div>';
+}

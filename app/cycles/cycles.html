@@ -22,7 +22,17 @@
     </div>
     <button class="nav-btn ghost" onclick="showScreen('landing')">How it works</button>
     <button class="nav-btn ghost" onclick="showScreen('status')">Live cycle</button>
-    <button class="nav-btn primary" onclick="scrollToId('closing')">Join the next cycle →</button>
+    <div id="nav-guest" style="display:flex;gap:8px;">
+      <button class="nav-btn outline" onclick="openAuthModal('login')">Log in</button>
+      <button class="nav-btn primary" onclick="openAuthModal('signup')">Sign up</button>
+    </div>
+    <div id="nav-user" style="display:none;align-items:center;gap:10px;">
+      <button class="nav-profile-trigger" onclick="openProfileScreen()">
+        <div id="nav-avatar" class="nav-avatar">?</div>
+        <span id="nav-user-name" style="font-size:14px;color:rgba(255,255,255,0.85);font-family:'DM Sans',sans-serif;font-weight:500;"></span>
+      </button>
+      <button class="nav-btn ghost" onclick="cyclesSignOut()">Log out</button>
+    </div>
   </div>
 </nav>
 
@@ -1077,6 +1087,943 @@
   </div>
 </footer>
 
+<!-- ════════════════════ SCREEN: PROFILE ════════════════════ -->
+<div id="screen-profile" class="screen">
+  <div id="real-profile-layout" class="profile-layout" style="display:none;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <button class="btn" style="background:var(--cream);color:var(--text);padding:8px 16px;font-size:13px;" onclick="showScreen('landing')">← Back</button>
+      <button class="btn" style="background:none;border:1px solid var(--border);color:var(--text);padding:8px 16px;font-size:13px;" onclick="openChangePasswordModal()">🔒 Change Password</button>
+    </div>
+
+    <div class="profile-header">
+      <div style="position:relative;width:120px;height:120px;flex-shrink:0;">
+        <div class="avatar" id="profile-avatar" onclick="document.getElementById('avatar-upload-input').click()" style="cursor:pointer;width:120px;height:120px;" title="Click to upload photo">D</div>
+        <div style="position:absolute;bottom:0;right:0;width:26px;height:26px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid rgba(15,31,61,0.5);pointer-events:none;z-index:10;">📷</div>
+      </div>
+      <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;" onchange="uploadAvatar(this)">
+      <div class="profile-header-info">
+        <h2 id="profile-header-name"></h2>
+        <p id="profile-header-sub"></p>
+        <div class="profile-badges">
+          <span class="profile-badge available">✓ Available</span>
+          <span class="profile-badge university" id="profile-header-uni"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-sections">
+
+      <!-- BASIC INFO -->
+      <div class="profile-section full-width" id="basic-info-section">
+        <div class="section-head">
+          <h3>👤 Basic Info &amp; Identity</h3>
+          <button class="edit-btn" id="basic-edit-btn" onclick="toggleBasicEdit()">Edit</button>
+        </div>
+        <div id="basic-read-view">
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="flex:1;">
+              <div class="info-row"><span class="info-label">Full name </span><span class="info-value" id="profile-name">—</span></div>
+              <div class="info-row"><span class="info-label">Email </span><span class="info-value" id="profile-email">—</span></div>
+              <div class="info-row" style="align-items:flex-start;gap:24px;">
+                <span class="info-label" style="padding-top:2px;white-space:nowrap;">Short bio </span>
+                <span class="info-value" id="profile-bio" style="font-style:italic;color:var(--text-light);text-align:center;flex:1;">—</span>
+              </div>
+              <div class="info-row"><span class="info-label">Current field of study </span><span class="info-value" id="profile-field-of-study">—</span></div>
+              <div class="info-row"><span class="info-label">Work authorisation </span><span class="info-value" id="profile-work-auth">—</span></div>
+              <div class="info-row"><span class="info-label">LinkedIn / Portfolio </span><span class="info-value" id="profile-linkedin" style="color:var(--navy);">—</span></div>
+              <div class="info-row"><span class="info-label">Job seeking status </span><span class="info-value" id="profile-status">Actively looking</span></div>
+              <div class="info-row"><span class="info-label">Current status </span><span class="info-value" id="profile-current-status">—</span></div>
+              <div class="info-row">
+                <span class="info-label">Hometown / Location <span class="field-badge private">Private</span></span>
+                <span class="info-value" id="profile-location">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="basic-edit-view" style="display:none;">
+          <div class="basic-info-grid">
+            <div class="form-group full" style="display:flex;gap:16px;align-items:flex-start;">
+              <div style="flex:1;">
+                <label class="form-label">Profile photo </label>
+                <div style="font-size:12px;color:var(--gray);margin-top:4px;">Professional headshot recommended. Max 20MB.</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Full name <span class="field-badge required">Required</span></label>
+              <input id="edit-basic-name" class="form-input" type="text" placeholder="Your full name" maxlength="150">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email address </label>
+              <input id="edit-basic-email" class="form-input" type="email" disabled style="background:var(--cream);color:var(--text-light);">
+              <div class="form-hint">Email can be changed only from Settings.</div>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Short bio / "My Journey" </label>
+              <textarea id="edit-basic-bio" class="form-textarea" style="min-height:70px;" placeholder="Professional summary or elevator pitch…" maxlength="280"></textarea>
+              <small id="edit-basic-bio-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 280</small>
+              <div class="form-hint">First thing employers see. Keep it to 2–3 sentences.</div>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Current field of study <span class="field-badge required">Required</span></label>
+              <div class="pref-chips" id="field-of-study-chips" style="margin-top:6px;flex-wrap:wrap;">
+                <button class="pref-chip" data-val="Business Administration">Business Administration</button>
+                <button class="pref-chip" data-val="Economics">Economics</button>
+                <button class="pref-chip" data-val="Econometrics">Econometrics</button>
+                <button class="pref-chip" data-val="Finance">Finance</button>
+                <button class="pref-chip" data-val="Accounting">Accounting</button>
+                <button class="pref-chip" data-val="Marketing">Marketing</button>
+                <button class="pref-chip" data-val="Human Resource Management">Human Resource Management</button>
+                <button class="pref-chip" data-val="International Business">International Business</button>
+                <button class="pref-chip" data-val="Business Analytics">Business Analytics</button>
+                <button class="pref-chip" data-val="Data Science">Data Science</button>
+                <button class="pref-chip" data-val="Computer Science">Computer Science</button>
+                <button class="pref-chip" data-val="Software Engineering">Software Engineering</button>
+                <button class="pref-chip" data-val="Artificial Intelligence">Artificial Intelligence</button>
+                <button class="pref-chip" data-val="Information Systems">Information Systems</button>
+                <button class="pref-chip" data-val="Law">Law</button>
+                <button class="pref-chip" data-val="Psychology">Psychology</button>
+                <button class="pref-chip" data-val="Communication">Communication</button>
+                <button class="pref-chip" data-val="Sociology">Sociology</button>
+                <button class="pref-chip" data-val="Political Science">Political Science</button>
+                <button class="pref-chip" data-val="Liberal Arts">Liberal Arts</button>
+                <button class="pref-chip" data-val="Engineering">Engineering</button>
+                <button class="pref-chip" data-val="Other">Other</button>
+              </div>
+              <div id="field-of-study-other-wrap" style="display:none;margin-top:10px;">
+                <input id="field-of-study-other" class="form-input" type="text" placeholder="Please specify your field of study…" maxlength="100">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Work authorisation <span class="field-badge required">Required</span></label>
+              <div class="pref-chips multi" id="edit-basic-work-auth" style="margin-top:4px;">
+                <button class="pref-chip" data-val="EU / EEA / Swiss / Non-EU orientation year">EU / EEA / Swiss / Non-EU orientation year</button>
+                <button class="pref-chip" data-val="Non-EU — student visa">Non-EU — student visa</button>
+              </div>
+              <div class="form-hint">Private — used to filter visa-friendly roles.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Job seeking status </label>
+              <div class="pref-chips" id="seeking-chips">
+                <button class="pref-chip" data-val="Actively looking">Actively looking</button>
+                <button class="pref-chip" data-val="Casually browsing">Casually browsing</button>
+                <button class="pref-chip" data-val="Not looking">Not looking</button>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Current status <span class="field-badge required">Required</span></label>
+              <div class="pref-chips" id="current-status-chips" style="margin-top:6px;">
+                <button class="pref-chip" data-val="Bachelor">Bachelor</button>
+                <button class="pref-chip" data-val="Pre-master">Pre-master</button>
+                <button class="pref-chip" data-val="Master">Master</button>
+              </div>
+              <div id="current-status-year-wrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:8px;">Year</div>
+                <div class="pref-chips" id="current-status-year-chips" style="flex-wrap:wrap;"></div>
+              </div>
+              <div class="form-hint" style="margin-top:8px;">Drives matching with job postings.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">LinkedIn URL </label>
+              <input id="edit-basic-linkedin" class="form-input" type="text" placeholder="linkedin.com/in/yourname" maxlength="300">
+            </div>
+            <div class="form-group">
+              <label class="form-label">GitHub / Portfolio </label>
+              <input id="edit-basic-portfolio" class="form-input" type="text" placeholder="github.com/yourname or yoursite.com" maxlength="300">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hometown / Location <span class="field-badge private">Private</span></label>
+              <input id="edit-basic-location" class="form-input" type="text" placeholder="City, Country" maxlength="100">
+              <div class="form-hint">Private — used internally for recommendations only.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Alternate email </label>
+              <input id="edit-basic-alt-email" class="form-input" type="email" placeholder="Personal email for post-graduation access" maxlength="150">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-primary" style="padding:10px 24px;font-size:14px;" onclick="saveBasicInfo()">Save</button>
+            <button class="btn" style="background:var(--cream);color:var(--text);padding:10px 18px;font-size:14px;" onclick="cancelBasicEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EDUCATION -->
+      <div class="profile-section full-width" id="education-section">
+        <div class="section-head">
+          <h3>📚 Education</h3>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="field-badge required" id="edu-req-badge">Required</span>
+            <button class="edit-btn" id="edu-edit-btn" onclick="toggleEducationEdit()">Edit</button>
+          </div>
+        </div>
+        <div id="edu-read-view">
+          <div id="profile-edu-entries"><p style="font-size:13px;color:var(--gray);">Loading…</p></div>
+        </div>
+        <div id="edu-edit-view" style="display:none;">
+          <div id="edu-entries-container">
+            <div class="edu-entry-form" data-index="0">
+              <div class="edu-entry-form-header">
+                <span class="edu-entry-label">Entry 1</span>
+                <button class="remove-edu-btn" onclick="removeEduEntry(this)" style="display:none;">✕ Remove</button>
+              </div>
+              <div class="edu-form-grid">
+                <div class="form-group">
+                  <label class="form-label">Institution </label>
+                  <select class="form-input edu-university">
+                    <option value="">Select university...</option>
+                    <option>Tilburg University</option><option>University of Amsterdam (UvA)</option>
+                    <option>Vrije Universiteit Amsterdam (VU)</option><option>Delft University of Technology (TU Delft)</option>
+                    <option>Eindhoven University of Technology (TU/e)</option><option>Utrecht University</option>
+                    <option>Leiden University</option><option>Erasmus University Rotterdam</option>
+                    <option>Radboud University</option><option>University of Groningen (RUG)</option>
+                    <option>Wageningen University &amp; Research</option><option>Maastricht University</option>
+                    <option>University of Twente</option><option>HAN University of Applied Sciences</option>
+                    <option>Fontys University of Applied Sciences</option><option>The Hague University of Applied Sciences</option>
+                    <option>Amsterdam University of Applied Sciences (HvA)</option><option>Rotterdam University of Applied Sciences</option>
+                    <option>Saxion University of Applied Sciences</option><option>Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Degree level </label>
+                  <select class="form-input edu-degree-level">
+                    <option value="">Select level...</option>
+                    <option>Bachelor's degree (BSc / BA)</option><option>Pre-master</option>
+                    <option>Master's degree (MSc / MA)</option><option>MBA</option>
+                    <option>PhD / Doctorate</option><option>Associate degree</option>
+                    <option>Exchange programme</option><option>Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Name of program </label>
+                  <input class="form-input edu-program-name" type="text" placeholder="e.g. Business Analytics, Computer Science..." maxlength="150">
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="form-label">Field of study </label>
+                  <div class="pref-chips edu-field-chips" style="margin-top:6px;flex-wrap:wrap;">
+                    <button class="pref-chip" data-val="Business Administration">Business Administration</button>
+                    <button class="pref-chip" data-val="Economics">Economics</button>
+                    <button class="pref-chip" data-val="Econometrics">Econometrics</button>
+                    <button class="pref-chip" data-val="Finance">Finance</button>
+                    <button class="pref-chip" data-val="Accounting">Accounting</button>
+                    <button class="pref-chip" data-val="Marketing">Marketing</button>
+                    <button class="pref-chip" data-val="Human Resource Management">Human Resource Management</button>
+                    <button class="pref-chip" data-val="International Business">International Business</button>
+                    <button class="pref-chip" data-val="Business Analytics">Business Analytics</button>
+                    <button class="pref-chip" data-val="Data Science">Data Science</button>
+                    <button class="pref-chip" data-val="Computer Science">Computer Science</button>
+                    <button class="pref-chip" data-val="Software Engineering">Software Engineering</button>
+                    <button class="pref-chip" data-val="Artificial Intelligence">Artificial Intelligence</button>
+                    <button class="pref-chip" data-val="Information Systems">Information Systems</button>
+                    <button class="pref-chip" data-val="Law">Law</button>
+                    <button class="pref-chip" data-val="Psychology">Psychology</button>
+                    <button class="pref-chip" data-val="Communication">Communication</button>
+                    <button class="pref-chip" data-val="Sociology">Sociology</button>
+                    <button class="pref-chip" data-val="Political Science">Political Science</button>
+                    <button class="pref-chip" data-val="Engineering">Engineering</button>
+                    <button class="pref-chip" data-val="Other">Other</button>
+                  </div>
+                  <div class="edu-field-other-wrap" style="display:none;margin-top:8px;">
+                    <input class="form-input edu-field-other" type="text" placeholder="Please specify your field of study…" maxlength="100">
+                  </div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="form-label">Minor </label>
+                  <div class="pref-chips edu-minor-chips" style="margin-top:6px;flex-wrap:wrap;">
+                    <button class="pref-chip" data-val="None">None</button>
+                    <button class="pref-chip" data-val="Finance">Finance</button>
+                    <button class="pref-chip" data-val="Economics">Economics</button>
+                    <button class="pref-chip" data-val="Data Science">Data Science</button>
+                    <button class="pref-chip" data-val="Marketing">Marketing</button>
+                    <button class="pref-chip" data-val="Law">Law</button>
+                    <button class="pref-chip" data-val="Psychology">Psychology</button>
+                    <button class="pref-chip" data-val="Philosophy">Philosophy</button>
+                    <button class="pref-chip" data-val="Communication">Communication</button>
+                    <button class="pref-chip" data-val="Entrepreneurship">Entrepreneurship</button>
+                    <button class="pref-chip" data-val="Human Resource Studies">Human Resource Studies</button>
+                    <button class="pref-chip" data-val="Sustainability">Sustainability</button>
+                    <button class="pref-chip" data-val="International Business">International Business</button>
+                    <button class="pref-chip" data-val="Computer Science">Computer Science</button>
+                    <button class="pref-chip" data-val="Other">Other</button>
+                  </div>
+                  <div class="edu-minor-other-wrap" style="display:none;margin-top:8px;">
+                    <input class="form-input edu-minor" type="text" placeholder="Please specify your minor…" maxlength="100">
+                  </div>
+                  <div class="form-hint">Additional academic discipline.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Start date </label>
+                  <div style="display:flex;gap:8px;">
+                    <select class="form-input" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select>
+                    <select class="form-input" style="flex:1;"><option value="">Year</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option><option>2026</option></select>
+                  </div>
+                </div>
+                <div class="form-group" id="edu-end-group-0">
+                  <label class="form-label">End date</label>
+                  <div style="display:flex;gap:8px;">
+                    <select class="form-input" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select>
+                    <select class="form-input" style="flex:1;"><option value="">Year</option><option>2023</option><option>2024</option><option>2025</option><option>2026</option><option>2027</option></select>
+                  </div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="edu-checkbox-label">
+                    <input type="checkbox" id="still-studying-0" onchange="toggleEndDate(this,'edu-end-group-0')">
+                    <span>I am currently enrolled</span>
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">GPA <span class="field-badge private">Private</span></label>
+                  <input class="form-input edu-gpa" type="text" placeholder="e.g. 7.8 / 10 or 3.6 / 4.0" maxlength="20">
+                  <div class="form-hint">Visible to employers only.</div>
+                </div>
+                <div class="form-group" style="display:none;" id="edu-grad-group-0">
+                  <label class="form-label">Graduation date</label>
+                  <div style="display:flex;gap:8px;">
+                    <select class="form-input" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select>
+                    <select class="form-input" style="flex:1;"><option value="">Year</option><option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2029</option></select>
+                  </div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="form-label">Description </label>
+                  <div class="desc-bullets-wrap">
+                    <div class="desc-bullets-list"></div>
+                    <button type="button" style="margin-top:4px;font-size:12px;color:var(--navy);background:none;border:none;cursor:pointer;padding:2px 0;font-weight:600;" onclick="_addDescBulletToEntry(this)">+ Add point</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="add-edu-btn" onclick="addEduEntry()">+ Add another degree or exchange</button>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-primary" style="padding:10px 24px;font-size:14px;" onclick="saveEducation()">Save education</button>
+            <button class="btn" style="background:var(--cream);color:var(--text);padding:10px 18px;font-size:14px;" onclick="cancelEducationEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPERIENCE -->
+      <div class="profile-section full-width" id="experience-section">
+        <div class="section-head">
+          <h3>💼 Experience</h3>
+          <button class="edit-btn" id="exp-edit-btn" onclick="toggleExperienceEdit()">Edit</button>
+        </div>
+        <div id="exp-read-view">
+          <div id="profile-exp-entries"><p style="font-size:13px;color:var(--gray);">Loading…</p></div>
+        </div>
+        <div id="exp-edit-view" style="display:none;">
+          <div id="exp-entries-container">
+            <div class="edu-entry-form" data-index="0">
+              <div class="edu-entry-form-header">
+                <span class="edu-entry-label">Entry 1</span>
+                <button class="remove-edu-btn" onclick="removeExpEntry(this)" style="display:none;">✕ Remove</button>
+              </div>
+              <div class="edu-form-grid">
+                <div class="form-group">
+                  <label class="form-label">Job title / Role </label>
+                  <input class="form-input exp-role" type="text" placeholder="e.g. Marketing Intern, Research Assistant..." maxlength="150">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Company / Organisation </label>
+                  <input class="form-input exp-company" type="text" placeholder="e.g. KPMG, Startup XYZ, TiU..." maxlength="150">
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="form-label">Field of work </label>
+                  <div class="pref-chips exp-field-chips" style="margin-top:6px;flex-wrap:wrap;">
+                    <button class="pref-chip" data-val="Finance &amp; Banking">Finance &amp; Banking</button>
+                    <button class="pref-chip" data-val="Consulting">Consulting</button>
+                    <button class="pref-chip" data-val="Marketing">Marketing</button>
+                    <button class="pref-chip" data-val="Data &amp; Analytics">Data &amp; Analytics</button>
+                    <button class="pref-chip" data-val="Technology">Technology</button>
+                    <button class="pref-chip" data-val="HR &amp; People">HR &amp; People</button>
+                    <button class="pref-chip" data-val="Law &amp; Legal">Law &amp; Legal</button>
+                    <button class="pref-chip" data-val="Accounting &amp; Audit">Accounting &amp; Audit</button>
+                    <button class="pref-chip" data-val="Operations">Operations</button>
+                    <button class="pref-chip" data-val="Research">Research</button>
+                    <button class="pref-chip" data-val="Sustainability">Sustainability</button>
+                    <button class="pref-chip" data-val="Education">Education</button>
+                    <button class="pref-chip" data-val="Healthcare">Healthcare</button>
+                    <button class="pref-chip" data-val="Non-profit">Non-profit</button>
+                    <button class="pref-chip" data-val="Other">Other</button>
+                  </div>
+                  <div class="exp-field-other-wrap" style="display:none;margin-top:8px;">
+                    <input class="form-input exp-field-other" type="text" placeholder="Please specify your field of work…" maxlength="100">
+                  </div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="form-label">Location </label>
+                  <input class="form-input exp-location" type="text" placeholder="City, Country — e.g. Tilburg, Netherlands" maxlength="100">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Start date</label>
+                  <div style="display:flex;gap:8px;">
+                    <select class="form-input" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select>
+                    <select class="form-input" style="flex:1;"><option value="">Year</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option><option>2026</option></select>
+                  </div>
+                </div>
+                <div class="form-group" id="exp-end-group-0">
+                  <label class="form-label">End date</label>
+                  <div style="display:flex;gap:8px;">
+                    <select class="form-input" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select>
+                    <select class="form-input" style="flex:1;"><option value="">Year</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option><option>2026</option></select>
+                  </div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="edu-checkbox-label">
+                    <input type="checkbox" id="still-working-0" onchange="toggleEndDate(this,'exp-end-group-0')">
+                    <span>I currently work here</span>
+                  </label>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="form-label">Description <span style="color:var(--gray);font-weight:400;">(optional)</span></label>
+                  <div class="desc-bullets-wrap">
+                    <div class="desc-bullets-list"></div>
+                    <button type="button" style="margin-top:4px;font-size:12px;color:var(--navy);background:none;border:none;cursor:pointer;padding:2px 0;font-weight:600;" onclick="_addDescBulletToEntry(this)">+ Add point</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="add-edu-btn" onclick="addExpEntry()">+ Add another role</button>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-primary" style="padding:10px 24px;font-size:14px;" onclick="saveExperience()">Save experience</button>
+            <button class="btn" style="background:var(--cream);color:var(--text);padding:10px 18px;font-size:14px;" onclick="cancelExperienceEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORGANISATIONS -->
+      <div class="profile-section full-width" id="orgs-section">
+        <div class="section-head">
+          <h3>🏛️ Organisations &amp; Extracurriculars</h3>
+          <button class="edit-btn" id="orgs-edit-btn" onclick="toggleOrgsEdit()">Edit</button>
+        </div>
+        <div id="orgs-read-view">
+          <p style="font-size:13px;color:var(--gray);">Loading…</p>
+        </div>
+        <div id="orgs-edit-view" style="display:none;">
+          <div id="orgs-entries-container">
+            <div class="edu-entry-form" data-index="0">
+              <div class="edu-entry-form-header">
+                <span class="edu-entry-label">Entry 1</span>
+                <button class="remove-edu-btn" onclick="removeOrgsEntry(this)" style="display:none;">✕ Remove</button>
+              </div>
+              <div class="edu-form-grid">
+                <div class="form-group">
+                  <label class="form-label">Organisation name </label>
+                  <input class="form-input" type="text" placeholder="Full name — e.g. TiU Investment Society" maxlength="150">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Position / Role title </label>
+                  <input class="form-input" type="text" placeholder="e.g. President, Member, Volunteer" maxlength="100">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Start date </label>
+                  <div style="display:flex;gap:8px;">
+                    <select class="form-input" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select>
+                    <select class="form-input" style="flex:1;"><option value="">Year</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option><option>2026</option></select>
+                  </div>
+                </div>
+                <div class="form-group" id="orgs-end-group-0">
+                  <label class="form-label">End date </label>
+                  <div style="display:flex;gap:8px;">
+                    <select class="form-input" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select>
+                    <select class="form-input" style="flex:1;"><option value="">Year</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option><option>2026</option></select>
+                  </div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="edu-checkbox-label">
+                    <input type="checkbox" id="orgs-active-0" onchange="toggleEndDate(this,'orgs-end-group-0')">
+                    <span>I am currently a member</span>
+                  </label>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="form-label">Description </label>
+                  <div class="desc-bullets-wrap">
+                    <div class="desc-bullets-list"></div>
+                    <button type="button" style="margin-top:4px;font-size:12px;color:var(--navy);background:none;border:none;cursor:pointer;padding:2px 0;font-weight:600;" onclick="_addDescBulletToEntry(this)">+ Add point</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="add-edu-btn" onclick="addOrgsEntry()">+ Add another organisation</button>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-primary" style="padding:10px 24px;font-size:14px;" onclick="saveOrgs()">Save</button>
+            <button class="btn" style="background:var(--cream);color:var(--text);padding:10px 18px;font-size:14px;" onclick="cancelOrgsEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SKILLS -->
+      <div class="profile-section full-width" id="skills-section">
+        <div class="section-head">
+          <h3>🎓 Skills &amp; Certificates</h3>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="field-badge required" id="skills-req-badge">Required</span>
+            <button class="edit-btn" id="skills-edit-btn" onclick="toggleSkillsEdit()">Edit</button>
+          </div>
+        </div>
+        <div id="skills-read-view">
+          <div class="skills-category-block">
+            <div class="skills-cat-label">💻 Technical Skills</div>
+            <div class="skills-read-grid" id="read-technical"></div>
+          </div>
+          <div class="skills-category-block">
+            <div class="skills-cat-label">💼 Professional Skills</div>
+            <div class="skills-read-grid" id="read-professional"></div>
+          </div>
+          <div class="skills-category-block">
+            <div class="skills-cat-label">🌍 Languages</div>
+            <div class="skills-read-grid" id="read-languages"></div>
+          </div>
+          <div class="skills-category-block">
+            <div class="skills-cat-label">📖 Courses</div>
+            <div id="read-courses"><span style="font-size:13px;color:var(--text-light);">—</span></div>
+          </div>
+          <div class="skills-category-block">
+            <div class="skills-cat-label">🔬 Projects</div>
+            <div id="read-projects"><span style="font-size:13px;color:var(--text-light);">—</span></div>
+          </div>
+        </div>
+        <div id="skills-edit-view" style="display:none;">
+          <div class="skills-cat-tabs">
+            <button class="skills-cat-tab active" id="stab-technical" onclick="switchSkillCat('technical')">💻 Technical</button>
+            <button class="skills-cat-tab" id="stab-professional" onclick="switchSkillCat('professional')">💼 Professional</button>
+            <button class="skills-cat-tab" id="stab-languages" onclick="switchSkillCat('languages')">🌍 Languages</button>
+            <button class="skills-cat-tab" id="stab-courses" onclick="switchSkillCat('courses')">📖 Courses</button>
+            <button class="skills-cat-tab" id="stab-projects" onclick="switchSkillCat('projects')">🔬 Projects</button>
+          </div>
+          <div class="skills-search-wrap" style="margin-top:14px;">
+            <input class="form-input" id="skill-search-input" type="text" placeholder="Search or type a skill..."
+              oninput="filterSkillSuggestions(this.value)"
+              onkeydown="if(event.key==='Enter'){addSkillFromSearch();}"
+              autocomplete="off">
+            <button class="btn btn-navy" style="padding:10px 18px;font-size:13px;" onclick="addSkillFromSearch()">+ Add</button>
+          </div>
+          <div id="skill-suggestions" class="skill-suggestions" style="display:none;"></div>
+          <div id="skills-edit-technical" style="margin-top:14px;"></div>
+          <div id="skills-edit-professional" style="margin-top:14px;display:none;"></div>
+          <div id="skills-edit-languages" style="margin-top:14px;display:none;"></div>
+          <div id="skills-edit-courses" style="margin-top:14px;display:none;">
+            <div id="courses-list">
+              <div class="edu-entry-form">
+                <div class="edu-form-grid">
+                  <div class="form-group"><label class="form-label">Course name </label><input class="form-input" type="text" placeholder="e.g. Advanced Econometrics" maxlength="150"></div>
+                  <div class="form-group"><label class="form-label">Course code </label><input class="form-input" type="text" placeholder="e.g. ECO301" maxlength="50"></div>
+                </div>
+                <button class="remove-edu-btn" onclick="this.closest('.edu-entry-form').remove()" style="margin-top:8px;">✕ Remove</button>
+              </div>
+            </div>
+            <button class="add-edu-btn" onclick="addCourseEntry()" style="margin-top:8px;">+ Add another course</button>
+          </div>
+          <div id="skills-edit-projects" style="margin-top:14px;display:none;">
+            <div id="projects-list">
+              <div class="edu-entry-form">
+                <div class="edu-form-grid">
+                  <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Project name </label><input class="form-input" type="text" placeholder="e.g. Portfolio Optimisation Tool" maxlength="150"></div>
+                  <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Description </label><textarea class="form-textarea" style="min-height:70px;" placeholder="Briefly describe the project, your role and outcomes..." maxlength="500"></textarea></div>
+                  <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Link / Attachment </label><input class="form-input" type="text" placeholder="github.com/yourproject or attach a file URL" maxlength="300"></div>
+                </div>
+                <button class="remove-edu-btn" onclick="this.closest('.edu-entry-form').remove()" style="margin-top:8px;">✕ Remove</button>
+              </div>
+            </div>
+            <button class="add-edu-btn" onclick="addProjectEntry()" style="margin-top:8px;">+ Add another project</button>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-primary" style="padding:10px 24px;font-size:14px;" onclick="saveSkills()">Save</button>
+            <button class="btn" style="background:var(--cream);color:var(--text);padding:10px 18px;font-size:14px;" onclick="cancelSkillsEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREFERENCES -->
+      <div class="profile-section full-width" id="preferences-section">
+        <div class="section-head">
+          <h3>🎯 Preferences</h3>
+          <button class="edit-btn" id="pref-edit-btn" onclick="togglePreferencesEdit()">Edit</button>
+        </div>
+        <div id="pref-read-view">
+          <div class="info-row"><span class="info-label">Looking for</span><span class="info-value" id="pref-read-type">—</span></div>
+          <div class="info-row"><span class="info-label">Employment type</span><span class="info-value" id="pref-read-emp-type">—</span></div>
+          <div class="info-row"><span class="info-label">Start date</span><span class="info-value" id="pref-read-start">—</span></div>
+          <div class="info-row"><span class="info-label">Duration</span><span class="info-value" id="pref-read-duration">—</span></div>
+          <div class="info-row"><span class="info-label">Sectors</span><span class="info-value" id="pref-read-sectors">—</span></div>
+          <div class="info-row"><span class="info-label">Location</span><span class="info-value" id="pref-read-location">—</span></div>
+          <div class="info-row"><span class="info-label">Role interests</span><span class="info-value" id="pref-read-roles">—</span></div>
+          <div class="info-row"><span class="info-label">Dutch-only roles</span><span class="info-value" id="pref-read-dutch-only">No</span></div>
+        </div>
+        <div id="pref-edit-view" style="display:none;">
+          <div class="pref-group">
+            <div class="pref-group-label">What are you looking for? <span class="field-badge required" style="vertical-align:middle;">Required</span></div>
+            <div class="pref-chips multi" id="pref-type">
+              <button class="pref-chip" data-val="Internship (stage)">Internship (stage)</button>
+              <button class="pref-chip" data-val="Working student">Working student</button>
+              <button class="pref-chip" data-val="Graduate role">Graduate role</button>
+            </div>
+          </div>
+          <div class="pref-group">
+            <div class="pref-group-label">Employment type</div>
+            <div class="pref-chips" id="pref-emp-type">
+              <button class="pref-chip" data-val="Full-time">Full-time</button>
+              <button class="pref-chip" data-val="Part-time">Part-time</button>
+            </div>
+            <div id="pref-hours-wrap" style="display:none;margin-top:10px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <input id="pref-hours-per-week" class="form-input" type="number" min="1" max="40" placeholder="e.g. 16" style="width:100px;">
+                <span style="font-size:13px;color:var(--gray);">hours per week</span>
+              </div>
+            </div>
+          </div>
+          <div class="pref-group">
+            <div class="pref-group-label">Available from</div>
+            <div style="display:flex;gap:8px;">
+              <select class="form-input" id="pref-start-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select>
+              <select class="form-input" id="pref-start-year" style="flex:1;"><option value="">Year</option><option>2025</option><option>2026</option><option>2027</option></select>
+            </div>
+          </div>
+          <div class="pref-group">
+            <div class="pref-group-label">Preferred duration</div>
+            <div class="pref-chips" id="pref-duration">
+              <button class="pref-chip" data-val="1-3 months">1-3 months</button>
+              <button class="pref-chip" data-val="3-6 months">3-6 months</button>
+              <button class="pref-chip" data-val="6-12 months">6-12 months</button>
+              <button class="pref-chip" data-val="12+ months">12+ months</button>
+              <button class="pref-chip" data-val="Flexible">Flexible</button>
+            </div>
+          </div>
+          <div class="pref-group">
+            <div class="pref-group-label">Sectors of interest <span style="color:var(--gray);font-weight:400;font-size:11px;">(select all that apply)</span> <span class="field-badge required" style="vertical-align:middle;">Required</span></div>
+            <div class="pref-chips multi" id="pref-sectors">
+              <button class="pref-chip" data-val="Finance &amp; Banking">Finance &amp; Banking</button>
+              <button class="pref-chip" data-val="Consulting">Consulting</button>
+              <button class="pref-chip" data-val="Marketing">Marketing</button>
+              <button class="pref-chip" data-val="Data &amp; Analytics">Data &amp; Analytics</button>
+              <button class="pref-chip" data-val="HR &amp; People">HR &amp; People</button>
+              <button class="pref-chip" data-val="Law &amp; Legal">Law &amp; Legal</button>
+              <button class="pref-chip" data-val="Technology">Technology</button>
+              <button class="pref-chip" data-val="Sustainability">Sustainability</button>
+              <button class="pref-chip" data-val="Accounting &amp; Audit">Accounting &amp; Audit</button>
+              <button class="pref-chip" data-val="Operations">Operations</button>
+              <button class="pref-chip" data-val="Research">Research</button>
+              <button class="pref-chip" data-val="Other">Other</button>
+            </div>
+            <div id="pref-sectors-other-wrap" style="display:none;margin-top:10px;">
+              <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <input id="pref-sectors-other" class="form-input" type="text" placeholder="e.g. Real Estate, Gaming, Aerospace…" style="flex:1;"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomSector();}">
+                <button class="btn btn-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCustomSector()">+ Add</button>
+              </div>
+              <div id="pref-sectors-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+            </div>
+          </div>
+          <div class="pref-group">
+            <div class="pref-group-label">Preferred location <span class="field-badge required" style="vertical-align:middle;">Required</span></div>
+            <div class="pref-chips multi" id="pref-location">
+              <button class="pref-chip" data-val="Tilburg">Tilburg</button>
+              <button class="pref-chip" data-val="Amsterdam">Amsterdam</button>
+              <button class="pref-chip" data-val="Rotterdam">Rotterdam</button>
+              <button class="pref-chip" data-val="Eindhoven">Eindhoven</button>
+              <button class="pref-chip" data-val="The Hague">The Hague</button>
+              <button class="pref-chip" data-val="Utrecht">Utrecht</button>
+              <button class="pref-chip" data-val="Breda">Breda</button>
+              <button class="pref-chip" data-val="Den Bosch">Den Bosch</button>
+              <button class="pref-chip" data-val="Hybrid">Hybrid</button>
+              <button class="pref-chip" data-val="Remote">Remote</button>
+              <button class="pref-chip" data-val="Open to anywhere">Open to anywhere</button>
+              <button class="pref-chip" data-val="Other">Other</button>
+            </div>
+            <div id="pref-location-other-wrap" style="display:none;margin-top:10px;">
+              <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <input id="pref-location-other" class="form-input" type="text" placeholder="e.g. Groningen, Brussels, London…" style="flex:1;"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomLocation();}">
+                <button class="btn btn-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCustomLocation()">+ Add</button>
+              </div>
+              <div id="pref-location-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+            </div>
+          </div>
+          <div class="pref-group">
+            <div class="pref-group-label">Job role interests <span style="color:var(--gray);font-weight:400;font-size:11px;">(add up to 5 — drives matching)</span></div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <div style="flex:1;position:relative;">
+                <input class="form-input" id="role-search-input" type="text"
+                  placeholder="Search roles e.g. Financial Analyst, Data Scientist..."
+                  oninput="filterRoleSuggestions(this.value)"
+                  onkeydown="if(event.key==='Enter'){addRoleTag();}"
+                  autocomplete="off">
+                <div id="role-suggestions" class="skill-suggestions" style="display:none;position:absolute;width:100%;z-index:50;"></div>
+              </div>
+              <button class="btn btn-navy" style="padding:10px 16px;font-size:13px;" onclick="addRoleTag()">+ Add</button>
+            </div>
+            <div id="pref-roles-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+            <div class="form-hint" style="margin-top:6px;">Students who fill this are 2.5x more likely to see relevant jobs.</div>
+          </div>
+          <div class="pref-group">
+            <div class="pref-group-label">Looking for Dutch-only roles?</div>
+            <div class="pref-chips" id="pref-dutch-only">
+              <button class="pref-chip" data-val="Yes">Yes</button>
+              <button class="pref-chip active" data-val="No">No</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-primary" style="padding:10px 24px;font-size:14px;" onclick="savePreferences()">Save preferences</button>
+            <button class="btn" style="background:var(--cream);color:var(--text);padding:10px 18px;font-size:14px;" onclick="cancelPreferencesEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCUMENTS & SETTINGS -->
+      <div class="profile-section full-width" id="documents-section">
+        <div class="section-head">
+          <h3>📄 Documents &amp; Settings</h3>
+          <button class="edit-btn" id="docs-edit-btn" onclick="toggleDocsEdit()">Edit</button>
+        </div>
+        <div id="docs-read-view">
+          <div class="info-row">
+            <span class="info-label">CV / Resume </span>
+            <span class="info-value" id="profile-cv-status" style="color:var(--gray);">Not uploaded</span>
+            <span id="cv-read-link"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Profile visibility </span>
+            <span class="info-value" id="profile-visibility-status">Not set</span>
+          </div>
+        </div>
+        <div id="docs-edit-view" style="display:none;">
+          <div class="edu-form-grid">
+            <div class="form-group">
+              <label class="form-label">CV / Resume </label>
+              <div class="doc-upload-box dashed" onclick="document.getElementById('cv-upload-input').click()" style="cursor:pointer;" id="cv-upload-box">
+                <span style="font-size:20px;">+</span>
+                <div style="font-size:13px;color:var(--gray);">Upload your CV or résumé<br><span style="font-size:11px;">PDF only · Max 10MB</span></div>
+              </div>
+              <input type="file" id="cv-upload-input" accept=".pdf,application/pdf" style="display:none;" onchange="uploadCV(this)">
+              <div id="cv-upload-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Profile visibility </label>
+              <div class="pref-chips" id="visibility-chips">
+                <button class="pref-chip" data-val="Public">Public<br><span style="font-size:10px;font-weight:400;">Visible to companies</span></button>
+                <button class="pref-chip" data-val="Private">Private<br><span style="font-size:10px;font-weight:400;">Only you can see</span></button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-primary" style="padding:10px 24px;font-size:14px;" onclick="saveDocs()">Save</button>
+            <button class="btn" style="background:var(--cream);color:var(--text);padding:10px 18px;font-size:14px;" onclick="cancelDocsEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE COMPLETENESS -->
+      <div class="profile-section">
+        <div class="section-head"><h3>📊 Profile completeness</h3></div>
+        <div class="progress-bar-wrap">
+          <div class="progress-label"><span>Overall</span><span id="prog-overall-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="prog-overall-fill" style="width:0%"></div></div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-label"><span>Basic info</span><span id="prog-basic-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="prog-basic-fill" style="width:0%"></div></div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-label"><span>Education</span><span id="prog-edu-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="prog-edu-fill" style="width:0%"></div></div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-label"><span>Skills</span><span id="prog-skills-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="prog-skills-fill" style="width:0%"></div></div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-label"><span>Preferences</span><span id="prog-prefs-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="prog-prefs-fill" style="width:0%"></div></div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-label"><span>Experience</span><span id="prog-exp-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="prog-exp-fill" style="width:0%"></div></div>
+        </div>
+        <p id="prog-tip" style="font-size:12px;color:var(--text-light);margin-top:12px;"></p>
+      </div>
+
+    </div>
+  </div>
+  <div id="company-profile-content" style="display:none;">
+    <div class="profile-layout">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <button class="btn" style="background:var(--cream);color:var(--text);padding:8px 16px;font-size:13px;" onclick="showScreen('landing')">← Back</button>
+        <button class="btn" style="background:none;border:1px solid var(--border);color:var(--text);padding:8px 16px;font-size:13px;" onclick="openChangePasswordModal()">🔒 Change Password</button>
+      </div>
+
+      <div class="profile-header">
+        <div class="avatar" id="co-profile-avatar" style="border-radius:14px;font-size:38px;">C</div>
+        <div class="profile-header-info">
+          <h2 id="co-profile-name">Company</h2>
+          <p id="co-profile-sector"></p>
+          <div class="profile-badges">
+            <span class="profile-badge available" id="co-profile-status-badge">✓ Active</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-sections">
+
+        <!-- COMPANY PROFILE -->
+        <div class="profile-section full-width" id="company-info-section">
+          <div class="section-head">
+            <h3>🏢 Company Profile</h3>
+            <button class="edit-btn" id="co-edit-btn" onclick="toggleCompanyEdit()">Edit</button>
+          </div>
+
+          <!-- READ VIEW -->
+          <div id="co-read-view">
+            <div class="info-row"><span class="info-label">Company name</span><span class="info-value" id="co-read-name">—</span></div>
+            <div class="info-row"><span class="info-label">Contact name</span><span class="info-value" id="co-read-contact">—</span></div>
+            <div class="info-row"><span class="info-label">Work email</span><span class="info-value" id="co-read-email">—</span></div>
+            <div class="info-row"><span class="info-label">Website</span><span class="info-value" id="co-read-website">—</span></div>
+            <div class="info-row"><span class="info-label">Company size</span><span class="info-value" id="co-read-size">—</span></div>
+            <div class="info-row"><span class="info-label">Sector</span><span class="info-value" id="co-read-sector">—</span></div>
+            <div class="info-row" style="align-items:flex-start;">
+              <span class="info-label" style="padding-top:4px;white-space:nowrap;">Description</span>
+              <span class="info-value" id="co-read-description" style="text-align:left;color:var(--text-light);font-size:14px;line-height:1.7;max-width:68%;">—</span>
+            </div>
+          </div>
+
+          <!-- EDIT VIEW -->
+          <div id="co-edit-view" style="display:none;">
+            <div class="basic-info-grid">
+              <div class="form-group">
+                <label class="form-label">Company name <span class="field-badge required">Required</span></label>
+                <input id="co-edit-name" class="form-input" type="text" placeholder="e.g. KPMG Netherlands" maxlength="150">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Work email</label>
+                <input id="co-edit-email" class="form-input" type="email" disabled style="background:var(--cream);color:var(--text-light);">
+                <div class="form-hint">Email can be changed only from Settings.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contact first name</label>
+                <input id="co-edit-firstname" class="form-input" type="text" placeholder="e.g. Jeroen" maxlength="80">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contact last name</label>
+                <input id="co-edit-lastname" class="form-input" type="text" placeholder="e.g. Visser" maxlength="80">
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Website <span class="field-badge required">Required</span></label>
+                <input id="co-edit-website" class="form-input" type="text" placeholder="https://www.company.nl" maxlength="300">
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Company size <span class="field-badge required">Required</span></label>
+                <div class="pref-chips" id="co-size-chips" style="margin-top:4px;flex-wrap:wrap;">
+                  <button class="pref-chip" data-val="1–10">1–10</button>
+                  <button class="pref-chip" data-val="10–50">10–50</button>
+                  <button class="pref-chip" data-val="50–250">50–250</button>
+                  <button class="pref-chip" data-val="250–1000">250–1000</button>
+                  <button class="pref-chip" data-val="1000+">1000+</button>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Sector <span class="field-badge required">Required</span></label>
+                <div class="pref-chips" id="co-sector-chips" style="margin-top:4px;flex-wrap:wrap;">
+                  <button class="pref-chip" data-val="Finance &amp; Banking">Finance &amp; Banking</button>
+                  <button class="pref-chip" data-val="Data &amp; Analytics">Data &amp; Analytics</button>
+                  <button class="pref-chip" data-val="Consulting">Consulting</button>
+                  <button class="pref-chip" data-val="Marketing">Marketing</button>
+                  <button class="pref-chip" data-val="Technology">Technology</button>
+                  <button class="pref-chip" data-val="HR &amp; People">HR &amp; People</button>
+                  <button class="pref-chip" data-val="Accounting &amp; Audit">Accounting &amp; Audit</button>
+                  <button class="pref-chip" data-val="Operations">Operations</button>
+                  <button class="pref-chip" data-val="Other">Other</button>
+                </div>
+                <div id="co-sector-other-wrap" style="display:none;margin-top:8px;">
+                  <input id="co-sector-other" class="form-input" type="text" placeholder="Please specify your sector…" maxlength="100">
+                </div>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Company description <span class="field-badge required">Required</span></label>
+                <textarea id="co-edit-description" class="form-textarea" style="min-height:100px;" placeholder="A short description of your company — shown on your listings." maxlength="2000"></textarea>
+                <small id="co-description-counter" style="float:right;font-size:11px;color:var(--gray);margin-top:3px;">0 / 2000</small>
+              </div>
+            </div>
+            <div id="co-edit-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:13px;color:#dc2626;margin-top:8px;"></div>
+            <div style="display:flex;gap:10px;margin-top:20px;">
+              <button class="btn btn-primary" style="padding:10px 24px;font-size:14px;" onclick="saveCompanyProfile()">Save</button>
+              <button class="btn" style="background:var(--cream);color:var(--text);padding:10px 18px;font-size:14px;" onclick="cancelCompanyEdit()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ AUTH MODAL ════════════════════ -->
+<div id="auth-modal" class="auth-modal-overlay">
+  <div class="auth-modal-card">
+    <button class="auth-modal-close" onclick="closeAuthModal()">&#x2715;</button>
+
+    <div class="auth-modal-logo">
+      <span class="logo-name">R<span class="logo-oo">oo</span>kies</span>
+      <span class="logo-suffix" style="color:var(--orange);">Cycles</span>
+    </div>
+
+    <h2 id="auth-title" style="font-family:'Playfair Display',serif;font-size:24px;color:var(--navy);margin:0 0 6px;">Log in</h2>
+    <p id="auth-sub" style="font-size:14px;color:#666;margin:0 0 22px;">Welcome back to Rookies Cycles.</p>
+
+    <!-- Role chips — login + signup -->
+    <div id="auth-role-wrap" style="display:block;margin-bottom:18px;">
+      <div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">I am a</div>
+      <div style="display:flex;gap:8px;">
+        <button class="auth-role-chip active" data-val="student" onclick="selectAuthRole(this)">🎓 Student</button>
+        <button class="auth-role-chip" data-val="company" onclick="selectAuthRole(this)">🏢 Company</button>
+      </div>
+    </div>
+
+    <!-- Name — signup only -->
+    <div id="auth-name-wrap" style="display:none;margin-bottom:10px;">
+      <input id="auth-name" type="text" class="auth-input" placeholder="Full name" maxlength="100">
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <input id="auth-email" type="email" class="auth-input" placeholder="Email address" maxlength="200" onkeydown="if(event.key==='Enter')submitAuth()">
+    </div>
+    <div style="margin-bottom:14px;">
+      <input id="auth-password" type="password" class="auth-input" placeholder="Password" maxlength="128" onkeydown="if(event.key==='Enter')submitAuth()">
+    </div>
+
+    <div id="auth-error" style="display:none;color:#c0392b;font-size:13px;padding:8px 12px;background:#fdf0ee;border-radius:6px;margin-bottom:12px;"></div>
+
+    <button id="auth-submit-btn" class="auth-submit-btn" onclick="submitAuth()">Log in</button>
+
+    <p id="auth-switch" style="text-align:center;font-size:13px;color:#999;margin:16px 0 0;">
+      Don't have an account?
+      <a href="#" id="auth-switch-link" onclick="switchAuthMode();return false;"
+         style="color:var(--orange);font-weight:600;text-decoration:none;">Sign up</a>
+    </p>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirm-modal" class="modal-overlay">
+  <div class="modal" style="max-width:440px;padding:0;overflow:hidden;">
+    <div style="background:var(--navy);padding:24px 28px;position:relative;">
+      <div id="confirm-modal-title" style="font-family:'Playfair Display',serif;font-size:20px;color:white;margin-bottom:4px;"></div>
+      <div id="confirm-modal-subtitle" style="font-size:13px;color:rgba(255,255,255,0.6);"></div>
+    </div>
+    <div style="padding:24px 28px;">
+      <p id="confirm-modal-body" style="font-size:14px;color:var(--text);margin:0 0 24px;line-height:1.6;"></p>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="closeConfirmModal()" class="btn" style="background:var(--cream);color:var(--text);">Cancel</button>
+        <button id="confirm-modal-action-btn" class="btn btn-primary" style="min-width:100px;justify-content:center;"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/cycles.js"></script>
+<script src="js/cycles-profile.js"></script>
+<script src="js/cycles-company-profile.js"></script>
 </body>
 </html>
