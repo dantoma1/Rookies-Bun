@@ -41,6 +41,145 @@ body {
 
 ::selection { background: var(--orange); color: white; }
 
+/* ─── WAITLIST GATE (live cycle only) ─── */
+.waitlist-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgba(247, 244, 239, 0.55);
+  backdrop-filter: blur(7px) saturate(120%);
+  -webkit-backdrop-filter: blur(7px) saturate(120%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px 40px;
+  animation: waitlistFadeIn 0.45s ease;
+}
+#screen-status { position: relative; min-height: calc(100vh - 64px); }
+@keyframes waitlistFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.waitlist-card {
+  background: white;
+  border-radius: 22px;
+  padding: 48px 44px 38px;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 32px 80px rgba(15, 31, 61, 0.4);
+  position: relative;
+  overflow: hidden;
+  animation: waitlistPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes waitlistPop {
+  from { transform: translateY(16px) scale(0.96); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+.waitlist-card::before {
+  content: '';
+  position: absolute;
+  top: -140px;
+  right: -140px;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, rgba(232, 98, 42, 0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+.waitlist-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(232, 98, 42, 0.12);
+  border: 1px solid rgba(232, 98, 42, 0.35);
+  color: var(--orange);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  margin-bottom: 22px;
+  position: relative;
+  z-index: 1;
+}
+.waitlist-status .pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orange);
+  animation: pulse 1.6s infinite;
+}
+.waitlist-card h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 40px;
+  color: var(--navy);
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 14px;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+.waitlist-card h2 em {
+  font-style: italic;
+  color: var(--orange);
+}
+.waitlist-card p {
+  font-size: 16px;
+  color: var(--text-light);
+  line-height: 1.65;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 1;
+}
+.waitlist-btn {
+  background: var(--orange);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(232, 98, 42, 0.35);
+  transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+}
+.waitlist-btn:hover {
+  background: var(--orange-light);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(232, 98, 42, 0.45);
+}
+.waitlist-btn:disabled {
+  background: var(--cream-dark);
+  color: var(--text-light);
+  box-shadow: none;
+  cursor: default;
+  transform: none;
+}
+.waitlist-message {
+  display: none;
+  margin-top: 18px;
+  background: rgba(46, 125, 82, 0.1);
+  color: var(--success);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+.waitlist-message.show { display: block; }
+
+@media (max-width: 520px) {
+  .waitlist-card { padding: 36px 24px 28px; }
+  .waitlist-card h2 { font-size: 30px; }
+}
+
 /* ─── NAV ─── */
 nav {
   background: var(--navy);
@@ -275,7 +414,22 @@ nav {
   min-width: 0;
 }
 .diagram-rookies .diagram-row { justify-content: flex-end; padding-right: 2px; }
+.diagram-companies { position: relative; }
 .diagram-companies .diagram-row { justify-content: flex-start; padding-left: 2px; }
+.diagram-more {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -28px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: left;
+  padding-left: 6px;
+  letter-spacing: 0.2px;
+}
 
 /* Rookie avatars */
 .diagram-avatar {

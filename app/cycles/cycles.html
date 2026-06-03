@@ -68,16 +68,16 @@
               <div class="diagram-avatar c2">M</div>
             </div>
             <div class="diagram-row">
-              <div class="diagram-name">Liora</div>
-              <div class="diagram-avatar c3">L</div>
+              <div class="diagram-name">Dan</div>
+              <div class="diagram-avatar c3">D</div>
             </div>
             <div class="diagram-row">
-              <div class="diagram-name">Daan</div>
-              <div class="diagram-avatar c4">D</div>
+              <div class="diagram-name">Miriam</div>
+              <div class="diagram-avatar c4">M</div>
             </div>
             <div class="diagram-row">
-              <div class="diagram-name">Noor</div>
-              <div class="diagram-avatar c5">N</div>
+              <div class="diagram-name">Alaska</div>
+              <div class="diagram-avatar c5">A</div>
             </div>
           </div>
 
@@ -120,6 +120,7 @@
             <div class="diagram-row">
               <div class="diagram-role"><span class="dot"></span><span class="lbl">Product Design</span></div>
             </div>
+            <div class="diagram-more">…and many more</div>
           </div>
         </div>
 
@@ -477,7 +478,7 @@
       <div class="closing-ctas">
         <button class="btn btn-primary">I'm a student →</button>
         <button class="btn btn-outline-white">I'm an employer →</button>
-        <button class="btn btn-outline-white">I'm a university →</button>
+        <button class="btn btn-outline-white" onclick="showScreen('universities')">University partnerships →</button>
       </div>
     </div>
   </div>
@@ -762,9 +763,9 @@
         Cycle 01 is open. Reveal day is 14 June. Get your roles in the pool.
       </p>
       <div class="closing-ctas">
-        <button class="btn btn-primary">Register a role →</button>
-        <button class="btn btn-outline-white">Talk to founding team →</button>
-        <button class="btn btn-outline-white">University partnerships →</button>
+        <button class="btn btn-primary">I'm a student →</button>
+        <button class="btn btn-outline-white">I'm an employer →</button>
+        <button class="btn btn-outline-white" onclick="showScreen('universities')">University partnerships →</button>
       </div>
     </div>
   </div>
@@ -775,6 +776,18 @@
 
 <!-- ════════════════════ SCREEN: LIVE CYCLE STATUS ════════════════════ -->
 <div id="screen-status" class="screen">
+
+  <!-- Waitlist gate (live cycle only) -->
+  <div class="waitlist-overlay">
+    <div class="waitlist-card">
+      <div class="waitlist-status"><span class="pulse"></span> Cycle 01 · Status</div>
+      <h2>Cycle 01 opens <em>soon.</em></h2>
+      <p>We're gathering the last companies. Join the waitlist and we'll let you know the moment registration opens.</p>
+      <button type="button" class="waitlist-btn" onclick="joinWaitlist()">Join the waitlist →</button>
+      <div class="waitlist-message" id="waitlist-message"></div>
+    </div>
+  </div>
+
   <div class="subscreen">
     <div class="section-eyebrow">Live now</div>
     <h1 class="subscreen-title">Cycle 01 · <em style="font-style:italic;color:var(--orange);">Spring 2026.</em></h1>
@@ -866,101 +879,8 @@
       </div>
     </div>
 
-    <div style="margin-top:40px;text-align:center;">
-      <button class="btn btn-primary" onclick="showScreen('preferences')">See what students see →</button>
-      <button class="btn btn-outline-navy" onclick="showScreen('landing')" style="margin-left:8px;">← Back to landing</button>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════ SCREEN: PREFERENCE DEMO ════════════════════ -->
-<div id="screen-preferences" class="screen">
-  <div class="subscreen">
-    <div class="section-eyebrow">Day 22 of the cycle</div>
-    <h1 class="subscreen-title">Your top five. <em style="font-style:italic;color:var(--orange);">Picked for you.</em></h1>
-    <p class="subscreen-sub">
-      This is what you see three days before match day. The Rookie Algorithm has already ranked your five — you don't move them around and you don't submit anything. Nothing to click. Just a preview of what's coming on reveal day.
-    </p>
-
-    <div class="demo-shell">
-      <div class="demo-shell-header">
-        <div class="demo-shell-title">Your matches · Cycle 01 · Liora · Tilburg</div>
-        <div class="demo-shell-tag">Reveal in 3 days</div>
-      </div>
-      <div class="demo-shell-body">
-        <div class="pref-list">
-          <div class="pref-item top">
-            <div class="rank">1</div>
-            <div>
-              <div class="name">Healthtech Studio · Junior Data Analyst</div>
-              <div class="meta">Utrecht · 6-month · €18/hr · Hybrid</div>
-            </div>
-            <div>
-              <div class="score">94</div>
-              <div class="score-label">Fit</div>
-            </div>
-          </div>
-          <div class="pref-item">
-            <div class="rank">2</div>
-            <div>
-              <div class="name">Bynder · Product Marketing Trainee</div>
-              <div class="meta">Amsterdam · Graduate · €2,800/mo · On-site</div>
-            </div>
-            <div>
-              <div class="score">88</div>
-              <div class="score-label">Fit</div>
-            </div>
-          </div>
-          <div class="pref-item">
-            <div class="rank">3</div>
-            <div>
-              <div class="name">ASR Innovation · Strategy Intern</div>
-              <div class="meta">Utrecht · 4-month · €15/hr · Hybrid</div>
-            </div>
-            <div>
-              <div class="score">85</div>
-              <div class="score-label">Fit</div>
-            </div>
-          </div>
-          <div class="pref-item">
-            <div class="rank">4</div>
-            <div>
-              <div class="name">Channable · Junior Business Analyst</div>
-              <div class="meta">Utrecht · Graduate · €2,650/mo · Hybrid</div>
-            </div>
-            <div>
-              <div class="score">81</div>
-              <div class="score-label">Fit</div>
-            </div>
-          </div>
-          <div class="pref-item">
-            <div class="rank">5</div>
-            <div>
-              <div class="name">Backbase · Working Student, Ops</div>
-              <div class="meta">Amsterdam · Working-student · €17/hr · Hybrid</div>
-            </div>
-            <div>
-              <div class="score">79</div>
-              <div class="score-label">Fit</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-top:28px;padding:18px 20px;background:var(--cream);border-radius:12px;border-left:3px solid var(--orange);">
-          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--orange);margin-bottom:6px;">How the Rookie Algorithm picked these</div>
-          <p style="font-size:15px;color:var(--text);line-height:1.6;">
-            "Applied statistics from Tilburg, a healthtech thesis, Python fluency — strong fit for analyst-style roles at growth-stage NL companies. We've weighted what you can do, who you are, and who else is in this cycle. Want this to change? Update your profile and the algorithm reruns automatically before clearing."
-          </p>
-        </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
-          <div style="font-size:14px;color:var(--text-light);">Locked by the Rookie Algorithm · reveal day 14 June</div>
-          <button class="btn btn-navy" style="padding:10px 20px;font-size:14px;" onclick="showScreen('results')">See reveal day →</button>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:32px;text-align:center;">
+    <div style="margin-top:40px;text-align:center;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="scrollToId('closing')">Join Cycle 01 →</button>
       <button class="btn btn-outline-navy" onclick="showScreen('landing')">← Back to landing</button>
     </div>
   </div>
@@ -1071,6 +991,38 @@
   </div>
 </div>
 
+<!-- ════════════════════ SCREEN: UNIVERSITIES ════════════════════ -->
+<div id="screen-universities" class="screen">
+  <div style="min-height:calc(100vh - 64px);background:var(--navy);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:80px 48px;">
+    <div style="position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:820px;height:820px;background:radial-gradient(circle,rgba(232,98,42,0.16) 0%,transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:-180px;right:-140px;width:540px;height:540px;background:radial-gradient(circle,rgba(232,98,42,0.07) 0%,transparent 70%);pointer-events:none;"></div>
+
+    <div style="max-width:720px;margin:0 auto;text-align:center;position:relative;z-index:1;">
+      <div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1.8px;color:var(--orange-light);margin-bottom:26px;">For universities</div>
+
+      <h1 style="font-family:'Playfair Display',serif;font-size:64px;color:white;line-height:1.05;letter-spacing:-1.5px;margin-bottom:32px;font-weight:700;">
+        We've quietly built<br>something <em style="font-style:italic;color:var(--orange);">for you.</em>
+      </h1>
+
+      <p style="font-size:20px;color:rgba(255,255,255,0.72);line-height:1.7;margin-bottom:22px;">
+        Imagine knowing where your cohort actually lands — live, every cycle. Imagine sector trends, participation, outcomes, all on one screen. Imagine a handful of other things career offices have always wanted but never quite had.
+      </p>
+
+      <p style="font-size:18px;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:48px;font-style:italic;">
+        We don't really do pitches. But if you're a university and you're curious, we'd love to show you in person.
+      </p>
+
+      <a href="mailto:hello@rookies.nl?subject=University%20partnership" style="display:inline-flex;align-items:center;gap:8px;background:var(--orange);color:white;padding:18px 40px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:17px;font-weight:600;text-decoration:none;box-shadow:0 6px 22px rgba(232,98,42,0.4);transition:all 0.2s;">
+        Get in touch →
+      </a>
+
+      <div style="margin-top:48px;">
+        <button onclick="showScreen('landing')" style="background:transparent;color:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.18);padding:11px 22px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;">← Back to landing</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════ FOOTER ════════════════════ -->
 <footer>
   <div>
@@ -1079,7 +1031,6 @@
   <div style="margin-top:8px;">
     <a href="javascript:showScreen('landing')">How it works</a>
     <a href="javascript:showScreen('status')">Live cycle</a>
-    <a href="javascript:showScreen('preferences')">Inside a cycle</a>
     <a href="../privacy.html">Privacy</a>
   </div>
   <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,0.3);">

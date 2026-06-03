@@ -174,6 +174,46 @@ async function cyclesSignOut() {
   _clearCyclesUser();
 }
 
+// ─── Waitlist gate (live cycle only) ─────────────────
+async function joinWaitlist() {
+  const btn = document.querySelector('.waitlist-btn');
+  const msg = document.getElementById('waitlist-message');
+  if (!btn || !msg) return;
+
+  // Not signed in → send to sign-in
+  if (!currentCyclesUserData) {
+    openAuthModal('login');
+    return;
+  }
+
+  // Signed in → register on waitlist
+  btn.disabled = true;
+  btn.textContent = 'Adding you…';
+
+  try {
+    if (db) {
+      const role = currentCyclesUserType || 'student';
+      const userId = currentCyclesUserData.id;
+      const name = currentCyclesUserData.name || currentCyclesUserData.company_name || '';
+      // Insert into waitlist table; ignore conflict if already on it
+      await db.from('waitlist').upsert(
+        [{ user_id: userId, role, name, cycle: 'cycle-01' }],
+        { onConflict: 'user_id,cycle' }
+      );
+    }
+    msg.textContent = "✓ You're on the waitlist. We'll reach out the moment Cycle 01 opens.";
+    msg.classList.add('show');
+    btn.textContent = "You're on the list";
+  } catch (err) {
+    msg.textContent = "Couldn't save your spot just now. Try again in a moment.";
+    msg.style.background = 'rgba(220,38,38,0.1)';
+    msg.style.color = '#dc2626';
+    msg.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Join the waitlist →';
+  }
+}
+
 // ─── Screen switching ────────────────────────────────
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
