@@ -11,14 +11,17 @@
 
 <!-- ════════════════════ NAVIGATION ════════════════════ -->
 <nav>
-  <div class="logo" onclick="showScreen('landing')">
-    <span class="logo-name">R<span class="logo-oo">oo</span>kies</span>
-    <span class="logo-suffix">Cycles</span>
+  <div class="logo-group">
+    <div class="logo" onclick="showScreen('landing')">
+      <span class="logo-name">R<span class="logo-oo">oo</span>kies</span>
+      <span class="logo-suffix">Cycles</span>
+    </div>
+    <a href="../rookies.html" class="nav-back">← Rookies main</a>
   </div>
   <div class="nav-links">
     <div class="nav-cycle-pill" onclick="showScreen('status')">
       <span class="pulse"></span>
-      Cycle 01 · registration open · <strong id="nav-countdown">23d 04h</strong>
+      Cycle 01 · <strong>opens soon</strong>
     </div>
     <button class="nav-btn ghost" onclick="showScreen('landing')">How it works</button>
     <button class="nav-btn ghost" onclick="showScreen('status')">Live cycle</button>
@@ -41,12 +44,32 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-inner">
-      <div class="hero-badge">
-        <span class="pulse"></span>
-        <span>Next cycle clears <strong id="hero-cycle-date">14 June 2026</strong></span>
+    <div class="hero-countdown">
+      <div class="hero-countdown-label">Cycle 01 Launch Date 🚀</div>
+      <div class="hero-countdown-cells">
+        <div class="hero-countdown-cell">
+          <div class="num"><span class="t-prefix">T-</span><span id="cd-days">7</span></div>
+          <div class="lbl">Days</div>
+        </div>
+        <div class="colon">:</div>
+        <div class="hero-countdown-cell">
+          <div class="num" id="cd-hours">04</div>
+          <div class="lbl">Hours</div>
+        </div>
+        <div class="colon">:</div>
+        <div class="hero-countdown-cell">
+          <div class="num" id="cd-mins">17</div>
+          <div class="lbl">Mins</div>
+        </div>
+        <div class="colon">:</div>
+        <div class="hero-countdown-cell">
+          <div class="num" id="cd-secs">52</div>
+          <div class="lbl">Secs</div>
+        </div>
       </div>
-
+      <div class="hero-countdown-foot">awaiting mission control confirmation</div>
+    </div>
+    <div class="hero-inner">
       <h1>
         Match day.<br>
         <span class="strike">Not job board.</span>
@@ -135,34 +158,6 @@
         <button class="btn btn-primary" onclick="scrollToId('closing')">Join Cycle 01 →</button>
         <button class="btn btn-outline-white" onclick="showScreen('status')">See live cycle</button>
       </div>
-
-      <div class="hero-countdown">
-        <div class="hero-countdown-label">
-          Cycle 01<br>
-          clears in
-        </div>
-        <div class="hero-countdown-cells">
-          <div class="hero-countdown-cell">
-            <div class="num" id="cd-days">23</div>
-            <div class="lbl">Days</div>
-          </div>
-          <div class="colon">:</div>
-          <div class="hero-countdown-cell">
-            <div class="num" id="cd-hours">04</div>
-            <div class="lbl">Hours</div>
-          </div>
-          <div class="colon">:</div>
-          <div class="hero-countdown-cell">
-            <div class="num" id="cd-mins">17</div>
-            <div class="lbl">Minutes</div>
-          </div>
-          <div class="colon">:</div>
-          <div class="hero-countdown-cell">
-            <div class="num" id="cd-secs">52</div>
-            <div class="lbl">Seconds</div>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -171,7 +166,7 @@
     <div class="stats-bar-inner">
       <div class="stat-item">
         <div class="stat-num orange">Cycle 01</div>
-        <div class="stat-label">Now open</div>
+        <div class="stat-label">Coming soon</div>
       </div>
       <div class="stat-item">
         <div class="stat-num" id="stat-students">412</div>
@@ -243,29 +238,38 @@
 
   <!-- LIVE CYCLE TIMELINE PREVIEW -->
   <section class="section tight">
-    <div class="cycle-timeline">
-      <div class="cycle-timeline-header">
-        <div>
-          <div class="section-eyebrow" style="margin-bottom:6px;">Live cycle status</div>
-          <div class="cycle-timeline-title">Cycle 01 · Spring 2026</div>
+    <div class="timeline-gate-wrap">
+      <div class="cycle-timeline">
+        <div class="cycle-timeline-header">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:6px;">Live cycle status</div>
+            <div class="cycle-timeline-title">Cycle 01 · Spring 2026</div>
+          </div>
+          <div class="cycle-timeline-meta">Clearing 14 June · <strong id="timeline-countdown" style="color:var(--orange);">23 days remaining</strong></div>
         </div>
-        <div class="cycle-timeline-meta">Clearing 14 June · <strong id="timeline-countdown" style="color:var(--orange);">23 days remaining</strong></div>
+        <div class="cycle-track">
+          <div class="cycle-track-cell done"></div>
+          <div class="cycle-track-cell live"></div>
+          <div class="cycle-track-cell"></div>
+          <div class="cycle-track-cell"></div>
+          <div class="cycle-track-cell"></div>
+          <div class="cycle-track-cell"></div>
+        </div>
+        <div class="cycle-track-labels">
+          <div class="cycle-track-label done">Scheduled</div>
+          <div class="cycle-track-label live">Registration</div>
+          <div class="cycle-track-label">Lock</div>
+          <div class="cycle-track-label">Clearing</div>
+          <div class="cycle-track-label">Reveal</div>
+          <div class="cycle-track-label">Closed</div>
+        </div>
       </div>
-      <div class="cycle-track">
-        <div class="cycle-track-cell done"></div>
-        <div class="cycle-track-cell live"></div>
-        <div class="cycle-track-cell"></div>
-        <div class="cycle-track-cell"></div>
-        <div class="cycle-track-cell"></div>
-        <div class="cycle-track-cell"></div>
-      </div>
-      <div class="cycle-track-labels">
-        <div class="cycle-track-label done">Scheduled</div>
-        <div class="cycle-track-label live">Registration</div>
-        <div class="cycle-track-label">Lock</div>
-        <div class="cycle-track-label">Clearing</div>
-        <div class="cycle-track-label">Reveal</div>
-        <div class="cycle-track-label">Closed</div>
+      <div class="timeline-gate">
+        <div class="timeline-gate-card">
+          <div class="timeline-gate-badge"><span class="pulse"></span> Cycle 01 · Status</div>
+          <h3>Cycle 01 opens <em>soon.</em></h3>
+          <p>Want in? Hit <strong>Join Cycle 01</strong> up top — we'll save you a spot.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -349,11 +353,11 @@
 
     <div class="calendar-grid">
       <div class="calendar-card live">
-        <div class="badge">Live</div>
-        <div class="month">Right now</div>
+        <div class="badge">Next</div>
+        <div class="month">First up</div>
         <div class="date">01</div>
         <div class="name">The first one</div>
-        <div class="sub">Cycle 01 is open · jump in</div>
+        <div class="sub">Cycle 01 · coming soon · stay tuned</div>
       </div>
       <div class="calendar-card">
         <div class="month">Soon-ish</div>
@@ -381,7 +385,7 @@
     <div class="section-eyebrow">The moment</div>
     <h2 class="section-title">Match day. <em>Reveal time.</em></h2>
     <p class="section-sub">
-      No more "coffee chats" where you try to charm a recruiter into remembering your name. No more "Hey, I saw you also studied at University X…" DMs into the void. The Rookie Algorithm reads your profile and the live pool, then ranks — and that's the ranking. Five matches, one time, every student and every employer at the same second — 18:00 CET on cycle day. Each one comes with the reason it happened. No leaks, no waitlist, no "we'll get back to you."
+      No more "coffee chats" where you try to charm a recruiter into remembering your name. No more "Hey, I saw you also studied at University X…" DMs into the void. The Rookie Algorithm reads your profile and the live pool, then ranks — and that's the ranking. Five matches, one time, every student and every employer at the same second. Each one comes with the reason it happened. No leaks, no waitlist, no "we'll get back to you."
     </p>
 
     <div class="reveal-shell">
@@ -464,6 +468,15 @@
     </div>
   </section>
 
+  <!-- WHAT NEXT — Rookie -->
+  <section class="section">
+    <div class="section-eyebrow">What next?</div>
+    <h2 class="section-title">You decide. They decide. <em>Intros happen.</em></h2>
+    <p class="section-sub">
+      You pick the matches you want to pursue. The company does the same on their side, and intros get scheduled. Think it sounds too good to be true? <em>Rookie mistake.</em>
+    </p>
+  </section>
+
   <!-- CLOSING -->
   <div class="closing" id="closing">
     <div class="closing-inner">
@@ -473,7 +486,7 @@
         <em>Done.</em>
       </h2>
       <p class="closing-sub">
-        Cycle 01 is open. Reveal day is 14 June. Be in the pool.
+        Cycle 01 is coming. Reveal day is 14 June. Be in the pool.
       </p>
       <div class="closing-ctas">
         <button class="btn btn-primary">I'm a student →</button>
@@ -520,29 +533,38 @@
 
   <!-- LIVE CYCLE TIMELINE — Company -->
   <section class="section tight">
-    <div class="cycle-timeline">
-      <div class="cycle-timeline-header">
-        <div>
-          <div class="section-eyebrow" style="margin-bottom:6px;">Live cycle status</div>
-          <div class="cycle-timeline-title">Cycle 01 · Spring 2026</div>
+    <div class="timeline-gate-wrap">
+      <div class="cycle-timeline">
+        <div class="cycle-timeline-header">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:6px;">Live cycle status</div>
+            <div class="cycle-timeline-title">Cycle 01 · Spring 2026</div>
+          </div>
+          <div class="cycle-timeline-meta">Shortlist drops 14 June · <strong id="timeline-countdown-company" style="color:var(--orange);">23 days remaining</strong></div>
         </div>
-        <div class="cycle-timeline-meta">Shortlist drops 14 June · <strong id="timeline-countdown-company" style="color:var(--orange);">23 days remaining</strong></div>
+        <div class="cycle-track">
+          <div class="cycle-track-cell done"></div>
+          <div class="cycle-track-cell live"></div>
+          <div class="cycle-track-cell"></div>
+          <div class="cycle-track-cell"></div>
+          <div class="cycle-track-cell"></div>
+          <div class="cycle-track-cell"></div>
+        </div>
+        <div class="cycle-track-labels">
+          <div class="cycle-track-label done">Scheduled</div>
+          <div class="cycle-track-label live">Roles open</div>
+          <div class="cycle-track-label">Lock</div>
+          <div class="cycle-track-label">Clearing</div>
+          <div class="cycle-track-label">Reveal</div>
+          <div class="cycle-track-label">Closed</div>
+        </div>
       </div>
-      <div class="cycle-track">
-        <div class="cycle-track-cell done"></div>
-        <div class="cycle-track-cell live"></div>
-        <div class="cycle-track-cell"></div>
-        <div class="cycle-track-cell"></div>
-        <div class="cycle-track-cell"></div>
-        <div class="cycle-track-cell"></div>
-      </div>
-      <div class="cycle-track-labels">
-        <div class="cycle-track-label done">Scheduled</div>
-        <div class="cycle-track-label live">Roles open</div>
-        <div class="cycle-track-label">Lock</div>
-        <div class="cycle-track-label">Clearing</div>
-        <div class="cycle-track-label">Reveal</div>
-        <div class="cycle-track-label">Closed</div>
+      <div class="timeline-gate">
+        <div class="timeline-gate-card">
+          <div class="timeline-gate-badge"><span class="pulse"></span> Cycle 01 · Status</div>
+          <h3>Cycle 01 opens <em>soon.</em></h3>
+          <p>Want in? Hit <strong>Join Cycle 01</strong> up top — we'll save you a spot.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -574,8 +596,8 @@
         </div>
         <div class="mechanism-card">
           <div class="layer-tag">Signal 04</div>
-          <h4>Mutual intent</h4>
-          <p>Every candidate on your shortlist already ranked your company in their top ten. No more chasing dream candidates who'll ghost the offer — the interest is mutual before reveal day.</p>
+          <h4>Mutual fit</h4>
+          <p>Every candidate on your shortlist already has your role scored in <em>their</em> top five — the algorithm's read of both sides agreed. No more sifting through hundreds of CVs to find someone valuable; the matches that land on your shortlist were vetted from both sides.</p>
         </div>
       </div>
     </section>
@@ -626,11 +648,11 @@
 
     <div class="calendar-grid">
       <div class="calendar-card live">
-        <div class="badge">Live</div>
-        <div class="month">Right now</div>
+        <div class="badge">Next</div>
+        <div class="month">First up</div>
         <div class="date">01</div>
         <div class="name">The first one</div>
-        <div class="sub">Cycle 01 is open · post a role</div>
+        <div class="sub">Cycle 01 · coming soon · stay tuned</div>
       </div>
       <div class="calendar-card">
         <div class="month">Soon-ish</div>
@@ -658,7 +680,7 @@
     <div class="section-eyebrow">The moment</div>
     <h2 class="section-title">Match day. <em>Meet your candidates.</em></h2>
     <p class="section-sub">
-      Three days before reveal, the Rookie Algorithm has already ranked the strongest five for your role — names, universities, start windows and the one-line reason each rose to the top. No spreadsheet, no 300-CV inbox, no juggling. Five candidates, one time, every employer at the same second — 18:00 CET on cycle day. Each one comes with their full profile and the reason they matched. No leaks, no spray applications, no "we'll get back to you."
+      Three days before reveal, the Rookie Algorithm has already ranked the strongest five for your role — names, universities, start windows and the one-line reason each rose to the top. No spreadsheet, no 300-CV inbox, no juggling. Five candidates, one time, every employer at the same second. Each one comes with their full profile and the reason they matched. No leaks, no spray applications, no "we'll get back to you."
     </p>
 
     <div class="reveal-shell">
@@ -751,6 +773,15 @@
     </div>
   </section>
 
+  <!-- WHAT NEXT — Company -->
+  <section class="section">
+    <div class="section-eyebrow">What next?</div>
+    <h2 class="section-title">You decide. They decide. <em>Intros happen.</em></h2>
+    <p class="section-sub">
+      You pick the candidates you want to pursue. They do the same on their side, and intros get scheduled. Think it sounds too good to be true? <em>Rookie mistake.</em>
+    </p>
+  </section>
+
   <!-- CLOSING — Company -->
   <div class="closing" id="closing-company">
     <div class="closing-inner">
@@ -760,7 +791,7 @@
         <em>Done.</em>
       </h2>
       <p class="closing-sub">
-        Cycle 01 is open. Reveal day is 14 June. Get your roles in the pool.
+        Cycle 01 is coming. Reveal day is 14 June. Get your roles in the pool.
       </p>
       <div class="closing-ctas">
         <button class="btn btn-primary">I'm a student →</button>
@@ -789,16 +820,16 @@
   </div>
 
   <div class="subscreen">
-    <div class="section-eyebrow">Live now</div>
+    <div class="section-eyebrow">Coming soon</div>
     <h1 class="subscreen-title">Cycle 01 · <em style="font-style:italic;color:var(--orange);">Spring 2026.</em></h1>
     <p class="subscreen-sub">
-      Where the cycle is right now. Refreshing every minute — registration counters, top sectors, top universities, and how the pool is shaping up.
+      A preview of what the live cycle page will show once Cycle 01 opens — registration counters, top sectors, top universities, and how the pool is shaping up. Refreshing every minute on the day.
     </p>
 
     <div class="cycle-timeline">
       <div class="cycle-timeline-header">
         <div>
-          <div class="cycle-timeline-title">Phase 02 of 06 · Registration open</div>
+          <div class="cycle-timeline-title">Phase 01 of 06 · Scheduled</div>
         </div>
         <div class="cycle-timeline-meta">Clearing 14 June 2026 · <strong style="color:var(--orange);" id="status-countdown">23d 04h 17m</strong></div>
       </div>

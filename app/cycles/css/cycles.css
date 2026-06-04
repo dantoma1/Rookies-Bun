@@ -41,6 +41,80 @@ body {
 
 ::selection { background: var(--orange); color: white; }
 
+/* ─── INLINE TIMELINE GATE (landing preview) ─── */
+.timeline-gate-wrap { position: relative; }
+.timeline-gate {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(247, 244, 239, 0.35);
+  backdrop-filter: blur(5px) saturate(115%);
+  -webkit-backdrop-filter: blur(5px) saturate(115%);
+  border-radius: 20px;
+  padding: 24px;
+  pointer-events: none;
+  animation: waitlistFadeIn 0.45s ease;
+}
+.timeline-gate-card {
+  pointer-events: auto;
+  background: white;
+  padding: 24px 28px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(15, 31, 61, 0.3);
+  max-width: 420px;
+  border: 1px solid var(--border);
+}
+.timeline-gate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(232, 98, 42, 0.12);
+  border: 1px solid rgba(232, 98, 42, 0.35);
+  color: var(--orange);
+  padding: 5px 13px;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  margin-bottom: 14px;
+}
+.timeline-gate-badge .pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orange);
+  animation: pulse 1.6s infinite;
+}
+.timeline-gate-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  color: var(--navy);
+  letter-spacing: -0.7px;
+  line-height: 1.15;
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+.timeline-gate-card h3 em {
+  font-style: italic;
+  color: var(--orange);
+}
+.timeline-gate-card p {
+  font-size: 15px;
+  color: var(--text-light);
+  line-height: 1.55;
+  margin: 0;
+}
+.timeline-gate-card p strong {
+  color: var(--navy);
+  font-weight: 600;
+}
+
 /* ─── WAITLIST GATE (live cycle only) ─── */
 .waitlist-overlay {
   position: absolute;
@@ -194,6 +268,11 @@ nav {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
+.logo-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 .logo {
   font-family: 'Playfair Display', serif;
   color: var(--white);
@@ -204,6 +283,26 @@ nav {
   display: flex;
   align-items: baseline;
   gap: 10px;
+}
+.nav-back {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.nav-back:hover {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.05);
+}
+@media (max-width: 640px) {
+  .nav-back { display: none; }
 }
 .logo .logo-oo { color: var(--orange); }
 .logo-suffix {
@@ -285,7 +384,7 @@ nav {
 .hero {
   background: var(--navy);
   min-height: calc(100vh - 64px);
-  padding: 0 48px;
+  padding: 30px 48px 50px;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -626,42 +725,76 @@ nav {
 }
 .btn-white:hover { transform: translateY(-1px); }
 
-/* Hero countdown widget */
+/* Hero countdown — mission-patch badge floating top-right of the hero */
 .hero-countdown {
-  margin-top: 56px;
-  display: inline-flex;
+  position: absolute;
+  top: 40px;
+  right: 96px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 28px;
-  padding: 22px 36px;
+  gap: 14px;
+  padding: 24px 30px 20px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(232, 98, 42, 0.35);
   border-radius: 16px;
   backdrop-filter: blur(8px);
+  text-align: center;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25), inset 0 0 30px rgba(232, 98, 42, 0.06);
 }
 .hero-countdown-label {
-  font-size: 11px;
-  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.4px;
-  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 1.8px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.2;
 }
-.hero-countdown-cells { display: flex; gap: 16px; }
-.hero-countdown-cell { text-align: center; }
+.hero-countdown-cells {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hero-countdown-cell { text-align: center; min-width: 44px; }
 .hero-countdown-cell .num {
   font-family: 'Syne', 'Playfair Display', sans-serif;
-  font-size: 40px;
+  font-size: 34px;
   font-weight: 700;
-  color: white;
+  color: var(--orange);
   line-height: 1;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+.hero-countdown-cell .num .t-prefix {
+  font-size: 25px;
+  color: var(--orange-light);
+  letter-spacing: 0;
+  margin-right: 1px;
 }
 .hero-countdown-cell .lbl {
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.45);
-  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 7px;
+}
+.hero-countdown-cells .colon {
+  font-family: 'Syne', sans-serif;
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.3);
+  align-self: flex-start;
+  line-height: 1;
+  padding-top: 2px;
+}
+.hero-countdown-foot {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.3px;
 }
 .hero-countdown-cell .colon {
   font-family: 'Syne', sans-serif;
@@ -697,6 +830,11 @@ nav {
   letter-spacing: -0.5px;
 }
 .stat-num.orange { color: var(--orange); }
+#stat-students, #stat-employers, #stat-roles {
+  filter: blur(6px);
+  user-select: none;
+  opacity: 0.7;
+}
 .stat-label {
   font-size: 12px;
   color: var(--text-light);
@@ -1575,12 +1713,12 @@ footer a:hover { color: var(--orange-light); }
   .hero { padding: 0 24px; }
   .match-card { grid-template-columns: 56px 1fr; }
   .match-card .badge { grid-column: 1 / -1; justify-self: start; }
+  .hero-countdown { top: 24px; right: 24px; padding: 16px 20px; }
+  .hero-countdown-cell .num { font-size: 30px; }
 }
 @media (max-width: 640px) {
   .hero h1 { font-size: 44px; }
-  .hero-countdown { padding: 16px 22px; gap: 14px; flex-wrap: wrap; }
-  .hero-countdown-cells { gap: 10px; }
-  .hero-countdown-cell .num { font-size: 28px; }
+  .hero-countdown { display: none; }
   .cycle-steps, .mechanism-grid, .calendar-grid { grid-template-columns: 1fr; }
   .stats-bar-inner { flex-wrap: wrap; }
   .stat-item { padding: 20px 28px; }

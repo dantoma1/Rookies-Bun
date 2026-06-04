@@ -244,8 +244,9 @@ function scrollToId(id) {
 }
 
 // ─── Live countdown to Cycle 01 clear ─────────────────
-// Target: 14 June 2026 18:00 CET (UTC+2 in summer)
-const CYCLE_CLEAR = new Date('2026-06-14T18:00:00+02:00');
+// Placeholder target: 7 days from page load so the hero badge always
+// shows ~T-7 days/HH/MM/SS. Replace with the real launch date when set.
+const CYCLE_CLEAR = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -349,18 +350,7 @@ function setCycleRole(role) {
 // Students can request a re-score but cannot reorder.
 // (No drag-and-drop wiring by design.)
 
-// ─── Hero scroll progress (optional) ──────────────────
-// Just a subtle visual cue — fades countdown when hero scrolls out.
-function setupHeroFade() {
-  const countdown = document.querySelector('.hero-countdown');
-  if (!countdown) return;
-  window.addEventListener('scroll', () => {
-    const scrolled = window.scrollY;
-    const opacity = Math.max(0, 1 - scrolled / 400);
-    countdown.style.opacity = opacity;
-  });
-}
-setupHeroFade();
+// (Hero scroll fade removed — the T-10 widget stays visible.)
 
 // ─── Tilt the demo shell slightly on mouse move ───────
 function setupShellTilt() {
