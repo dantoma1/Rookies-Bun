@@ -52,6 +52,8 @@ function loadCompanyProfile() {
   _coSet('co-read-size',        c.size);
   _coSet('co-read-sector',      c.sector);
   _coSet('co-read-description', c.description || 'No description yet — click Edit to add one.');
+
+  if (typeof loadCompanyCycleSection === 'function') loadCompanyCycleSection();
 }
 
 function _coSet(id, val) {

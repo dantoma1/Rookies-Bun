@@ -20,6 +20,63 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('auth-modal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeAuthModal();
   });
+
+  // Signup form blur validation
+  function _blurCheck(id, checkFn) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('blur', checkFn);
+    el.addEventListener('input', function() { if (el.classList.contains('error')) checkFn(); });
+  }
+  _blurCheck('ss-firstname', function() {
+    var el = document.getElementById('ss-firstname');
+    if (!el.value.trim()) _showFieldError(el, 'Please enter your first name.');
+    else _clearFieldError(el);
+  });
+  _blurCheck('ss-lastname', function() {
+    var el = document.getElementById('ss-lastname');
+    if (!el.value.trim()) _showFieldError(el, 'Please enter your last name.');
+    else _clearFieldError(el);
+  });
+  _blurCheck('ss-email', function() {
+    var el = document.getElementById('ss-email');
+    if (!el.value.trim()) _showFieldError(el, 'Please enter your email address.');
+    else if (!_isValidEmail(el.value.trim())) _showFieldError(el, 'Please enter a valid email address.');
+    else _clearFieldError(el);
+  });
+  _blurCheck('ss-password', function() {
+    var el = document.getElementById('ss-password');
+    if (el.value.length > 0 && el.value.length < 8) _showFieldError(el, 'Password must be at least 8 characters.');
+    else _clearFieldError(el);
+  });
+  _blurCheck('ss-password2', function() {
+    var el = document.getElementById('ss-password2');
+    var pw = document.getElementById('ss-password');
+    if (el.value && pw && el.value !== pw.value) _showFieldError(el, 'Passwords do not match.');
+    else _clearFieldError(el);
+  });
+  _blurCheck('cs-company', function() {
+    var el = document.getElementById('cs-company');
+    if (!el.value.trim()) _showFieldError(el, 'Please enter your company name.');
+    else _clearFieldError(el);
+  });
+  _blurCheck('cs-email', function() {
+    var el = document.getElementById('cs-email');
+    if (!el.value.trim()) _showFieldError(el, 'Please enter your work email.');
+    else if (!_isValidEmail(el.value.trim())) _showFieldError(el, 'Please enter a valid email address.');
+    else _clearFieldError(el);
+  });
+  _blurCheck('cs-password', function() {
+    var el = document.getElementById('cs-password');
+    if (el.value.length > 0 && el.value.length < 8) _showFieldError(el, 'Password must be at least 8 characters.');
+    else _clearFieldError(el);
+  });
+  _blurCheck('cs-password2', function() {
+    var el = document.getElementById('cs-password2');
+    var pw = document.getElementById('cs-password');
+    if (el.value && pw && el.value !== pw.value) _showFieldError(el, 'Passwords do not match.');
+    else _clearFieldError(el);
+  });
 });
 
 // ─── Session restore ─────────────────────────────────
@@ -32,6 +89,87 @@ async function checkCyclesSession() {
   if (stu.data) { _setCyclesUser(stu.data.name, stu.data, 'student'); return; }
   const emp = await db.from('employers').select('*').eq('id', userId).single();
   if (emp.data) { _setCyclesUser(emp.data.company_name, emp.data, 'company'); return; }
+
+  // No DB row — user may have just verified their email
+  var pendingType = sessionStorage.getItem('cycles_pending_type');
+  if (pendingType === 'student') {
+    var pendingName  = sessionStorage.getItem('cycles_pending_name') || session.user.email;
+    var pendingFirst = pendingName.split(' ')[0];
+    var colors = ['#e8622a','#1565c0','#2e7d52','#6a1b9a','#c0392b','#4a148c','#0f1f3d'];
+    var color  = colors[Math.floor(Math.random() * colors.length)];
+    var row = {
+      id: userId, name: pendingName, color: color, initial: pendingFirst[0].toUpperCase(),
+      pref_roles: [], skills_technical: [], skills_professional: [],
+      skills_languages: [], education: [], experience: [], organisations: [],
+      is_active: true, is_admin: false
+    };
+    var ins = await db.from('students').insert([row]);
+    if (!ins.error) {
+      sessionStorage.removeItem('cycles_pending_type');
+      sessionStorage.removeItem('cycles_pending_name');
+      sessionStorage.removeItem('cycles_pending_email');
+      _setCyclesUser(pendingName, row, 'student');
+      if (typeof showToast === 'function') showToast('Email verified! Welcome, ' + pendingFirst + '!');
+      openProfileScreen();
+    }
+  }
+}
+
+async function _checkLandingGate() {
+  if (!db || !currentCyclesUserData) return;
+  try {
+    var { data: cycle } = await db.from('cycles').select('*')
+      .not('status', 'eq', 'closed').order('created_at', { ascending: false }).limit(1).maybeSingle();
+    if (!cycle) return;
+
+    // Always update the timeline phase to match the real DB status
+    _updateLandingTimeline(cycle.status);
+
+    // Fetch real stats for any logged-in user
+    var { data: stats } = await db.rpc('get_cycle_stats', { p_cycle_id: cycle.id });
+    if (stats) {
+      animateCounter('stat-students',  stats.students  || 0, 1000);
+      animateCounter('stat-employers', stats.companies || 0, 900);
+      animateCounter('stat-roles',     stats.roles     || 0, 800);
+    }
+
+    // Check participation — only participants get blur removed and gates hidden
+    var { data: part } = await db.from('cycle_participants').select('id')
+      .eq('cycle_id', cycle.id).eq('user_id', currentCyclesUserData.id).maybeSingle();
+    if (!part) return;
+
+    document.querySelectorAll('.landing-timeline-gate').forEach(function(el) {
+      el.classList.add('hidden');
+    });
+    ['stat-students', 'stat-employers', 'stat-roles'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.filter = 'none'; el.style.opacity = '1'; }
+    });
+  } catch(e) {}
+}
+
+function _updateLandingTimeline(status) {
+  var phases   = ['scheduled','open','locked','clearing','revealed','closed'];
+  var idx      = phases.indexOf(status || 'scheduled');
+  var stuLabels = ['Scheduled','Registration','Lock','Clearing','Reveal','Closed'];
+  var coLabels  = ['Scheduled','Roles open','Lock','Clearing','Reveal','Closed'];
+
+  function renderTrack(trackId, labelsId, labelNames) {
+    var track  = document.getElementById(trackId);
+    var labels = document.getElementById(labelsId);
+    if (!track || !labels) return;
+    track.innerHTML = phases.map(function(_, i) {
+      var cls = i < idx ? ' done' : i === idx ? ' live' : '';
+      return '<div class="cycle-track-cell' + cls + '"></div>';
+    }).join('');
+    labels.innerHTML = labelNames.map(function(name, i) {
+      var cls = i < idx ? ' done' : i === idx ? ' live' : '';
+      return '<div class="cycle-track-label' + cls + '">' + name + '</div>';
+    }).join('');
+  }
+
+  renderTrack('landing-track-student', 'landing-labels-student', stuLabels);
+  renderTrack('landing-track-company', 'landing-labels-company', coLabels);
 }
 
 function _setCyclesUser(name, data, type) {
@@ -39,6 +177,10 @@ function _setCyclesUser(name, data, type) {
   currentCyclesUserType = type || null;
   document.getElementById('nav-guest').style.display = 'none';
   const userNav = document.getElementById('nav-user');
+  // Re-check gate in case the status screen is currently visible
+  if (document.getElementById('screen-status').classList.contains('active')) {
+    if (typeof checkCycleGate === 'function') checkCycleGate();
+  }
   userNav.style.display = 'flex';
   document.getElementById('nav-user-name').textContent = name || 'there';
   const avatarEl = document.getElementById('nav-avatar');
@@ -46,6 +188,8 @@ function _setCyclesUser(name, data, type) {
     avatarEl.textContent = (name || '?').charAt(0).toUpperCase();
     avatarEl.style.background = (data && data.color) ? data.color : 'var(--orange)';
   }
+  // Check whether to reveal the landing-page cycle timeline
+  _checkLandingGate();
 }
 
 function _clearCyclesUser() {
@@ -54,6 +198,14 @@ function _clearCyclesUser() {
   document.getElementById('nav-guest').style.display = 'flex';
   document.getElementById('nav-user').style.display = 'none';
   document.getElementById('nav-user-name').textContent = '';
+  // Restore landing-page gates and blurred stats on sign-out
+  document.querySelectorAll('.landing-timeline-gate').forEach(function(el) {
+    el.classList.remove('hidden');
+  });
+  ['stat-students', 'stat-employers', 'stat-roles'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.style.filter = ''; el.style.opacity = ''; }
+  });
 }
 
 // ─── Auth modal ──────────────────────────────────────
@@ -72,24 +224,20 @@ function closeAuthModal() {
   document.getElementById('auth-error').style.display = 'none';
   document.getElementById('auth-email').value = '';
   document.getElementById('auth-password').value = '';
-  document.getElementById('auth-name').value = '';
 }
 
 function switchAuthMode() {
-  _authMode = _authMode === 'login' ? 'signup' : 'login';
-  _syncAuthModal();
+  // Modal is login-only; route signup to the role picker
+  closeAuthModal();
+  showScreen('signup-pick');
 }
 
 function _syncAuthModal() {
-  const isSignup = _authMode === 'signup';
-  document.getElementById('auth-title').textContent     = isSignup ? 'Sign up' : 'Log in';
-  document.getElementById('auth-sub').textContent       = isSignup ? 'Create your Rookies Cycles account.' : 'Welcome back to Rookies Cycles.';
-  document.getElementById('auth-submit-btn').textContent = isSignup ? 'Create account' : 'Log in';
-  document.getElementById('auth-role-wrap').style.display = 'block';
-  document.getElementById('auth-name-wrap').style.display = isSignup ? 'block' : 'none';
-  document.getElementById('auth-switch').innerHTML = isSignup
-    ? 'Already have an account? <a href="#" onclick="switchAuthMode();return false;" style="color:var(--orange);font-weight:600;text-decoration:none;">Log in</a>'
-    : "Don't have an account? <a href=\"#\" onclick=\"switchAuthMode();return false;\" style=\"color:var(--orange);font-weight:600;text-decoration:none;\">Sign up</a>";
+  document.getElementById('auth-title').textContent      = 'Log in';
+  document.getElementById('auth-sub').textContent        = 'Welcome back to Rookies Cycles.';
+  document.getElementById('auth-submit-btn').textContent = 'Log in';
+  document.getElementById('auth-switch').innerHTML =
+    "Don't have an account? <a href=\"#\" onclick=\"closeAuthModal();showScreen('signup-pick');return false;\" style=\"color:var(--orange);font-weight:600;text-decoration:none;\">Sign up</a>";
   document.getElementById('auth-error').style.display = 'none';
 }
 
@@ -103,64 +251,51 @@ async function submitAuth() {
   if (!db) return;
   const email    = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
-  const name     = document.getElementById('auth-name').value.trim();
-  const errEl    = document.getElementById('auth-error');
   const btn      = document.getElementById('auth-submit-btn');
 
-  errEl.style.display = 'none';
+  document.getElementById('auth-error').style.display = 'none';
   if (!email || !password) { _showAuthError('Please enter your email and password.'); return; }
-  if (_authMode === 'signup' && !name) { _showAuthError('Please enter your full name.'); return; }
 
-  btn.textContent = _authMode === 'signup' ? 'Creating account…' : 'Signing in…';
+  btn.textContent = 'Signing in…';
   btn.disabled = true;
 
   try {
-    if (_authMode === 'login') {
-      const { data, error } = await db.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      const userId = data.user.id;
-      if (_authRole === 'student') {
-        const stu = await db.from('students').select('*').eq('id', userId).single();
-        if (stu.data) { _setCyclesUser(stu.data.name, stu.data, 'student'); closeAuthModal(); return; }
-        throw new Error('No student account found for this email. Are you trying to log in as a company?');
-      } else {
-        const emp = await db.from('employers').select('*').eq('id', userId).single();
-        if (emp.data) { _setCyclesUser(emp.data.company_name, emp.data, 'company'); closeAuthModal(); return; }
-        throw new Error('No company account found for this email. Are you trying to log in as a student?');
-      }
-
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    const userId = data.user.id;
+    if (_authRole === 'student') {
+      const stu = await db.from('students').select('*').eq('id', userId).single();
+      if (stu.data) { _setCyclesUser(stu.data.name, stu.data, 'student'); closeAuthModal(); return; }
+      throw new Error('No student account found for this email. Are you trying to log in as a company?');
     } else {
-      const { data, error } = await db.auth.signUpWithPassword
-        ? await db.auth.signUpWithPassword({ email, password })
-        : await db.auth.signUp({ email, password });
-      if (error) throw error;
-      const userId = data.user.id;
-
-      if (_authRole === 'student') {
-        const colors = ['#e8622a','#1565c0','#2e7d52','#6a1b9a','#c0392b'];
-        const color  = colors[Math.floor(Math.random() * colors.length)];
-        const stuData = {
-          id: userId, name, color,
-          initial: name.charAt(0).toUpperCase(),
-          pref_roles: [], skills_technical: [], skills_professional: [],
-          skills_languages: [], education: [], experience: [], organisations: [],
-          is_active: true, is_admin: false
-        };
-        await db.from('students').insert([stuData]);
-        _setCyclesUser(name, stuData, 'student');
-      } else {
-        const empData = { id: userId, email, company_name: name, status: 'pending' };
-        await db.from('employers').insert([empData]);
-        _setCyclesUser(name, empData, 'company');
-      }
-      closeAuthModal();
+      const emp = await db.from('employers').select('*').eq('id', userId).single();
+      if (emp.data) { _setCyclesUser(emp.data.company_name, emp.data, 'company'); closeAuthModal(); return; }
+      throw new Error('No company account found for this email. Are you trying to log in as a student?');
     }
   } catch (err) {
     _showAuthError(err.message || 'Something went wrong. Please try again.');
   } finally {
-    btn.textContent = _authMode === 'signup' ? 'Create account' : 'Log in';
+    btn.textContent = 'Log in';
     btn.disabled = false;
   }
+}
+
+function openAuthForRole(role) {
+  // Already logged in as that role → go straight to profile
+  if (currentCyclesUserData && currentCyclesUserType === role) {
+    openProfileScreen();
+    return;
+  }
+  // Not logged in or different role → open modal with role pre-selected
+  // For new users, the modal "Sign up" link routes to the correct signup screen
+  _authRole = role;
+  _syncAuthModal();
+  // Pre-select the right chip
+  document.querySelectorAll('.auth-role-chip').forEach(function(c) {
+    c.classList.toggle('active', c.dataset.val === role);
+  });
+  document.getElementById('auth-modal').classList.add('open');
+  setTimeout(function() { document.getElementById('auth-email').focus(); }, 80);
 }
 
 function _showAuthError(msg) {
@@ -172,6 +307,140 @@ function _showAuthError(msg) {
 async function cyclesSignOut() {
   if (db) await db.auth.signOut();
   _clearCyclesUser();
+  showScreen('landing');
+}
+
+// ─── Student signup ───────────────────────────────────
+function _isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function _showSignupError(id, msg) {
+  var el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+function _hideSignupError(id) {
+  var el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+
+async function studentSignupSubmit() {
+  var firstEl = document.getElementById('ss-firstname');
+  var lastEl  = document.getElementById('ss-lastname');
+  var emailEl = document.getElementById('ss-email');
+  var pwEl    = document.getElementById('ss-password');
+  var pw2El   = document.getElementById('ss-password2');
+
+  _hideSignupError('ss-error-1');
+  var first = firstEl.value.trim(), last = lastEl.value.trim();
+  var email = emailEl.value.trim();
+  var pw = pwEl.value, pw2 = pw2El.value;
+
+  var ok = true;
+  if (!first) { _showFieldError(firstEl, 'Please enter your first name.'); ok = false; } else _clearFieldError(firstEl);
+  if (!last)  { _showFieldError(lastEl,  'Please enter your last name.');  ok = false; } else _clearFieldError(lastEl);
+  if (!email) { _showFieldError(emailEl, 'Please enter your email address.'); ok = false; }
+  else if (!_isValidEmail(email)) { _showFieldError(emailEl, 'Please enter a valid email address.'); ok = false; }
+  else _clearFieldError(emailEl);
+  if (pw.length < 8) { _showFieldError(pwEl, 'Password must be at least 8 characters.'); ok = false; } else _clearFieldError(pwEl);
+  if (pw !== pw2) { _showFieldError(pw2El, 'Passwords do not match.'); ok = false; } else _clearFieldError(pw2El);
+  if (!ok) { _scrollToFirstError(document.getElementById('screen-signup-student')); return; }
+
+  var btn = document.getElementById('ss-submit-btn');
+  btn.textContent = 'Creating account…'; btn.disabled = true;
+
+  try {
+    var a = await db.auth.signUp({ email: email, password: pw });
+    if (a.error) throw a.error;
+    if (!a.data.user) throw new Error('Signup succeeded but no user returned — check Supabase email confirmation settings.');
+
+    if (!a.data.session) {
+      // Email confirmation required
+      sessionStorage.setItem('cycles_pending_type', 'student');
+      sessionStorage.setItem('cycles_pending_name', first + ' ' + last);
+      sessionStorage.setItem('cycles_pending_email', email);
+      document.getElementById('verify-email-address').textContent = email;
+      btn.textContent = 'Create account →'; btn.disabled = false;
+      showScreen('verify-email');
+      return;
+    }
+
+    // Email confirmation off — create row immediately
+    var name = first + ' ' + last;
+    var colors = ['#e8622a','#1565c0','#2e7d52','#6a1b9a','#c0392b','#4a148c','#0f1f3d'];
+    var color  = colors[Math.floor(Math.random() * colors.length)];
+    var row = {
+      id: a.data.user.id, name: name, color: color, initial: first[0].toUpperCase(),
+      pref_roles: [], skills_technical: [], skills_professional: [],
+      skills_languages: [], education: [], experience: [], organisations: [],
+      is_active: true, is_admin: false
+    };
+    var ins = await db.from('students').insert([row]);
+    if (ins.error) throw ins.error;
+    _setCyclesUser(name, row, 'student');
+    showToast('Welcome to Rookies Cycles, ' + first + '!');
+    openProfileScreen();
+  } catch(err) {
+    var msg = err.message || 'Something went wrong. Please try again.';
+    if (msg.toLowerCase().includes('should contain at least one character of each')) {
+      msg = 'Password must include at least one uppercase letter, one lowercase letter, and one number.';
+    }
+    _showSignupError('ss-error-1', msg);
+    btn.textContent = 'Create account →'; btn.disabled = false;
+  }
+}
+
+async function resendVerificationEmail() {
+  var email = sessionStorage.getItem('cycles_pending_email');
+  if (!email) { showToast('No pending verification found.', 'error'); return; }
+  var res = await db.auth.resend({ type: 'signup', email: email });
+  if (res.error) showToast('Could not resend: ' + res.error.message, 'error');
+  else showToast('Verification email resent — check your inbox.');
+}
+
+// ─── Company signup ───────────────────────────────────
+async function companySignupSubmit() {
+  var companyEl = document.getElementById('cs-company');
+  var emailEl   = document.getElementById('cs-email');
+  var pwEl      = document.getElementById('cs-password');
+  var pw2El     = document.getElementById('cs-password2');
+
+  _hideSignupError('cs-error-1');
+  var company = companyEl.value.trim(), email = emailEl.value.trim();
+  var pw = pwEl.value, pw2 = pw2El.value;
+
+  var ok = true;
+  if (!company) { _showFieldError(companyEl, 'Please enter your company name.'); ok = false; } else _clearFieldError(companyEl);
+  if (!email)   { _showFieldError(emailEl, 'Please enter your work email.'); ok = false; }
+  else if (!_isValidEmail(email)) { _showFieldError(emailEl, 'Please enter a valid email address.'); ok = false; }
+  else _clearFieldError(emailEl);
+  if (pw.length < 8) { _showFieldError(pwEl, 'Password must be at least 8 characters.'); ok = false; } else _clearFieldError(pwEl);
+  if (pw !== pw2) { _showFieldError(pw2El, 'Passwords do not match.'); ok = false; } else _clearFieldError(pw2El);
+  if (!ok) { _scrollToFirstError(document.getElementById('screen-signup-company')); return; }
+
+  var btn = document.getElementById('cs-submit-btn');
+  btn.textContent = 'Creating account…'; btn.disabled = true;
+
+  try {
+    var a = await db.auth.signUp({ email: email, password: pw });
+    if (a.error) throw a.error;
+    if (!a.data.user) throw new Error('Signup succeeded but no user returned — check Supabase email confirmation settings.');
+
+    var empData = { id: a.data.user.id, email: email, company_name: company, status: 'approved' };
+    var ins = await db.from('employers').insert([empData]);
+    if (ins.error) throw ins.error;
+    _setCyclesUser(company, empData, 'company');
+    showToast('Welcome to Rookies Cycles, ' + company + '!');
+    openProfileScreen();
+  } catch(err) {
+    var msg = err.message || 'Something went wrong. Please try again.';
+    if (msg.toLowerCase().includes('should contain at least one character of each')) {
+      msg = 'Password must include at least one uppercase letter, one lowercase letter, and one number.';
+    }
+    _showSignupError('cs-error-1', msg);
+    btn.textContent = 'Create account →'; btn.disabled = false;
+  }
 }
 
 // ─── Waitlist gate (live cycle only) ─────────────────
@@ -220,6 +489,7 @@ function showScreen(name) {
   const el = document.getElementById('screen-' + name);
   if (el) {
     el.classList.add('active');
+    if (name === 'status' && typeof checkCycleGate === 'function') checkCycleGate();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }

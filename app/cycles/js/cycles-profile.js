@@ -450,6 +450,8 @@ async function loadStudentProfile() {
     else if (expScore === 0)     tipEl.textContent = 'Add past experience to boost your match rate with companies.';
     else                          tipEl.textContent = 'Great profile! Keep it up to date.';
   }
+  // Load cycle participation section
+  if (typeof loadStudentCycleSection === 'function') loadStudentCycleSection();
 }
 
 // ─── EDUCATION EDIT ───

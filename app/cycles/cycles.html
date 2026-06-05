@@ -27,7 +27,7 @@
     <button class="nav-btn ghost" onclick="showScreen('status')">Live cycle</button>
     <div id="nav-guest" style="display:flex;gap:8px;">
       <button class="nav-btn outline" onclick="openAuthModal('login')">Log in</button>
-      <button class="nav-btn primary" onclick="openAuthModal('signup')">Sign up</button>
+      <button class="nav-btn primary" onclick="showScreen('signup-pick')">Sign up</button>
     </div>
     <div id="nav-user" style="display:none;align-items:center;gap:10px;">
       <button class="nav-profile-trigger" onclick="openProfileScreen()">
@@ -247,7 +247,7 @@
           </div>
           <div class="cycle-timeline-meta">Clearing 14 June · <strong id="timeline-countdown" style="color:var(--orange);">23 days remaining</strong></div>
         </div>
-        <div class="cycle-track">
+        <div class="cycle-track" id="landing-track-student">
           <div class="cycle-track-cell done"></div>
           <div class="cycle-track-cell live"></div>
           <div class="cycle-track-cell"></div>
@@ -255,7 +255,7 @@
           <div class="cycle-track-cell"></div>
           <div class="cycle-track-cell"></div>
         </div>
-        <div class="cycle-track-labels">
+        <div class="cycle-track-labels" id="landing-labels-student">
           <div class="cycle-track-label done">Scheduled</div>
           <div class="cycle-track-label live">Registration</div>
           <div class="cycle-track-label">Lock</div>
@@ -264,7 +264,7 @@
           <div class="cycle-track-label">Closed</div>
         </div>
       </div>
-      <div class="timeline-gate">
+      <div class="timeline-gate landing-timeline-gate">
         <div class="timeline-gate-card">
           <div class="timeline-gate-badge"><span class="pulse"></span> Cycle 01 · Status</div>
           <h3>Cycle 01 opens <em>soon.</em></h3>
@@ -489,8 +489,8 @@
         Cycle 01 is coming. Reveal day is 14 June. Be in the pool.
       </p>
       <div class="closing-ctas">
-        <button class="btn btn-primary">I'm a student →</button>
-        <button class="btn btn-outline-white">I'm an employer →</button>
+        <button class="btn btn-primary" onclick="openAuthForRole('student')">I'm a student →</button>
+        <button class="btn btn-outline-white" onclick="openAuthForRole('company')">I'm an employer →</button>
         <button class="btn btn-outline-white" onclick="showScreen('universities')">University partnerships →</button>
       </div>
     </div>
@@ -542,7 +542,7 @@
           </div>
           <div class="cycle-timeline-meta">Shortlist drops 14 June · <strong id="timeline-countdown-company" style="color:var(--orange);">23 days remaining</strong></div>
         </div>
-        <div class="cycle-track">
+        <div class="cycle-track" id="landing-track-company">
           <div class="cycle-track-cell done"></div>
           <div class="cycle-track-cell live"></div>
           <div class="cycle-track-cell"></div>
@@ -550,7 +550,7 @@
           <div class="cycle-track-cell"></div>
           <div class="cycle-track-cell"></div>
         </div>
-        <div class="cycle-track-labels">
+        <div class="cycle-track-labels" id="landing-labels-company">
           <div class="cycle-track-label done">Scheduled</div>
           <div class="cycle-track-label live">Roles open</div>
           <div class="cycle-track-label">Lock</div>
@@ -559,7 +559,7 @@
           <div class="cycle-track-label">Closed</div>
         </div>
       </div>
-      <div class="timeline-gate">
+      <div class="timeline-gate landing-timeline-gate">
         <div class="timeline-gate-card">
           <div class="timeline-gate-badge"><span class="pulse"></span> Cycle 01 · Status</div>
           <h3>Cycle 01 opens <em>soon.</em></h3>
@@ -794,8 +794,8 @@
         Cycle 01 is coming. Reveal day is 14 June. Get your roles in the pool.
       </p>
       <div class="closing-ctas">
-        <button class="btn btn-primary">I'm a student →</button>
-        <button class="btn btn-outline-white">I'm an employer →</button>
+        <button class="btn btn-primary" onclick="openAuthForRole('student')">I'm a student →</button>
+        <button class="btn btn-outline-white" onclick="openAuthForRole('company')">I'm an employer →</button>
         <button class="btn btn-outline-white" onclick="showScreen('universities')">University partnerships →</button>
       </div>
     </div>
@@ -808,113 +808,80 @@
 <!-- ════════════════════ SCREEN: LIVE CYCLE STATUS ════════════════════ -->
 <div id="screen-status" class="screen">
 
-  <!-- Waitlist gate (live cycle only) -->
-  <div class="waitlist-overlay">
+  <!-- Participation gate — visible by default, hidden only once JS confirms participation -->
+  <div class="waitlist-overlay" id="cycle-gate">
     <div class="waitlist-card">
-      <div class="waitlist-status"><span class="pulse"></span> Cycle 01 · Status</div>
-      <h2>Cycle 01 opens <em>soon.</em></h2>
-      <p>We're gathering the last companies. Join the waitlist and we'll let you know the moment registration opens.</p>
-      <button type="button" class="waitlist-btn" onclick="joinWaitlist()">Join the waitlist →</button>
-      <div class="waitlist-message" id="waitlist-message"></div>
+      <div class="waitlist-status"><span class="pulse"></span> Cycle 01 · Live</div>
+      <h2 id="cycle-gate-title">Join to see inside.</h2>
+      <p id="cycle-gate-sub">Register for Cycle 01 to see who's in the pool, which sectors are represented, and how the cycle is shaping up.</p>
+      <button type="button" class="waitlist-btn" id="cycle-gate-btn" onclick="cycleGateAction()">Join Cycle 01 →</button>
+      <div id="cycle-gate-message" style="margin-top:14px;font-size:14px;color:rgba(255,255,255,0.7);min-height:20px;"></div>
     </div>
   </div>
 
-  <div class="subscreen">
+  <!-- Static blurred backdrop — always in DOM, fake placeholder numbers only, no real data -->
+  <div id="cycle-status-preview" class="subscreen" style="filter:blur(7px);pointer-events:none;user-select:none;" aria-hidden="true">
     <div class="section-eyebrow">Coming soon</div>
     <h1 class="subscreen-title">Cycle 01 · <em style="font-style:italic;color:var(--orange);">Spring 2026.</em></h1>
-    <p class="subscreen-sub">
-      A preview of what the live cycle page will show once Cycle 01 opens — registration counters, top sectors, top universities, and how the pool is shaping up. Refreshing every minute on the day.
-    </p>
-
+    <p class="subscreen-sub">A preview of what the live cycle page will show once Cycle 01 opens.</p>
     <div class="cycle-timeline">
       <div class="cycle-timeline-header">
-        <div>
-          <div class="cycle-timeline-title">Phase 01 of 06 · Scheduled</div>
-        </div>
-        <div class="cycle-timeline-meta">Clearing 14 June 2026 · <strong style="color:var(--orange);" id="status-countdown">23d 04h 17m</strong></div>
+        <div><div class="cycle-timeline-title">Phase 01 of 06 · Scheduled</div></div>
+        <div class="cycle-timeline-meta">Clearing 14 June 2026 · <strong style="color:var(--orange);">23d 04h 17m</strong></div>
       </div>
       <div class="cycle-track">
-        <div class="cycle-track-cell done"></div>
-        <div class="cycle-track-cell live"></div>
-        <div class="cycle-track-cell"></div>
-        <div class="cycle-track-cell"></div>
-        <div class="cycle-track-cell"></div>
-        <div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell done"></div><div class="cycle-track-cell live"></div>
+        <div class="cycle-track-cell"></div><div class="cycle-track-cell"></div>
+        <div class="cycle-track-cell"></div><div class="cycle-track-cell"></div>
       </div>
       <div class="cycle-track-labels">
-        <div class="cycle-track-label done">Scheduled</div>
-        <div class="cycle-track-label live">Registration</div>
-        <div class="cycle-track-label">Lock</div>
-        <div class="cycle-track-label">Clearing</div>
-        <div class="cycle-track-label">Reveal</div>
-        <div class="cycle-track-label">Closed</div>
+        <div class="cycle-track-label done">Scheduled</div><div class="cycle-track-label live">Registration</div>
+        <div class="cycle-track-label">Lock</div><div class="cycle-track-label">Clearing</div>
+        <div class="cycle-track-label">Reveal</div><div class="cycle-track-label">Closed</div>
       </div>
     </div>
-
     <div class="stats-bar" style="margin-top:24px;border-radius:18px;border:1px solid var(--border);">
       <div class="stats-bar-inner">
-        <div class="stat-item">
-          <div class="stat-num orange">412</div>
-          <div class="stat-label">Students registered</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">38</div>
-          <div class="stat-label">Employers in pool</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">96</div>
-          <div class="stat-label">Open roles</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">64</div>
-          <div class="stat-label">Projected matches</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num orange">21</div>
-          <div class="stat-label">Sectors represented</div>
-        </div>
+        <div class="stat-item"><div class="stat-num orange">—</div><div class="stat-label">Students registered</div></div>
+        <div class="stat-item"><div class="stat-num">—</div><div class="stat-label">Employers in pool</div></div>
+        <div class="stat-item"><div class="stat-num">—</div><div class="stat-label">Open roles</div></div>
+        <div class="stat-item"><div class="stat-num">—</div><div class="stat-label">Projected matches</div></div>
+        <div class="stat-item"><div class="stat-num orange">—</div><div class="stat-label">Sectors represented</div></div>
       </div>
     </div>
-
     <div style="margin-top:32px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
       <div class="mechanism-card" style="background:white;border:1px solid var(--border);">
         <div class="layer-tag" style="color:var(--orange);">Sector signal</div>
         <h4 style="color:var(--navy);font-family:'Syne',sans-serif;font-size:17px;margin-bottom:18px;">Top sectors this cycle</h4>
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Tech & SaaS</span><strong style="color:var(--navy);">42%</strong></div>
-          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Finance & Insurance</span><strong style="color:var(--navy);">18%</strong></div>
-          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Health & Biotech</span><strong style="color:var(--navy);">14%</strong></div>
-          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Consulting & Strategy</span><strong style="color:var(--navy);">12%</strong></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--text-light);"><span>Other</span><strong style="color:var(--navy);">14%</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>████████</span><strong style="color:var(--navy);">██%</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>████████████</span><strong style="color:var(--navy);">██%</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>██████████</span><strong style="color:var(--navy);">██%</strong></div>
         </div>
       </div>
       <div class="mechanism-card" style="background:white;border:1px solid var(--border);">
         <div class="layer-tag" style="color:var(--orange);">University signal</div>
         <h4 style="color:var(--navy);font-family:'Syne',sans-serif;font-size:17px;margin-bottom:18px;">Top institutions</h4>
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Tilburg University</span><strong style="color:var(--navy);">126</strong></div>
-          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Erasmus Rotterdam</span><strong style="color:var(--navy);">94</strong></div>
-          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>UvA Amsterdam</span><strong style="color:var(--navy);">71</strong></div>
-          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>Utrecht University</span><strong style="color:var(--navy);">54</strong></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--text-light);"><span>Other NL universities</span><strong style="color:var(--navy);">67</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>████████████</span><strong style="color:var(--navy);">███</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>████████████</span><strong style="color:var(--navy);">██</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;"><span>████████████</span><strong style="color:var(--navy);">██</strong></div>
         </div>
       </div>
       <div class="mechanism-card" style="background:white;border:1px solid var(--border);">
         <div class="layer-tag" style="color:var(--orange);">Cycle pulse</div>
         <h4 style="color:var(--navy);font-family:'Syne',sans-serif;font-size:17px;margin-bottom:18px;">How this cycle is going</h4>
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px;">
-          <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:700;color:var(--success);line-height:1;">A−</div>
+          <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:700;color:var(--success);line-height:1;">?</div>
           <div style="font-size:13px;color:var(--text-light);">cycle health</div>
         </div>
-        <p style="font-size:14px;color:var(--text-light);line-height:1.6;">Plenty of students for the roles posted. Sector mix looks healthy. The cycle is on track to match cleanly on 14 June.</p>
+        <p style="font-size:14px;color:var(--text-light);line-height:1.6;">Join the cycle to see real-time pool health and sector balance.</p>
       </div>
     </div>
-
-    <div style="margin-top:40px;text-align:center;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="scrollToId('closing')">Join Cycle 01 →</button>
-      <button class="btn btn-outline-navy" onclick="showScreen('landing')">← Back to landing</button>
-    </div>
   </div>
+
+  <!-- Real content — empty until JS confirms participation -->
+  <div class="subscreen" id="cycle-status-content" style="display:none;"></div>
 </div>
 
 <!-- ════════════════════ SCREEN: RESULTS REVEAL ════════════════════ -->
@@ -1092,6 +1059,11 @@
           <span class="profile-badge university" id="profile-header-uni"></span>
         </div>
       </div>
+    </div>
+
+    <!-- CYCLE PARTICIPATION (student) -->
+    <div id="student-cycle-section" class="profile-section full-width" style="display:none;border-top:3px solid var(--orange);">
+      <div id="student-cycle-content"></div>
     </div>
 
     <div class="profile-sections">
@@ -1847,6 +1819,11 @@
         </div>
       </div>
 
+      <!-- CYCLE PARTICIPATION (company) -->
+      <div id="company-cycle-section" class="profile-section full-width" style="display:none;border-top:3px solid var(--orange);">
+        <div id="company-cycle-content"></div>
+      </div>
+
       <div class="profile-sections">
 
         <!-- COMPANY PROFILE -->
@@ -1940,6 +1917,155 @@
   </div>
 </div>
 
+<!-- ════════════════════ SCREEN: SIGNUP PICK ════════════════════ -->
+<div id="screen-signup-pick" class="screen">
+  <div style="min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;background:var(--cream);padding:40px 20px;">
+    <div style="width:100%;max-width:560px;">
+      <div style="text-align:center;margin-bottom:36px;">
+        <div style="font-family:'Playfair Display',serif;font-size:32px;color:var(--navy);margin-bottom:10px;">Join Rookies Cycles</div>
+        <div style="font-size:16px;color:var(--text-light);">Who are you signing up as?</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <button onclick="showScreen('signup-student')" style="display:flex;align-items:center;gap:20px;padding:28px;background:white;border:2px solid var(--border);border-radius:14px;cursor:pointer;text-align:left;transition:all 0.2s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='var(--navy)';this.style.boxShadow='0 4px 16px rgba(15,31,61,0.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+          <span style="font-size:36px;">🎓</span>
+          <div style="flex:1;">
+            <div style="font-size:19px;font-weight:600;color:var(--navy);">Student</div>
+            <div style="font-size:14px;color:var(--text-light);margin-top:4px;">Find internships, student jobs &amp; graduate roles in the Netherlands</div>
+          </div>
+          <span style="color:var(--gray);font-size:22px;">→</span>
+        </button>
+        <button onclick="showScreen('signup-company')" style="display:flex;align-items:center;gap:20px;padding:28px;background:white;border:2px solid var(--border);border-radius:14px;cursor:pointer;text-align:left;transition:all 0.2s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='var(--orange)';this.style.boxShadow='0 4px 16px rgba(232,98,42,0.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+          <span style="font-size:36px;">🏢</span>
+          <div style="flex:1;">
+            <div style="font-size:19px;font-weight:600;color:var(--navy);">Company</div>
+            <div style="font-size:14px;color:var(--text-light);margin-top:4px;">Post listings and find motivated students across Dutch universities</div>
+          </div>
+          <span style="color:var(--gray);font-size:22px;">→</span>
+        </button>
+      </div>
+      <div style="text-align:center;margin-top:28px;font-size:14px;color:var(--text-light);">
+        Already have an account? <button onclick="openAuthModal('login')" style="background:none;border:none;color:var(--orange);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;">Sign in →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ SCREEN: STUDENT SIGNUP ════════════════════ -->
+<div id="screen-signup-student" class="screen">
+  <div style="min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;background:var(--cream);padding:40px 20px;">
+    <div style="width:100%;max-width:540px;">
+
+      <div style="text-align:center;margin-bottom:28px;">
+        <button onclick="showScreen('signup-pick')" style="background:none;border:1.5px solid var(--border);border-radius:8px;color:var(--navy);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;padding:8px 16px;">&#8592; Back</button>
+        <div style="font-family:'Playfair Display',serif;font-size:30px;color:var(--navy);margin-bottom:8px;">Create your student account</div>
+        <div style="font-size:15px;color:var(--text-light);">Free forever. No credit card needed.</div>
+      </div>
+
+      <div style="background:white;border-radius:16px;padding:36px;border:1.5px solid var(--border);display:flex;flex-direction:column;gap:18px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <label class="form-label">First name </label>
+            <input id="ss-firstname" class="form-input" type="text" placeholder="e.g. Emma" maxlength="80">
+            <div class="field-error"></div>
+          </div>
+          <div>
+            <label class="form-label">Last name </label>
+            <input id="ss-lastname" class="form-input" type="text" placeholder="e.g. de Vries" maxlength="80">
+            <div class="field-error"></div>
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Email </label>
+          <input id="ss-email" class="form-input" type="email" placeholder="your@email.com" maxlength="150">
+          <div class="field-error"></div>
+          <div class="form-hint">Preferably your university email.</div>
+        </div>
+        <div>
+          <label class="form-label">Password </label>
+          <input id="ss-password" class="form-input" type="password" placeholder="Min. 8 characters" maxlength="128">
+          <div class="field-error"></div>
+        </div>
+        <div>
+          <label class="form-label">Confirm password </label>
+          <input id="ss-password2" class="form-input" type="password" placeholder="Repeat your password" maxlength="128">
+          <div class="field-error"></div>
+        </div>
+        <div id="ss-error-1" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:14px;color:#dc2626;"></div>
+        <button id="ss-submit-btn" class="btn btn-primary" style="width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:4px;" onclick="studentSignupSubmit()">Create account →</button>
+      </div>
+
+      <div style="text-align:center;margin-top:18px;font-size:14px;color:var(--text-light);">
+        Already have an account?
+        <button onclick="openAuthModal('login')" style="background:none;border:none;color:var(--orange);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;">Sign in</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ SCREEN: COMPANY SIGNUP ════════════════════ -->
+<div id="screen-signup-company" class="screen">
+  <div style="min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;background:var(--cream);padding:40px 20px;">
+    <div style="width:100%;max-width:540px;">
+
+      <div style="text-align:center;margin-bottom:28px;">
+        <button onclick="showScreen('signup-pick')" style="background:none;border:1.5px solid var(--border);border-radius:8px;color:var(--navy);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;padding:8px 16px;">&#8592; Back</button>
+        <div style="font-family:'Playfair Display',serif;font-size:30px;color:var(--navy);margin-bottom:8px;">Create your company account</div>
+        <div style="font-size:15px;color:var(--text-light);">Free to post during the Tilburg pilot. Takes 30 seconds.</div>
+      </div>
+
+      <div style="background:white;border-radius:16px;padding:36px;border:1.5px solid var(--border);display:flex;flex-direction:column;gap:18px;">
+        <div>
+          <label class="form-label">Company name </label>
+          <input id="cs-company" class="form-input" type="text" placeholder="e.g. Interpolis, BDO, Jumbo…" maxlength="150">
+          <div class="field-error"></div>
+        </div>
+        <div>
+          <label class="form-label">Work email </label>
+          <input id="cs-email" class="form-input" type="email" placeholder="you@company.nl" maxlength="150">
+          <div class="field-error"></div>
+          <div class="form-hint">Use your company email — not Gmail or Hotmail.</div>
+        </div>
+        <div>
+          <label class="form-label">Password </label>
+          <input id="cs-password" class="form-input" type="password" placeholder="Min. 8 characters" maxlength="128">
+          <div class="field-error"></div>
+        </div>
+        <div>
+          <label class="form-label">Confirm password </label>
+          <input id="cs-password2" class="form-input" type="password" placeholder="Repeat your password" maxlength="128">
+          <div class="field-error"></div>
+        </div>
+        <div id="cs-error-1" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:14px;color:#dc2626;"></div>
+        <button id="cs-submit-btn" class="btn btn-primary" style="width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:4px;" onclick="companySignupSubmit()">Create account →</button>
+      </div>
+
+      <div style="text-align:center;margin-top:18px;font-size:14px;color:var(--text-light);">
+        Already have an account?
+        <button onclick="openAuthModal('login')" style="background:none;border:none;color:var(--orange);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;">Sign in</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ SCREEN: VERIFY EMAIL ════════════════════ -->
+<div id="screen-verify-email" class="screen">
+  <div style="min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;background:var(--cream);padding:40px 20px;">
+    <div style="width:100%;max-width:520px;text-align:center;">
+      <div style="font-size:56px;margin-bottom:24px;">📧</div>
+      <div style="font-family:'Playfair Display',serif;font-size:30px;color:var(--navy);margin-bottom:12px;">Check your email</div>
+      <p style="font-size:15px;color:var(--text-light);line-height:1.7;margin-bottom:28px;">We sent a verification link to <strong id="verify-email-address" style="color:var(--navy);"></strong>. Click the link in that email to activate your account.</p>
+      <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:28px;text-align:left;font-size:14px;color:var(--text-light);line-height:1.6;">
+        <strong style="color:var(--navy);">Didn't get it?</strong><br>
+        Check your spam folder first. If it's not there, click below to resend.
+      </div>
+      <button onclick="resendVerificationEmail()" class="btn btn-outline-navy" style="margin-right:12px;">Resend email</button>
+      <button onclick="showScreen('signup-student')" class="btn" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;font-family:'DM Sans',sans-serif;">Use a different email</button>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════ AUTH MODAL ════════════════════ -->
 <div id="auth-modal" class="auth-modal-overlay">
   <div class="auth-modal-card">
@@ -1962,11 +2088,6 @@
       </div>
     </div>
 
-    <!-- Name — signup only -->
-    <div id="auth-name-wrap" style="display:none;margin-bottom:10px;">
-      <input id="auth-name" type="text" class="auth-input" placeholder="Full name" maxlength="100">
-    </div>
-
     <div style="margin-bottom:10px;">
       <input id="auth-email" type="email" class="auth-input" placeholder="Email address" maxlength="200" onkeydown="if(event.key==='Enter')submitAuth()">
     </div>
@@ -1980,7 +2101,7 @@
 
     <p id="auth-switch" style="text-align:center;font-size:13px;color:#999;margin:16px 0 0;">
       Don't have an account?
-      <a href="#" id="auth-switch-link" onclick="switchAuthMode();return false;"
+      <a href="#" id="auth-switch-link" onclick="closeAuthModal();showScreen('signup-student');return false;"
          style="color:var(--orange);font-weight:600;text-decoration:none;">Sign up</a>
     </p>
   </div>
@@ -1994,7 +2115,7 @@
       <div id="confirm-modal-subtitle" style="font-size:13px;color:rgba(255,255,255,0.6);"></div>
     </div>
     <div style="padding:24px 28px;">
-      <p id="confirm-modal-body" style="font-size:14px;color:var(--text);margin:0 0 24px;line-height:1.6;"></p>
+      <div id="confirm-modal-body" style="font-size:14px;color:var(--text);margin:0 0 24px;line-height:1.6;"></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;">
         <button onclick="closeConfirmModal()" class="btn" style="background:var(--cream);color:var(--text);">Cancel</button>
         <button id="confirm-modal-action-btn" class="btn btn-primary" style="min-width:100px;justify-content:center;"></button>
@@ -2004,8 +2125,115 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- ════════════ POST LISTING MODAL (Cycles) ════════════ -->
+<div id="cycles-post-listing-modal" class="modal-overlay">
+  <div class="modal" style="max-width:960px;height:92vh;display:flex;flex-direction:column;overflow:hidden;width:92%;padding:0;">
+    <div id="cycles-post-listing-form" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
+      <div style="background:var(--navy);border-radius:16px 16px 0 0;padding:20px 28px;position:relative;flex-shrink:0;">
+        <button class="modal-close" onclick="closeCyclesPostModal()" style="position:absolute;top:14px;right:16px;color:rgba(255,255,255,0.55);background:none;border:none;font-size:18px;cursor:pointer;line-height:1;">&#x2715;</button>
+        <div style="font-family:'Playfair Display',serif;font-size:22px;color:white;margin-bottom:4px;">Post a new listing</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.55);">Fill in the details below — the role will be saved to Rookies and available to enter into the cycle</div>
+      </div>
+      <div style="overflow-y:auto;overscroll-behavior:contain;flex:1;padding:20px 28px 28px;min-height:0;">
+        <div class="listing-tab-nav">
+          <button class="listing-tab active" id="cpost-tab-basics"   onclick="switchCyclesListingTab('basics')">Basics</button>
+          <button class="listing-tab"        id="cpost-tab-details"  onclick="switchCyclesListingTab('details')">Details</button>
+          <button class="listing-tab"        id="cpost-tab-prefs"    onclick="switchCyclesListingTab('prefs')">Preferences</button>
+          <button class="listing-tab"        id="cpost-tab-messages" onclick="switchCyclesListingTab('messages')">Messages</button>
+        </div>
+
+        <!-- BASICS -->
+        <div id="cpost-panel-basics" class="listing-tab-panel">
+          <div class="listing-field-grid">
+            <div class="form-group"><label class="form-label">Job title </label><input class="form-input" type="text" id="cpost-title" placeholder="e.g. Finance Intern, Data Analyst…" maxlength="80"></div>
+            <div class="form-group"><label class="form-label">Application method </label><div class="pref-chips" id="cpost-app-method" style="margin-top:4px;"><button class="pref-chip active" data-val="Apply on platform">Apply on platform</button><button class="pref-chip" data-val="External (ATS URL)">External (ATS URL)</button></div><div id="cpost-ats-wrap" style="display:none;margin-top:8px;"><input class="form-input" type="text" id="cpost-ats" placeholder="Paste the external application URL…"></div></div>
+            <div class="form-group"><label class="form-label">Job type </label><div class="pref-chips" id="cpost-type-chips" style="margin-top:4px;"><button class="pref-chip active" data-val="Internship (stage)">Internship (stage)</button><button class="pref-chip" data-val="Working student">Working student</button><button class="pref-chip" data-val="Graduate role">Graduate role</button></div></div>
+            <div class="form-group"><label class="form-label">Employment type </label><div class="pref-chips" id="cpost-emp-type" style="margin-top:4px;"><button class="pref-chip active" data-val="Full-time">Full-time</button><button class="pref-chip" data-val="Part-time">Part-time</button></div><div id="cpost-hours-wrap" style="display:none;margin-top:8px;"><div style="display:flex;align-items:center;gap:10px;"><input id="cpost-hours-per-week" class="form-input" type="number" min="1" max="40" placeholder="e.g. 16" style="width:100px;"><span style="font-size:13px;color:var(--gray);">hours per week</span></div></div></div>
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field / Sector </label><div class="pref-chips" id="cpost-field-chips" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Finance &amp; Banking">Finance &amp; Banking</button><button class="pref-chip" data-val="Consulting">Consulting</button><button class="pref-chip" data-val="Marketing">Marketing</button><button class="pref-chip" data-val="Data &amp; Analytics">Data &amp; Analytics</button><button class="pref-chip" data-val="HR &amp; People">HR &amp; People</button><button class="pref-chip" data-val="Law &amp; Legal">Law &amp; Legal</button><button class="pref-chip" data-val="Technology">Technology</button><button class="pref-chip" data-val="Accounting &amp; Audit">Accounting &amp; Audit</button><button class="pref-chip" data-val="Operations">Operations</button><button class="pref-chip" data-val="Sustainability">Sustainability</button><button class="pref-chip" data-val="Research">Research</button><button class="pref-chip" data-val="Other">Other</button></div><div id="cpost-field-other-wrap" style="display:none;margin-top:8px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="cpost-field-other" class="form-input" type="text" placeholder="e.g. Real Estate, Gaming…" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCyclesCustomField();}"><button class="btn btn-outline-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCyclesCustomField()">+ Add</button></div><div id="cpost-field-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
+            <div class="form-group"><label class="form-label">Duration </label><div class="pref-chips" id="cpost-duration-chips" style="margin-top:4px;"><button class="pref-chip" data-val="1-3 months">1-3 months</button><button class="pref-chip" data-val="3-6 months">3-6 months</button><button class="pref-chip" data-val="6-12 months">6-12 months</button><button class="pref-chip" data-val="12+ months">12+ months</button><button class="pref-chip" data-val="Flexible">Flexible</button></div></div>
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job location </label><div class="pref-chips multi" id="cpost-location-chips" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Tilburg">Tilburg</button><button class="pref-chip" data-val="Amsterdam">Amsterdam</button><button class="pref-chip" data-val="Rotterdam">Rotterdam</button><button class="pref-chip" data-val="Eindhoven">Eindhoven</button><button class="pref-chip" data-val="The Hague">The Hague</button><button class="pref-chip" data-val="Utrecht">Utrecht</button><button class="pref-chip" data-val="Breda">Breda</button><button class="pref-chip" data-val="Den Bosch">Den Bosch</button><button class="pref-chip" data-val="Hybrid">Hybrid</button><button class="pref-chip" data-val="Remote">Remote</button><button class="pref-chip" data-val="Other">Other</button></div><div id="cpost-location-other-wrap" style="display:none;margin-top:8px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="cpost-location-other" class="form-input" type="text" placeholder="e.g. Groningen, Brussels…" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCyclesCustomJobLocation();}"><button class="btn btn-outline-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCyclesCustomJobLocation()">+ Add</button></div><div id="cpost-location-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
+            <div class="form-group"><label class="form-label">Work authorisation </label><div class="pref-chips multi" id="cpost-work-auth" style="margin-top:4px;"><button class="pref-chip" data-val="EU / EEA / Swiss / Non-EU orientation year">EU / EEA / Swiss</button><button class="pref-chip" data-val="Non-EU — student visa">Non-EU — student visa</button></div></div>
+            <div class="form-group"><label class="form-label">Estimated start date </label><div style="display:flex;gap:8px;"><select class="form-input" id="cpost-start-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select><select class="form-input" id="cpost-start-year" style="flex:1;"><option>2025</option><option selected>2026</option><option>2027</option></select></div></div>
+            <div class="form-group"><label class="form-label">Application deadline </label><div style="display:flex;gap:8px;"><select class="form-input" id="cpost-deadline-month" style="flex:1;"><option value="">Month</option><option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>May</option><option>Jun</option><option>Jul</option><option>Aug</option><option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option></select><select class="form-input" id="cpost-deadline-year" style="flex:1;"><option>2026</option><option>2027</option></select></div></div>
+            <div class="form-group"><label class="form-label">Company division </label><input class="form-input" type="text" id="cpost-division" placeholder="e.g. Advisory, Finance Dept…" maxlength="100"></div>
+            <div class="form-group" style="grid-column:1/-1;"><label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--cream);"><input type="checkbox" id="cpost-require-cv" style="width:16px;height:16px;flex-shrink:0;accent-color:var(--navy);"><div><div style="font-weight:600;font-size:14px;color:var(--navy);">Require CV from applicants</div><div style="font-size:12px;color:var(--gray);margin-top:1px;">Students must upload a CV before they can apply.</div></div></label></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:16px;"><button class="btn btn-outline-navy" onclick="switchCyclesListingTab('details')">Next: Details →</button></div>
+        </div>
+
+        <!-- DETAILS -->
+        <div id="cpost-panel-details" class="listing-tab-panel" style="display:none;">
+          <div class="listing-field-grid">
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job description </label><textarea class="form-textarea" id="cpost-description" style="min-height:120px;" placeholder="Full description of the role and qualifications." maxlength="2000"></textarea><small style="float:right;font-size:11px;color:var(--gray);margin-top:3px;" id="cpost-desc-counter">0 / 2000</small></div>
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Job role group </label><input class="form-input" type="text" id="cpost-role-group" placeholder="e.g. Financial Analyst, Data Analyst" maxlength="100"><div class="form-hint">Drives student matching.</div></div>
+            <div class="form-group"><label class="form-label">Number of hires </label><input class="form-input" type="number" id="cpost-num-hires" placeholder="e.g. 2" min="1"></div>
+            <div class="form-group"><label class="form-label">Pay / compensation </label><input class="form-input" type="text" id="cpost-pay" placeholder="e.g. €500/month, Unpaid" maxlength="100"></div>
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Must-have qualifications </label><textarea class="form-textarea" id="cpost-qualifications" style="min-height:70px;" placeholder="Key skills, certifications, or experience required." maxlength="2000"></textarea></div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label class="form-label">Searched skills </label>
+              <div class="form-hint" style="margin-bottom:10px;">Skills you're looking for — drives matching with students.</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                <div>
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:6px;">Technical</div>
+                  <div style="display:flex;gap:6px;margin-bottom:6px;position:relative;"><input class="form-input" id="cpost-skill-tech-input" type="text" placeholder="e.g. Python, Excel…" style="flex:1;font-size:13px;" maxlength="80" oninput="filterCyclesJobSkills('technical',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCyclesJobSkill('technical');}"><button class="btn btn-outline-navy" style="padding:8px 12px;font-size:12px;" onclick="addCyclesJobSkill('technical')">+ Add</button><div id="cpost-skill-tech-suggestions" class="skill-suggestions" style="display:none;position:absolute;top:100%;left:0;right:40px;z-index:50;"></div></div>
+                  <div id="cpost-skill-tech-tags" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+                </div>
+                <div>
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:6px;">Professional</div>
+                  <div style="display:flex;gap:6px;margin-bottom:6px;position:relative;"><input class="form-input" id="cpost-skill-prof-input" type="text" placeholder="e.g. Leadership…" style="flex:1;font-size:13px;" maxlength="80" oninput="filterCyclesJobSkills('professional',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCyclesJobSkill('professional');}"><button class="btn btn-outline-navy" style="padding:8px 12px;font-size:12px;" onclick="addCyclesJobSkill('professional')">+ Add</button><div id="cpost-skill-prof-suggestions" class="skill-suggestions" style="display:none;position:absolute;top:100%;left:0;right:40px;z-index:50;"></div></div>
+                  <div id="cpost-skill-prof-tags" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+                </div>
+                <div>
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:6px;">Language</div>
+                  <div style="display:flex;gap:6px;margin-bottom:6px;position:relative;"><input class="form-input" id="cpost-skill-lang-input" type="text" placeholder="e.g. Dutch, English…" style="flex:1;font-size:13px;" maxlength="80" oninput="filterCyclesJobSkills('languages',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCyclesJobSkill('languages');}"><button class="btn btn-outline-navy" style="padding:8px 12px;font-size:12px;" onclick="addCyclesJobSkill('languages')">+ Add</button><div id="cpost-skill-lang-suggestions" class="skill-suggestions" style="display:none;position:absolute;top:100%;left:0;right:40px;z-index:50;"></div></div>
+                  <div id="cpost-skill-lang-tags" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:16px;"><button class="btn" style="background:var(--cream);color:var(--text);" onclick="switchCyclesListingTab('basics')">← Basics</button><button class="btn btn-outline-navy" onclick="switchCyclesListingTab('prefs')">Next: Preferences →</button></div>
+        </div>
+
+        <!-- PREFS -->
+        <div id="cpost-panel-prefs" class="listing-tab-panel" style="display:none;">
+          <p style="font-size:12px;color:var(--gray);margin-bottom:16px;">All optional — none block applicants.</p>
+          <div class="listing-field-grid">
+            <div class="form-group"><label class="form-label">Graduation date range </label><div style="display:flex;gap:6px;align-items:center;"><select class="form-input" id="cpost-grad-from" style="flex:1;"><option value="">From</option><option>2024</option><option>2025</option><option>2026</option><option>2027</option></select><span style="color:var(--gray);font-size:13px;">to</span><select class="form-input" id="cpost-grad-to" style="flex:1;"><option value="">To</option><option>2025</option><option>2026</option><option>2027</option><option>2028</option></select></div></div>
+            <div class="form-group"><label class="form-label">Target candidate </label><div class="pref-chips multi" id="cpost-school-year" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Bachelor">Bachelor</button><button class="pref-chip" data-val="Pre-master">Pre-master</button><button class="pref-chip" data-val="Master">Master</button></div></div>
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Field of study </label><div class="pref-chips multi" id="cpost-majors" style="margin-top:4px;flex-wrap:wrap;"><button class="pref-chip" data-val="Business Administration">Business Administration</button><button class="pref-chip" data-val="Economics">Economics</button><button class="pref-chip" data-val="Econometrics">Econometrics</button><button class="pref-chip" data-val="Finance">Finance</button><button class="pref-chip" data-val="Accounting">Accounting</button><button class="pref-chip" data-val="Marketing">Marketing</button><button class="pref-chip" data-val="International Business">International Business</button><button class="pref-chip" data-val="Data Science">Data Science</button><button class="pref-chip" data-val="Computer Science">Computer Science</button><button class="pref-chip" data-val="Law">Law</button><button class="pref-chip" data-val="Psychology">Psychology</button><button class="pref-chip" data-val="Engineering">Engineering</button><button class="pref-chip" data-val="Any">Any</button><button class="pref-chip" data-val="Other">Other</button></div><div id="cpost-majors-other-wrap" style="display:none;margin-top:8px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="cpost-majors-other" class="form-input" type="text" placeholder="e.g. Marine Biology…" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCyclesCustomMajor();}"><button class="btn btn-outline-navy" style="padding:10px 16px;font-size:13px;white-space:nowrap;" onclick="addCyclesCustomMajor()">+ Add</button></div><div id="cpost-majors-custom-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
+            <div class="form-group"><label class="form-label">GPA minimum </label><input class="form-input" type="text" id="cpost-gpa-min" placeholder="e.g. 7.0 / 10" maxlength="20"><div class="form-hint">Shown but does not block applications.</div></div>
+            <div class="form-group"><label class="form-label">Dutch only? </label><div class="pref-chips" id="cpost-dutch-only" style="margin-top:4px;"><button class="pref-chip" data-val="Yes">Yes</button><button class="pref-chip active" data-val="No">No</button></div></div>
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Hiring team </label><input class="form-input" type="text" id="cpost-hiring-team" placeholder="Additional teammate emails to CC" maxlength="150"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:20px;"><button class="btn" style="background:var(--cream);color:var(--text);" onclick="switchCyclesListingTab('details')">← Details</button><button class="btn btn-primary" style="padding:10px 24px;" onclick="submitCyclesListing()">Publish listing →</button></div>
+        </div>
+
+        <!-- MESSAGES -->
+        <div id="cpost-panel-messages" class="listing-tab-panel" style="display:none;">
+          <p style="font-size:13px;color:var(--text-light);margin-bottom:20px;">Write the messages students will receive. Use <strong>[name]</strong> and <strong>[role]</strong> as placeholders.</p>
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            <div class="form-group"><label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:var(--navy);color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">✉ Invite to apply</span></label><textarea class="form-textarea" id="cpost-msg-invite" rows="3" placeholder="Hi [name], we'd love for you to apply for [role]…" maxlength="2000"></textarea></div>
+            <div class="form-group"><label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:#22c55e;color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">✅ Accepted</span></label><textarea class="form-textarea" id="cpost-msg-accepted" rows="3" placeholder="Hi [name], great news — we'd love to move forward with [role]…" maxlength="2000"></textarea></div>
+            <div class="form-group"><label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:#f59e0b;color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">⭐ Shortlisted</span></label><textarea class="form-textarea" id="cpost-msg-shortlisted" rows="3" placeholder="Hi [name], we've reviewed your profile for [role]…" maxlength="2000"></textarea></div>
+            <div class="form-group"><label class="form-label" style="display:flex;align-items:center;gap:8px;"><span style="background:#f43f5e;color:white;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:600;">❌ Rejected</span></label><textarea class="form-textarea" id="cpost-msg-rejected" rows="3" placeholder="Hi [name], thank you for applying for [role]…" maxlength="2000"></textarea></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:20px;"><button class="btn" style="background:var(--cream);color:var(--text);" onclick="switchCyclesListingTab('prefs')">← Preferences</button><button class="btn btn-primary" style="padding:10px 24px;" onclick="submitCyclesListing()">Publish listing →</button></div>
+        </div>
+      </div>
+    </div>
+    <div id="cycles-post-listing-success" class="success-screen" style="display:none;">
+      <div class="success-icon">✓</div>
+      <h3>Listing published!</h3>
+      <p>Your role is saved to Rookies and now appears in your cycle role list.</p>
+      <button class="btn btn-outline-navy" style="margin:0 auto;" onclick="closeCyclesPostModal()">Done</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/cycles.js"></script>
 <script src="js/cycles-profile.js"></script>
 <script src="js/cycles-company-profile.js"></script>
+<script src="js/cycles-participation.js"></script>
+<script src="js/cycles-post-listing.js"></script>
 </body>
 </html>
